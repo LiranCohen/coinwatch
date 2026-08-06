@@ -61,42 +61,4 @@ Frontend (Next.js + Tailwind)
 3. **Reputation:** 0xAnon’s score ticks up. They’ve correctly tagged 12 of the last 15 high-value txs.
 4. **Insight:** Viewer filters by “Accumulation” tags and sees three fresh wallets funded from the same source, annotated 6 minutes ago.
 
----
-
-### Sponsor Integration (No Pandering)
-
-**QuickNode:** We’re not using them because they’re a sponsor. We’re using them because real-time chain analysis *requires* sub-second, reliable node access. QuickNode’s Streams API is the only way we can push live data to users without running our own infrastructure—which a 4-hour hackathon project obviously can’t do. Their Filter API lets us be surgical about what we surface, keeping compute costs near zero.
-
-**OKX.AI:** On-chain data is noisy. LLMs are great at pattern summarization but terrible at ground truth. We use OKX.AI to generate *hypotheses*, not facts. The product’s value is the human-AI feedback loop: OKX.AI proposes, the crowd disposes. This positions OKX.AI as the reasoning engine inside a larger intelligence system, not a gimmick.
-
----
-
-### Startup Potential
-
-- **Data Moat:** Crowdsourced labels on wallet behavior become a proprietary training dataset. Every annotation improves the next generation of risk models.
-- **Network Effects:** More analysts → better accuracy → more users relying on the feed → more analysts wanting reputation.
-- **Monetization:** Free for retail. Paid tiers for real-time webhooks, API access to reputation scores, and “verified analyst” badges. Enterprise SAAS for compliance teams who need audit trails of *who* labeled what and when.
-- **Defensibility:** You can copy the UI; you can’t copy 18 months of validated, reputation-weighted annotations.
-
----
-
-### 4-Hour Build Plan
-
-| Hour | Task |
-|---|---|
-| **0–0.5** | Scaffold Next.js project, connect QuickNode Filter API, stream 1 tx type (e.g., ERC-20 transfers >$5k). |
-| **0.5–1.5** | Integrate OKX.AI: send tx data, receive summary, render in UI. |
-| **1.5–2.5** | Build annotation UI: tags, comments, upvote/downvote. Store in Supabase/SQLite. |
-| **2.5–3.5** | Reputation logic + leaderboard. Polish UI (dark mode, tx detail pane). |
-| **3.5–4** | Seed 5–10 demo transactions with pre-written annotations. Practice demo flow. |
-
----
-
-### Success Metrics for Tonight
-- **<500ms** latency from on-chain event to dashboard render.
-- **≥1** human insight overriding an AI hypothesis during the demo.
-- **≥3** distinct analyst profiles with visible reputation scores.
-
----
-
-**Bottom Line:** ChainWatch isn’t a dashboard. It’s a *protocol for trust*—using QuickNode to see the chain, OKX.AI to interpret it, and the crowd to validate it. Four hours gets us a feed. The model gets us a company.
+**Bottom Line:** ChainWatch isn’t just a dashboard. It’s a *protocol for trust*—using QuickNode to see the chain, OKX.AI to interpret it, and the crowd to validate it. Four hours gets us a feed. The model gets us a company.
