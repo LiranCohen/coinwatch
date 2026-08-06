@@ -1,9 +1,9 @@
-*ChainWatch: Crowdsourced On-Chain Intelligence**
+**CoinWatch: Crowdsourced On-Chain Intelligence**
 
 ---
 
 ### Overview
-ChainWatch is a real-time, community-validated layer for blockchain transaction analysis. We combine QuickNode’s low-latency infrastructure with OKX.AI’s pattern recognition to surface high-signal on-chain events, then let the community annotate, verify, and rank them—turning scattered Discord alpha into structured, reusable intelligence.
+CoinWatch is a real-time, community-validated layer for blockchain transaction analysis. We combine QuickNode’s low-latency infrastructure with OKX.AI’s pattern recognition to surface high-signal on-chain events, then let the community annotate, verify, and rank them—turning scattered Discord alpha into structured, reusable intelligence.
 
 ---
 
@@ -61,4 +61,4 @@ Frontend (Next.js + Tailwind)
 3. **Reputation:** 0xAnon’s score ticks up. They’ve correctly tagged 12 of the last 15 high-value txs.
 4. **Insight:** Viewer filters by “Accumulation” tags and sees three fresh wallets funded from the same source, annotated 6 minutes ago.
 
-**Bottom Line:** ChainWatch isn’t just a dashboard. It’s a *protocol for trust*—using QuickNode to see the chain, OKX.AI to interpret it, and the crowd to validate it. Four hours gets us a feed. The model gets us a company.
+**Bottom Line:** CoinWatch isn’t just a dashboard. It’s a *protocol for trust*—using QuickNode to see the chain, OKX.AI to interpret it, and the crowd to validate it. Four hours gets us a feed. The model gets us a company.
