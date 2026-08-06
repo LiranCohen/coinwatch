@@ -17,8 +17,9 @@ Build the `web/` workspace: Vite + React + TypeScript + Tailwind (KTD-3). Dark-m
 
 | Var | Default | Purpose |
 |---|---|---|
-| `VITE_API_URL` | `http://localhost:3001` | backend base URL |
 | `VITE_USE_FIXTURES` | `false` | serve all reads from `web/fixtures/` (R16) |
+
+The client calls relative `/api` paths through the Vite dev proxy — no absolute base URL in dev, so no CORS. An absolute base URL is only needed if the app is ever served separately from the proxy, and then the backend must enable CORS with the `Authorization` header allowed.
 
 ## File layout
 
@@ -54,11 +55,15 @@ web/
   - Persist: `did.export()` → localStorage key `chainwatch:identity`; restore via `DidDht.import({ portableDid })` or `DidJwk.import(...)` chosen by the DID prefix.
   - Login: `POST /api/auth/challenge` → `signer = await did.getSigner()` → sign the UTF-8 nonce → `POST /api/auth/verify { did, keyId: signer.keyId, nonce, signature: base64url(sig), handle? }` → store bearer token.
   - Pitfall: `DidDht.create()` publishes to the enbox gateway by default — that network call is expected; the did:jwk fallback covers offline/venue failure. Verify the happy path in a real browser before building login UI on top of it.
-- **Feed:** initial `GET /api/events` then merge SSE: `event:new` prepends, `event:update` patches by id, `label:new` refreshes affected visible events lazily. Cap the list at 50.
+- **Feed:** initial `GET /api/events` then merge SSE: `event:new` prepends, `event:update` patches by id — and when the update is for the currently open event, refetch `GET /api/events/:id` so the detail pane picks up `aiSummary` and the full label list — and `label:new` refreshes affected visible events lazily. Cap the list at 50.
+- **Specified states:** initial load shows a skeleton; empty feed renders "Listening to your node — no matching events yet" with the active detection thresholds and a pointer to the injector when enabled; a header pill shows connection status (live / reconnecting / offline) from the SSE hook; a "node connection stale" banner appears when `health` messages stop.
+- **Event status rendering:** `active` pulses subtly, `confirmed` shows a check badge, `evicted` renders dimmed — updates arrive via `event:update`.
+- **Demo-legibility direction:** BTC value is the largest element per card; distinct accent colors per rule (whale / dormant-wake / coinjoin / demo); tabular-numeral monospace for figures; type sizes verified on a projector or large display during U11.
 - **AI states:** `aiStatus: 'pending'|'failed'` renders an "analysis pending" card (AE5); `'done'` renders summary + tag with a "machine-generated" marker and confirm/refute buttons (authenticated only).
-- **Demo marker:** any event with `source: 'demo'` or `'demo'` in `rules` gets an unmistakable badge (AE6). The inject button shows only after a successful OPTIONS/probe of `/api/dev/inject` (404 = hidden).
+- **Demo marker:** any event with `source: 'demo'` or `'demo'` in `rules` gets an unmistakable badge (AE6). The inject button shows only when `GET /api/dev/inject` returns 200.
 - **Votes:** `VoteButton` mirrors `myVote`; clicking the active vote removes it, clicking the other flips it (R12/AE4). Unauthenticated clicks route to the account-creation prompt (AE3 UI half).
-- **Address page:** balance/txCount from `AddressInfo`; deep history links out to `externalUrl` (mempool.space) — do not build explorer pages.
+- **Address page:** balance/txCount from `AddressInfo`, rendering "—" with a "lookup unavailable" hint when null; tag and note render as escaped plain text and evidenceUrl only as a scheme-checked http(s) link; deep history links out to `externalUrl` (mempool.space) — do not build explorer pages.
+- **Routes:** `/` (feed with detail pane — event detail is pane-only, not a route), `/address/:address`, `/leaderboard`.
 - **Leaderboard:** table of handle-or-truncated-did, reputation, label count, net votes; friendly zero-state.
 
 ## Done when

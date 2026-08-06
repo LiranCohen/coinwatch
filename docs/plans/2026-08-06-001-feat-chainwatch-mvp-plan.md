@@ -68,7 +68,7 @@ flowchart TB
 **Ingestion and detection**
 
 - R1. The backend streams new mempool transactions and blocks from the user's node via RPC polling (ZMQ is a stretch goal, not required).
-- R2. Detection surfaces at minimum: transfers above a configurable BTC threshold; dormant-wallet wakes (an input address with no outgoing spend within a configurable block window); coinjoin-pattern transactions (heuristic such as ≥5 equal-value outputs).
+- R2. Detection surfaces at minimum: transfers above a configurable BTC threshold; dormant-wallet wakes (an input address with no outgoing spend within a configurable block window, checked only for transactions above the value gate in KTD-5); coinjoin-pattern transactions (heuristic such as ≥5 equal-value outputs).
 - R3. Each event stores txid, detection time, matched rules, involved addresses, and total value.
 - R4. Address detail lookups resolve via mempool.space with blockstream.info as fallback, with caching to respect rate limits.
 
@@ -133,7 +133,7 @@ flowchart TB
 ### Acceptance Examples
 
 - AE1. **Covers R2.** Given a mempool transaction below the value threshold with no other rule hits, when detection runs, then no event is surfaced.
-- AE2. **Covers R2.** Given an input address whose last outgoing spend is older than the dormant-window, when detection runs, then a dormant-wake event is surfaced naming that address.
+- AE2. **Covers R2.** Given a transaction at or above the dormant value gate whose input address's last outgoing spend is older than the dormant window, when detection runs, then a dormant-wake event is surfaced naming that address.
 - AE3. **Covers R11, A4.** Given no session, when a visitor attempts to label or vote, then the API rejects the write while all reads still succeed.
 - AE4. **Covers R12.** Given an identity that already voted on a label, when it votes again with the same value, then the vote is removed; when it votes with the opposite value, then the vote flips.
 - AE5. **Covers R7.** Given the AI provider errors, when an event surfaces, then it displays "analysis pending" and the feed is uninterrupted.
@@ -194,12 +194,12 @@ Product Contract preservation: changed R12 and AE4 (vote-toggle rule fixed), R18
 - **KTD-1. One repo, two workspaces plus a shared types package.** `server/`, `web/`, and `shared/` under npm workspaces. The split-backend/frontend decision holds without two-repo friction; `shared/` carries only the TypeScript types from the API contract so both sides compile against identical shapes.
 - **KTD-2. Backend: Bun + Hono + better-sqlite3.** Bun gives native TypeScript and fast installs; Hono is a thin HTTP layer with first-class SSE support; better-sqlite3 gives synchronous, zero-ORM storage. Swap any piece at build time if it fights the agent.
 - **KTD-3. Frontend: Vite + React + TypeScript + Tailwind.** Plain fetch hooks and `EventSource` for the stream — no state library, no query library. Dark mode is a Tailwind default palette, not a theme system.
-- **KTD-4. RPC polling with diff, not ZMQ.** Every `POLL_INTERVAL_MS` (default 5000), diff `getrawmempool` against the previous snapshot, and fetch `getrawtransaction` (verbose) for newcomers. Eviction sweep: an active event whose txid leaves the mempool is marked `confirmed` if it appears in the latest block, else `evicted`. ZMQ is deferred (Scope Boundaries).
+- **KTD-4. RPC polling with diff, not ZMQ.** Every `POLL_INTERVAL_MS` (default 5000), diff `getrawmempool` against the previous snapshot, and fetch newcomers with `getrawtransaction` verbosity=2 (Bitcoin Core v24+), which populates `vin[].prevout` with input addresses and values — txindex alone does not. The first poll after startup only establishes the baseline snapshot (no fetches, no rule evaluation), and events persist with `INSERT OR IGNORE` on a `UNIQUE(txid)` constraint, so restarts never re-detect or duplicate. Eviction sweep: an active event whose txid leaves the mempool is marked `confirmed` if it appears in the latest block, else `evicted`. ZMQ is deferred (Scope Boundaries).
 - **KTD-5. Dormant-wake checks are gated by value.** Address-history lookups cost an external API call, so dormant checks run only for transactions above a lower value gate (`DORMANT_MIN_VALUE_BTC`, default 1) and only against the highest-value input addresses. This keeps mempool.space rate limits safe.
 - **KTD-6. AI provider is an OpenAI-compatible chat-completions client.** Configured by `AI_BASE_URL` + `AI_API_KEY` + `AI_MODEL`, which covers most hosted providers and local GPU servers (vLLM/Ollama) with one code path. A mock provider returns templated text when no key is configured, satisfying R7 offline.
-- **KTD-7. did:dht with timed fallback to did:jwk.** Account creation tries `DidDht.create` (default publish) with a ~5s timeout; on failure it falls back to `DidJwk.create`. Backend verification resolves via `UniversalResolver` with both methods registered, so mixed-method identities coexist.
+- **KTD-7. did:dht with timed fallback to did:jwk.** Account creation tries `DidDht.create` (default publish) with a ~5s timeout; on failure it falls back to `DidJwk.create`. Backend verification resolves via `UniversalResolver` with both methods registered, so mixed-method identities coexist. On first successful verify the backend persists the resolved DID document keyed by DID and falls back to the cache when gateway resolution fails, so did:dht logins survive venue internet loss after one online login.
 - **KTD-8. Seed import is a build-time artifact, not a runtime fetch.** A curated TagPacks subset is committed as `server/fixtures/seed-labels.json` and imported on first startup as `source: 'seed'` labels with the TagPack source URL as evidence. Deterministic, offline-friendly, no YAML parsing at runtime.
-- **KTD-9. Reputation is a stored counter, updated synchronously on votes.** Upvote on a label = +1 to its author's reputation; downvote = -1; self-votes rejected; seed labels have no author and earn nothing. No batch jobs, no accuracy oracle.
+- **KTD-9. Reputation is a stored counter, recomputed synchronously on every vote change.** Label score and author reputation are derived from current votes in the same transaction: an upvote adds +1, a downvote -1; removing a vote reverts its delta and flipping a vote shifts it by 2 (matching R12's toggle semantics). Self-votes rejected; seed labels have no author and earn nothing. No batch jobs, no accuracy oracle.
 
 ### High-Level Technical Design
 
@@ -213,7 +213,7 @@ poll loop ──► diff mempool ──► fetch new txs (verbose) ──► eva
      │                                              coinjoin: ≥ COINJOIN_MIN_EQUAL_OUTPUTS (default 5) equal outputs
      │                                                        │
      ▼                                                        ▼
-eviction sweep (active event left mempool?)        persist event ──► AI first pass ──► SSE broadcast
+eviction sweep (active event left mempool?)        persist event ──► SSE broadcast ──► AI first pass ──► event:update broadcast
 ```
 
 **Auth sequence** (F2):
@@ -295,14 +295,18 @@ interface LeaderboardEntry {
 | `GET /api/events/:id` | no | → `EventDetail` | |
 | `POST /api/events/:id/ai-feedback` | yes | `{ value: 'confirm' \| 'refute' }` → `EventDetail['aiFeedback']` | toggle semantics like votes |
 | `GET /api/addresses/:address` | no | → `AddressInfo` | balance/txCount via mempool.space, cached 5 min |
-| `POST /api/addresses/:address/labels` | yes | `{ tag, note?, evidenceUrl? }` → `Label` | tag 2–32 chars |
+| `POST /api/addresses/:address/labels` | yes | `{ tag, note?, evidenceUrl? }` → `Label` | tag 2–32 chars; note ≤280 chars; evidenceUrl must be an absolute http(s) URL, else 400 |
 | `POST /api/labels/:id/vote` | yes | `{ value: 1 \| -1 }` → `Label` | toggle per R12; self-vote → 422 |
 | `GET /api/leaderboard` | no | → `{ analysts: LeaderboardEntry[] }` | top 20 by reputation |
 | `GET /api/labels/trending` | no | → `{ labels: Label[] }` | top 20 by score, last 24h |
 | `GET /api/stream` | no | SSE | events below |
-| `POST /api/dev/inject` | env-guarded | `{ rule?, valueSats?, address? }` → `EventDetail` | 404 unless `INJECTOR_ENABLED=true` |
+| `POST /api/dev/inject` | env-guarded + loopback-only | `{ rule?, valueSats?, address? }` → `EventDetail` | 404 unless `INJECTOR_ENABLED=true`; when enabled, rejects non-loopback callers. `GET` on the same path is the availability probe: 200 when enabled, 404 otherwise |
 
-**SSE messages on `/api/stream`:** `event:new` (EventSummary), `event:update` (EventSummary — AI attached, status changes), `label:new` (Label).
+**SSE messages on `/api/stream`:** `event:new` (EventSummary), `event:update` (EventSummary — AI attached, status changes), `label:new` (Label), `health` (`{ lastPollAt: string }` — emitted after each successful node poll; the UI flags the node connection as stale when these stop).
+
+**Contract notes:**
+- Read endpoints returning `Label` or `EventDetail` accept an optional `Authorization` header and populate `myVote`/`mine` for the authenticated caller, defaulting to `0`/`null` when absent. Writes always require auth.
+- In development the web app reaches the API through the Vite dev proxy using relative `/api` paths (U1), so no CORS configuration is needed. An absolute base URL is only for non-dev serving, and cross-origin use requires enabling Hono's `cors` middleware with the `Authorization` header allowed.
 
 **Frontend fixtures:** `web/fixtures/` mirrors one example response per endpoint above, so the frontend agent builds with `VITE_USE_FIXTURES=true` before the backend exists.
 
@@ -312,7 +316,7 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 
 ### Risks and Dependencies
 
-- **Venue internet failure** — mitigated by mock AI provider (KTD-6), did:jwk fallback (KTD-7), committed seed file (KTD-8); node RPC is local.
+- **Venue internet failure** — mitigated by mock AI provider (KTD-6), did:jwk fallback plus server-side DID-document caching (KTD-7), committed seed file (KTD-8); node RPC is local. Dormant checks silently pause in this case; U3 logs a warning whenever address lookups are skipped.
 - **mempool.space rate limiting** — mitigated by value-gated dormant checks (KTD-5) and 5-min address cache; blockstream.info fallback.
 - **Quiet mempool during judging** — mitigated by the injector (R17) exercised identically to live events.
 - **Node RPC unreachable at build start** — first backend task after U2 is an RPC connectivity smoke check; surface to user immediately if it fails.
@@ -341,8 +345,8 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Goal:** Workspaces monorepo with `server/`, `web/`, `shared/`; the API contract types compile and are importable from both lanes.
 - **Requirements:** R16
 - **Dependencies:** none
-- **Files:** `package.json`, `shared/package.json`, `shared/src/types.ts`, `server/package.json`, `server/tsconfig.json`, `web/package.json`, `web/tsconfig.json`, `web/vite.config.ts`, `web/index.html`, `.gitignore`
-- **Approach:** npm workspaces; `shared/` exports exactly the types in the API Contract section — no runtime code. Proxy config in Vite forwards `/api` to `localhost:3001`.
+- **Files:** `package.json`, `shared/package.json`, `shared/src/types.ts`, `server/package.json`, `server/tsconfig.json`, `web/package.json`, `web/tsconfig.json`, `web/vite.config.ts`, `web/index.html`, `.gitignore`, `.env.example`
+- **Approach:** npm workspaces; `shared/` exports exactly the types in the API Contract section — no runtime code. Proxy config in Vite forwards `/api` to `localhost:3001`. `.gitignore` excludes `.env` and `.env.*`; `.env.example` enumerates every env var from the backend brief with placeholder values. Real credentials (node RPC password, AI key) live only in the untracked `.env`.
 - **Test scenarios:**
   - Happy: `shared/src/types.ts` compiles standalone; a trivial import from both `server/` and `web/` typechecks.
 - **Verification:** Both workspaces install and typecheck; `shared` types importable from each.
@@ -366,11 +370,12 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Requirements:** R1, R2, R3, AE1, AE2
 - **Dependencies:** U2
 - **Files:** `server/src/rpc/client.ts`, `server/src/detect/rules.ts`, `server/src/detect/pipeline.ts`, `server/src/external/addressinfo.ts`, `server/src/config.ts`, `server/test/rules.test.ts`, `server/test/pipeline.test.ts`
-- **Approach:** RPC client wraps `getrawmempool`, `getrawtransaction` (verbose), `getblock`, `getblockhash`. Rules are pure functions over a normalized tx shape. Dormant checks value-gated per KTD-5, using `external/addressinfo.ts` (mempool.space, blockstream fallback, in-process cache). Pipeline emits persisted events to an in-process emitter consumed by U6's SSE and U4's AI pass. Covers AE1 (below-threshold tx produces nothing), AE2 (stale-input tx produces dormant event).
+- **Approach:** RPC client wraps `getrawmempool`, `getrawtransaction` (verbosity=2 per KTD-4), `getblock`, `getblockhash`. First poll is baseline-only and events dedupe on `UNIQUE(txid)` per KTD-4. Rules are pure functions over a normalized tx shape. Dormant checks value-gated per KTD-5, using `external/addressinfo.ts` (mempool.space, blockstream fallback, in-process cache). Pipeline emits persisted events to an in-process emitter consumed by U6's SSE and U4's AI pass. Covers AE1 (below-threshold tx produces nothing), AE2 (stale-input tx above the value gate produces dormant event).
 - **Test scenarios:**
   - Happy: synthetic whale tx (value ≥ threshold) yields one event with rule `whale`, correct sats and addresses.
   - Happy: tx with ≥5 equal outputs yields `coinjoin`.
   - Edge: tx matching multiple rules yields one event with all rules listed.
+  - Edge: restart with a populated mempool creates no duplicate or backfilled events (baseline snapshot + txid dedup).
   - Edge: tx disappearing from mempool without block inclusion is marked `evicted`; one included in the next block is marked `confirmed`.
   - Error: RPC failure logs and retries next poll without crashing. Covers AE1, AE2 with crafted inputs (address history stubbed).
 - **Verification:** Rule tests pass on crafted transactions; pipeline test drives a fake-RPC through detect→persist→evict.
@@ -407,12 +412,13 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Requirements:** R15, R17, R13, R14, R6, AE6
 - **Dependencies:** U3, U4, U5
 - **Files:** `server/src/index.ts`, `server/src/api/routes.ts`, `server/src/api/sse.ts`, `server/src/api/inject.ts`, `server/test/api.test.ts`
-- **Approach:** Hono app mounting auth (U5), routes per the contract table, SSE hub subscribed to the pipeline emitter. Event serialization resolves `matchedLabels`/`labels` by joining involved addresses (R13). Injector constructs a synthetic tx shape, marks `source: 'demo'`, rule includes `'demo'`, and pushes it through the same persist→AI→broadcast path. Covers AE6 at the API level. Vote endpoint implements toggle/flip per R12 and updates reputation per KTD-9.
+- **Approach:** Hono app mounting auth (U5), routes per the contract table, SSE hub subscribed to the pipeline emitter. Event serialization resolves `matchedLabels`/`labels` by joining involved addresses (R13). Injector constructs a synthetic tx shape, marks `source: 'demo'`, rule includes `'demo'`, and pushes it through the same persist→broadcast→AI path; the route is loopback-only and also answers `GET` as an availability probe. Covers AE6 at the API level. Vote endpoint implements toggle/flip per R12 and recomputes reputation per KTD-9. Label creation validates tag length, note length, and evidenceUrl scheme per the contract.
 - **Test scenarios:**
   - Happy: each endpoint returns contract-shaped JSON (schema-assert against `shared` types).
   - Integration: injected event appears on `/api/stream` as `event:new` with `source: 'demo'`. Covers AE6.
   - Edge: vote toggle (same value removes, opposite flips, self-vote 422).
-  - Error: unknown event id → 404; malformed label → 400.
+  - Edge: injector rejects non-loopback callers when enabled, and `GET /api/dev/inject` returns 404 when disabled.
+  - Error: unknown event id → 404; malformed label (bad tag length, over-long note, non-http(s) evidenceUrl) → 400.
 - **Verification:** API integration tests pass against an in-memory pipeline; every contract endpoint has at least one assertion.
 
 ### U7. Web scaffold + typed API client + fixtures mode
@@ -420,8 +426,8 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Goal:** Vite React app with routing, Tailwind dark base, a typed client for every contract endpoint, and a fixtures toggle.
 - **Requirements:** R16, R19 (base)
 - **Dependencies:** U1
-- **Files:** `web/src/main.tsx`, `web/src/App.tsx`, `web/src/api/client.ts`, `web/src/api/sse.ts`, `web/fixtures/events.json`, `web/fixtures/event-detail.json`, `web/fixtures/address.json`, `web/fixtures/leaderboard.json`, `web/src/index.css`
-- **Approach:** Client functions typed with `shared` types; when `VITE_USE_FIXTURES=true` the client returns fixture JSON instead of fetching. `EventSource` wrapped in a small hook. Routes: `/` (feed), `/events/:id` (or feed+detail pane), `/address/:address`, `/leaderboard`.
+- **Files:** `web/src/main.tsx`, `web/src/App.tsx`, `web/src/api/client.ts`, `web/src/api/sse.ts`, `web/fixtures/events.json`, `web/fixtures/event-detail.json`, `web/fixtures/address.json`, `web/fixtures/leaderboard.json`, `web/fixtures/trending.json`, `web/src/index.css`
+- **Approach:** Client functions typed with `shared` types and calling relative `/api` paths through the Vite dev proxy (no CORS in dev); when `VITE_USE_FIXTURES=true` the client returns fixture JSON instead of fetching. `EventSource` wrapped in a small hook. Routes: `/` (feed with detail pane — event detail is pane-only, not a route; deep-linking is deferred), `/address/:address`, `/leaderboard`.
 - **Test scenarios:**
   - Happy: fixtures mode renders the feed from `events.json` with zero network.
   - Error: SSE disconnect retries with backoff without duplicate events.
@@ -446,7 +452,7 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Requirements:** R19, R13, R6, AE5, AE6 (UI marker)
 - **Dependencies:** U7
 - **Files:** `web/src/pages/FeedPage.tsx`, `web/src/components/FeedItem.tsx`, `web/src/components/EventDetail.tsx`, `web/src/components/AiCard.tsx`, `web/src/components/LabelBadge.tsx`, `web/src/components/DemoBadge.tsx`
-- **Approach:** Feed merges initial `GET /api/events` with SSE `event:new`/`event:update`. AI card shows summary/tag with a machine-generated marker and confirm/refute buttons (authenticated). Demo events carry an unmistakable badge (AE6). `aiStatus: 'failed'` renders "analysis pending" per AE5.
+- **Approach:** Feed merges initial `GET /api/events` with SSE `event:new`/`event:update`; when `event:update` arrives for the currently open event, the detail pane refetches `GET /api/events/:id` to pick up `aiSummary` and the full label list. States are specified: initial load shows a skeleton; an empty feed renders a "Listening to your node — no matching events yet" state naming the active detection thresholds and pointing at the injector when enabled; a header pill shows connection status (live / reconnecting / offline) driven by the SSE hook; a "node connection stale" banner appears when `health` messages stop. Event status renders distinctly: `active` events pulse subtly, `confirmed` get a check badge, `evicted` dim. Demo-legibility direction: BTC value is the largest element on each card, each rule has a distinct accent color (whale / dormant-wake / coinjoin / demo), figures use tabular-numeral monospace, and type sizes are chosen for projector viewing. AI card shows summary/tag with a machine-generated marker and confirm/refute buttons (authenticated). Demo events carry an unmistakable badge (AE6). `aiStatus: 'failed'` renders "analysis pending" per AE5.
 - **Test scenarios:**
   - Happy: SSE `event:new` prepends to feed without reload; `event:update` patches in place.
   - Edge: 50-item feed cap drops oldest without flicker.
@@ -459,7 +465,7 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Requirements:** R11, R12, R4, AE4
 - **Dependencies:** U8, U9
 - **Files:** `web/src/pages/AddressPage.tsx`, `web/src/components/LabelForm.tsx`, `web/src/components/VoteButton.tsx`, `web/src/components/LabelList.tsx`
-- **Approach:** Label form (tag, note, evidence URL) posts and optimistically inserts. VoteButton reflects `myVote` and applies toggle/flip client-side per R12. Deep transaction exploration links out to `externalUrl` (mempool.space) per scope boundaries.
+- **Approach:** Label form (tag, note, evidence URL) posts and optimistically inserts. VoteButton reflects `myVote` and applies toggle/flip client-side per R12. Tag and note render as escaped plain text; evidenceUrl renders as a link only after the http(s) scheme check. When `balanceSats` or `txCount` is null, the row renders "—" with a "lookup unavailable" hint rather than being omitted. Deep transaction exploration links out to `externalUrl` (mempool.space) per scope boundaries.
 - **Test scenarios:**
   - Happy: submit label → appears with score 0; vote → score and `myVote` update.
   - Edge: re-clicking the same vote removes it; clicking the opposite flips it. Covers AE4's UI half.
@@ -472,7 +478,7 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 - **Requirements:** R10, R14, R20
 - **Dependencies:** U9
 - **Files:** `web/src/pages/LeaderboardPage.tsx`, `web/src/components/TrendingLabels.tsx`, `web/src/components/ReputationBadge.tsx`, `README.md`
-- **Approach:** Leaderboard table (handle/did, reputation, labels, net votes). Trending strip on the feed page. Demo polish: inject button visible only when the backend reports `INJECTOR_ENABLED`. README rewritten to the Bitcoin architecture with the sponsor framing preserved.
+- **Approach:** Leaderboard table (handle/did, reputation, labels, net votes). Trending strip on the feed page. Demo polish: inject button visible only when the `GET /api/dev/inject` probe returns 200. Final legibility pass on a projector or large display per U9's design direction. README rewritten to the Bitcoin architecture with the sponsor framing preserved.
 - **Test scenarios:**
   - Happy: leaderboard ordering matches reputation after seeded votes.
   - Edge: empty leaderboard renders a friendly zero-state.
@@ -496,7 +502,7 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 
 - The demo script runs end-to-end in under 5 minutes: live or injected event surfaces → AI take visible → account created in one click → label submitted → vote cast → reputation ticks on the leaderboard → trending view reflects it.
 - All Verification Contract gates pass.
-- The app runs from a clean checkout with only env config: node RPC credentials, optional AI key.
+- The app runs from a clean checkout with only env config: node RPC credentials, optional AI key. `.env.example` documents every variable, and no real credentials appear anywhere in git history.
 - README.md describes the Bitcoin system as built, with the QuickNode/OKX.AI production framing.
 - Cleanup: abandoned-attempt code, dead fixtures, and unused dependencies are removed, not left in the diff.
 
