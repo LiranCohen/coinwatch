@@ -164,6 +164,20 @@ export function TrustGraph({ data }: { data: TrustGraphData }) {
           node.y = Math.min(HEIGHT - 40, Math.max(40, y));
         }}
       >
+        {/* Background hit-layer: clicking empty canvas clears the pinned
+            selection. After a node drag, the click targets the svg ancestor,
+            not this rect — so releasing a drag never clears the selection. */}
+        <rect
+          x={0}
+          y={0}
+          width={WIDTH}
+          height={HEIGHT}
+          className="fill-transparent"
+          onClick={() => {
+            setSelectedId(null);
+            setHoverId(null);
+          }}
+        />
         {data.edges.map((edge, i) => {
           const source = nodes.find((n) => n.id === edge.source);
           const target = nodes.find((n) => n.id === edge.target);
@@ -177,6 +191,7 @@ export function TrustGraph({ data }: { data: TrustGraphData }) {
               y1={source.y}
               x2={target.x}
               y2={target.y}
+              pointerEvents="none"
               strokeWidth={active ? 2 : edge.kind === 'attestation' ? 1.2 : 1}
               strokeDasharray={edge.kind === 'vote' ? '4 3' : undefined}
               opacity={dimmedEdge ? 0.05 : active ? 0.95 : edge.kind === 'vote' ? 0.5 : 0.3}

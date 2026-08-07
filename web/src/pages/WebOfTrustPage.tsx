@@ -41,7 +41,8 @@ export function WebOfTrustPage() {
           </p>
         )}
         <p className="mt-2 text-xs text-zinc-600">
-          Drag nodes to untangle the web. Hover or tap a node to isolate its trust neighborhood.
+          Drag nodes to untangle the web. Hover or tap a node to isolate its trust neighborhood; click
+          empty space to reset.
         </p>
       </section>
 
