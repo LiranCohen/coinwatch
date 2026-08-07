@@ -87,7 +87,14 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
         </div>
       </header>
 
-      <AiCard event={event} onFeedback={(aiFeedback) => onUpdate({ ...event, aiFeedback })} />
+      <section>
+        <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">
+          {hack ? 'VALUE FLOW: THIS TRANSACTION' : 'VALUE FLOW'}
+        </h3>
+        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+          <TxGraph txid={event.txid} inputs={event.inputs} outputs={event.outputs} labels={event.labels} />
+        </div>
+      </section>
 
       {hack && (
         <section>
@@ -110,18 +117,13 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
         </section>
       )}
 
+      <AiCard event={event} onFeedback={(aiFeedback) => onUpdate({ ...event, aiFeedback })} />
+
       <section>
         <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">
           CROWD LABELS ON INVOLVED ADDRESSES
         </h3>
         <LabelList labels={event.labels} onVote={vote} />
-      </section>
-
-      <section>
-        <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW</h3>
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <TxGraph txid={event.txid} inputs={event.inputs} outputs={event.outputs} labels={event.labels} />
-        </div>
       </section>
     </div>
   );
