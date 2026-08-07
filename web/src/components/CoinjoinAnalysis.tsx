@@ -158,16 +158,31 @@ export function CoinjoinAnalysis({ txid }: CoinjoinAnalysisProps) {
           }
         />
         <Stat
-          value={entropy.status === 'ok' ? String(entropy.deterministicLinks.length) : '—'}
+          value={
+            entropy.status !== 'ok'
+              ? '—'
+              : entropy.combinations <= 1
+                ? 'all'
+                : String(entropy.deterministicLinks.length)
+          }
           label="forced links"
           tone={
             entropy.status === 'ok' && entropy.deterministicLinks.length > 0 ? 'text-amber-300' : undefined
           }
           info={
-            <>
-              Input-to-output pairings that hold in <em>every</em> reading of the amounts. These are
-              provable from the chain alone, and the mixing does not hide them.
-            </>
+            entropy.status === 'ok' && entropy.combinations <= 1 ? (
+              <>
+                Only one reading of the amounts exists, so every pairing is trivially forced. That is a
+                statement about the transaction admitting no alternative split — not about each
+                individual payment having been traced.
+              </>
+            ) : (
+              <>
+                Pairings that put an input and an output in the same group in <em>every</em> reading of
+                the amounts. Being in one group is weaker than "this coin paid that coin": the analysis
+                never attributes value inside a group.
+              </>
+            )
           }
         />
         <Stat
