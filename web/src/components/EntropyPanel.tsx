@@ -1,4 +1,8 @@
+import type { ReactNode } from 'react';
+
 import type { TxEntropy } from '@chainwatch/shared';
+
+import { InfoPopover } from './InfoPopover';
 
 interface EntropyPanelProps {
   entropy: TxEntropy;
@@ -6,76 +10,68 @@ interface EntropyPanelProps {
   nbOutputs: number;
 }
 
-function Stat({ value, label, hint, tone }: { value: string; label: string; hint?: string; tone?: string }) {
+function Stat({
+  value,
+  label,
+  tone,
+  info,
+}: {
+  value: string;
+  label: string;
+  tone?: string;
+  info?: ReactNode;
+}) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950/50 px-3 py-2">
       <p className={`tnum font-mono text-lg font-semibold ${tone ?? 'text-zinc-100'}`}>{value}</p>
-      <p className="text-[10px] uppercase tracking-wider text-zinc-500">{label}</p>
-      {hint && <p className="mt-0.5 text-[10px] leading-tight text-zinc-600">{hint}</p>}
+      <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-zinc-500">
+        {label}
+        {info && <InfoPopover label={label}>{info}</InfoPopover>}
+      </p>
     </div>
   );
 }
 
-/** Plain-language reading of the entropy score, so the number means something. */
-function verdict(entropy: TxEntropy, totalLinks: number): { headline: string; detail: string; tone: string } {
+/** Plain-language reading, so the panel leads with what it found. */
+function verdict(entropy: TxEntropy, totalLinks: number): { line: string; tone: string } {
   const certain = entropy.deterministicLinks.length;
   if (entropy.entropy === 0) {
     return {
-      headline: 'Fully transparent',
-      detail:
-        'Only one reading of this transaction is possible, so every input-to-output link is certain. Anyone watching the chain can reconstruct exactly where the money went.',
+      line: 'Fully traceable — there is only one way to read this transaction, so every payment in it is visible.',
       tone: 'text-amber-300',
     };
   }
   if (certain === 0) {
     return {
-      headline: 'No certain links',
-      detail: `${entropy.combinations.toLocaleString()} readings of this transaction are equally valid, and no single input can be pinned to any output.`,
+      line: 'Nothing provable — no input can be pinned to any output.',
       tone: 'text-emerald-300',
     };
   }
   return {
-    headline: 'Partially ambiguous',
-    detail: `${entropy.combinations.toLocaleString()} readings are possible, but ${certain} of ${totalLinks} possible links hold in every one of them — those are provable.`,
+    line: `Partly traceable — ${certain} of ${totalLinks} possible pairings hold no matter how you read it.`,
     tone: 'text-sky-300',
   };
 }
 
 /**
- * Boltzmann entropy for a single transaction: how much ambiguity it actually
- * offers an observer, and which links survive that ambiguity.
+ * How much this transaction gives away, for transactions that are not coinjoins.
+ * Coinjoins get their own panel, which reports the same measure alongside the
+ * mixing-specific findings.
  */
 export function EntropyPanel({ entropy, nbInputs, nbOutputs }: EntropyPanelProps) {
   if (entropy.status !== 'ok') {
     return (
       <section className="rounded-lg border border-dashed border-zinc-800 bg-zinc-900/40 p-4">
-        <header className="mb-1.5 flex flex-wrap items-center gap-2">
-          <span className="text-xs font-semibold tracking-wider text-zinc-400">PRIVACY ANALYSIS</span>
-          <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-zinc-500">
-            not run
-          </span>
+        <header className="mb-1 flex flex-wrap items-center gap-2">
+          <h3 className="text-xs font-semibold tracking-wider text-zinc-400">TRACEABILITY</h3>
+          <InfoPopover label="why this was not scored">
+            Scoring needs every possible reading of the amounts enumerated, which grows out of hand for
+            transactions whose coins all take different values
+            {entropy.reason ? ` (${entropy.reason})` : ''}. Rather than publish a guess, nothing is
+            claimed — and that difficulty is itself part of the protection.
+          </InfoPopover>
         </header>
-        <p className="text-sm text-zinc-400">
-          {entropy.status === 'aborted'
-            ? 'This transaction is too tangled to enumerate exhaustively within the search budget.'
-            : 'Exact entropy analysis was declined for this transaction.'}
-          {entropy.reason && <span className="text-zinc-500"> ({entropy.reason})</span>}
-        </p>
-        {entropy.maxEntropy > 0 && (
-          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            <Stat
-              value={entropy.maxEntropy.toFixed(1)}
-              label="bits — ceiling"
-              hint="if this shape were mixed perfectly"
-              tone="text-sky-300"
-            />
-            <Stat value={`${nbInputs} → ${nbOutputs}`} label="inputs → outputs" />
-          </div>
-        )}
-        <p className="mt-3 text-[11px] leading-relaxed text-zinc-600">
-          Counting interpretations exactly is exponential in transaction size, so beyond a bound we report the
-          ceiling for this transaction's shape rather than publishing a guess at its actual entropy.
-        </p>
+        <p className="text-sm text-zinc-400">Not scored for this transaction.</p>
       </section>
     );
   }
@@ -85,44 +81,52 @@ export function EntropyPanel({ entropy, nbInputs, nbOutputs }: EntropyPanelProps
 
   return (
     <section className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-      <header className="mb-3 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-semibold tracking-wider text-zinc-300">PRIVACY ANALYSIS</span>
-        <span className="rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wider text-zinc-500">
-          boltzmann entropy
-        </span>
-        <span className={`ml-auto text-xs font-medium ${read.tone}`}>{read.headline}</span>
+      <header className="mb-2 flex flex-wrap items-center gap-2">
+        <h3 className="text-xs font-semibold tracking-wider text-zinc-300">TRACEABILITY</h3>
+        <InfoPopover label="traceability">
+          Every way this transaction's amounts could add up was worked out. If only one reading fits,
+          the payments are plain to see. If many fit, an observer cannot tell which one actually
+          happened.
+        </InfoPopover>
       </header>
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <p className={`mb-3 text-sm font-medium ${read.tone}`}>{read.line}</p>
+
+      <div className="grid grid-cols-3 gap-2">
         <Stat
-          value={`${entropy.entropy.toFixed(2)}`}
-          label="bits of entropy"
-          hint={entropy.maxEntropy > 0 ? `${entropy.maxEntropy.toFixed(2)} possible for this shape` : undefined}
-          tone={read.tone}
-        />
-        <Stat
-          value={entropy.combinations.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-          label="interpretations"
-          hint="ways to map inputs to outputs"
-        />
-        <Stat
-          value={`${(entropy.efficiency * 100).toFixed(0)}%`}
-          label="efficiency"
-          hint="vs. a perfect coinjoin of the same shape"
+          value={entropy.entropy.toFixed(1)}
+          label="bits of doubt"
+          tone={entropy.entropy === 0 ? 'text-amber-300' : undefined}
+          info={
+            <>
+              {entropy.combinations.toLocaleString(undefined, { maximumFractionDigits: 0 })} different
+              readings fit these amounts. Zero bits means exactly one fits, and nothing is hidden.
+            </>
+          }
         />
         <Stat
           value={`${entropy.deterministicLinks.length}/${totalLinks}`}
-          label="certain links"
-          hint="hold in every interpretation"
+          label="forced links"
+          tone={entropy.deterministicLinks.length > 0 ? 'text-amber-300' : 'text-emerald-300'}
+          info={
+            <>
+              Input-to-output pairings that hold in <em>every</em> reading, and are therefore provable
+              from the chain alone.
+            </>
+          }
+        />
+        <Stat
+          value={`${Math.round(entropy.efficiency * 100)}%`}
+          label="of best possible"
+          info={
+            <>
+              How close this transaction comes to the most private one that could be built with the
+              same number of inputs and outputs. An ordinary payment scores high simply because little
+              better is possible at that shape.
+            </>
+          }
         />
       </div>
-
-      <p className="mt-3 text-sm leading-relaxed text-zinc-300">{read.detail}</p>
-      <p className="mt-1.5 text-[11px] leading-relaxed text-zinc-600">
-        Entropy counts how many distinct input-to-output mappings are consistent with this transaction's amounts.
-        A link that holds across all of them is provable from the chain alone; the rest are only probable, and the
-        flow graph above shows those probabilities.
-      </p>
     </section>
   );
 }

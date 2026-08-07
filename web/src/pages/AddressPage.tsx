@@ -10,6 +10,7 @@ import {
 
 import { ApiError, getAddress, getAddressTransactions, postLabel, postVote } from '../api/client';
 import { ClusterView } from '../components/ClusterView';
+import { InfoPopover } from '../components/InfoPopover';
 import { FeedItem } from '../components/FeedItem';
 import { FlowTrace } from '../components/FlowTrace';
 import { LabelForm } from '../components/LabelForm';
@@ -161,11 +162,14 @@ function ChainActivity({ address }: { address: string }) {
 
   return (
     <section>
-      <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">ON-CHAIN ACTIVITY</h2>
-      <p className="mb-2 text-xs text-zinc-500">
-        Read from the chain, not from the detection index — this is what the address has done,
-        whether or not any of it tripped a rule.
-      </p>
+      <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-zinc-400">
+        ON-CHAIN ACTIVITY
+        <InfoPopover label="on-chain activity">
+          Read straight from the chain rather than from CoinWatch's index, so this is everything the
+          address has actually done — whether or not any of it tripped a detection rule. The bits
+          figure on each row is how traceable that transaction is.
+        </InfoPopover>
+      </h2>
       {failed || state?.available === false ? (
         <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
           The chain source could not be reached, so recent activity is unavailable. This is not a
@@ -226,9 +230,7 @@ function ChainActivity({ address }: { address: string }) {
             ))}
           </div>
           <p className="mt-2 text-xs text-zinc-500">
-            The {state.transactions.length} most recent transactions the chain source returns. Bits
-            shown are this transaction's entropy — 0 means its input-to-output mapping is fully
-            determined.
+            Newest {state.transactions.length} transactions.
           </p>
         </>
       )}
@@ -375,15 +377,14 @@ export function AddressPage() {
             </p>
           </div>
         </div>
-        {!offNetwork && (current.balanceSats === null || current.txCount === null) && (
-          <p className="mt-3 text-xs text-zinc-500">
-            Anything shown as — could not be read from the node. It is not a zero.
-          </p>
-        )}
-        {!offNetwork && total === null && (
-          <p className="mt-1 text-xs text-zinc-500">
-            The detection total is dashed because this server reports no usable one. What is listed
-            below is the page it returned, which is a floor and not a count.
+        {!offNetwork && (current.balanceSats === null || current.txCount === null || total === null) && (
+          <p className="mt-3 flex items-center gap-1.5 text-xs text-zinc-500">
+            Some figures are unavailable.
+            <InfoPopover label="the dashes">
+              A dash means the figure could not be read, not that it is zero. Chain statistics come
+              from an external source that may be slow or rate-limited; a dashed detection total means
+              this server reported none, so the list below is a floor rather than a count.
+            </InfoPopover>
           </p>
         )}
       </header>
@@ -397,21 +398,19 @@ export function AddressPage() {
       )}
 
       <section>
-        <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">
-          BALANCE CHANGES COINWATCH HAS ON FILE
+        <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-zinc-400">
+          FLAGGED ACTIVITY
+          <InfoPopover label="flagged activity">
+            One row per transaction of this address that tripped a CoinWatch detection rule, and how
+            much it moved the balance. Everything else on the chain is left alone, so this is never
+            the address's full history — the on-chain activity list further down is.
+          </InfoPopover>
         </h2>
-        {history.length > 0 && (
-          <p className="mb-2 text-xs text-zinc-500">
-            One row per transaction CoinWatch stored for this address, and how much it moved the
-            balance. The node sees every transaction in every block and keeps only the ones that trip
-            a detection rule, so this is never the address's full transaction history.
-          </p>
-        )}
         {history.length === 0 ? (
           <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
             {offNetwork
-              ? `Nothing on file. CoinWatch indexes mainnet only, so a ${validation.network} address never gets a row here.`
-              : 'Nothing on file. No transaction of this address has tripped a detection rule while this node has been watching, and an untripped transaction is never stored — so an address in daily use shows nothing here.'}
+              ? `Nothing flagged — CoinWatch indexes mainnet only.`
+              : 'Nothing flagged. Ordinary activity is not stored, so an address in daily use shows nothing here.'}
           </p>
         ) : (
           <div className="overflow-hidden rounded-lg border border-zinc-800">
@@ -446,9 +445,7 @@ export function AddressPage() {
         )}
         {total !== null && history.length > 0 && history.length < total && (
           <p className="mt-2 text-xs text-zinc-500">
-            Capped the same way as the list below: these {history.length} rows are the newest of{' '}
-            {total.toLocaleString()} detections, so the balance changes shown do not add up to
-            anything.
+            Newest {history.length} of {total.toLocaleString()} — these do not sum to the balance.
           </p>
         )}
       </section>
@@ -480,10 +477,10 @@ export function AddressPage() {
           <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">RECENT EVENTS</h2>
           <p className="mb-2 text-xs text-zinc-500">
             {total !== null && total > shown
-              ? `Shows only the ${shown} most recent of ${total.toLocaleString()} detections on this address. The API caps this page, so the older ones are not on this screen.`
+              ? `Newest ${shown} of ${total.toLocaleString()} detections.`
               : total !== null
                 ? `All ${total} detection${total === 1 ? '' : 's'} on this address.`
-                : `Shows only the ${shown} most recent detections the API returned. It caps this page and reports no usable total, so ${shown} is a floor, not the count.`}
+                : `Newest ${shown} returned; the total is unknown.`}
           </p>
           <div className="space-y-3">
             {current.recentEvents.map((event) => (

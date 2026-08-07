@@ -5,6 +5,7 @@ import type { AddressCluster } from '@chainwatch/shared';
 
 import { getAddressCluster } from '../api/client';
 import { truncateMiddle } from '../lib/format';
+import { InfoPopover } from './InfoPopover';
 
 interface ClusterViewProps {
   address: string;
@@ -37,11 +38,14 @@ export function ClusterView({ address }: ClusterViewProps) {
 
   return (
     <section>
-      <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">WALLET CLUSTER</h2>
-      <p className="mb-2 text-xs text-zinc-500">
-        Addresses that signed a transaction together with this one, and are therefore controlled by
-        the same party. This is proven by the signatures, not inferred from spending patterns.
-      </p>
+      <h2 className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-zinc-400">
+        SAME OWNER
+        <InfoPopover label="same owner">
+          Addresses that signed a transaction together with this one. Signing for several inputs at
+          once means one party held all those keys, so this is proven rather than guessed. Coinjoins
+          are excluded, because their inputs belong to different people on purpose.
+        </InfoPopover>
+      </h2>
 
       {failed || cluster?.available === false ? (
         <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
@@ -57,13 +61,13 @@ export function ClusterView({ address }: ClusterViewProps) {
               <p className="tnum font-mono text-lg font-semibold text-zinc-100">
                 {cluster.members.length}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500">co-spending addresses</p>
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500">linked addresses</p>
             </div>
             <div>
               <p className="tnum font-mono text-lg font-semibold text-zinc-100">
                 {cluster.bindingTxids.length}
               </p>
-              <p className="text-[10px] uppercase tracking-wider text-zinc-500">proving transactions</p>
+              <p className="text-[10px] uppercase tracking-wider text-zinc-500">proving signatures</p>
             </div>
           </div>
 

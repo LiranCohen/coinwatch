@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { AddressFlow, FlowNode } from '@chainwatch/shared';
 
 import { getAddressFlow } from '../api/client';
+import { InfoPopover } from './InfoPopover';
 import { satsToBtc, truncateMiddle } from '../lib/format';
 
 interface FlowTraceProps {
@@ -79,14 +80,10 @@ export function FlowTrace({ address }: FlowTraceProps) {
   if (!flow && !running && failed === null) {
     return (
       <section>
-        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW TRACE</h2>
+        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">FOLLOW THE MONEY</h2>
         <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center">
-          <p className="text-sm text-zinc-300">Follow this address's money backwards and forwards.</p>
-          <p className="mx-auto mt-1 max-w-lg text-xs text-zinc-500">
-            Walks the chain from here to find which addresses funded it and where it sent value, then
-            shows what stopped and what moved on. This reads dozens of addresses from the chain source
-            and takes a few seconds.
-          </p>
+          <p className="text-sm text-zinc-300">Trace where this address's money came from and went.</p>
+          <p className="mx-auto mt-1 max-w-md text-xs text-zinc-500">Takes a few seconds.</p>
           <button
             type="button"
             onClick={run}
@@ -102,7 +99,7 @@ export function FlowTrace({ address }: FlowTraceProps) {
   if (running || !flow || !layout) {
     return (
       <section>
-        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW TRACE</h2>
+        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">FOLLOW THE MONEY</h2>
         {failed !== null ? (
           <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-5 text-center">
             <p className="text-sm text-amber-200">The trace could not be run.</p>
@@ -125,7 +122,7 @@ export function FlowTrace({ address }: FlowTraceProps) {
   if (!flow.available || flow.nodes.length <= 1) {
     return (
       <section>
-        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW TRACE</h2>
+        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">FOLLOW THE MONEY</h2>
         <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
           {!flow.available
             ? 'The chain source did not answer, so no trace could be run. This is not a statement that the address is isolated.'
@@ -139,10 +136,15 @@ export function FlowTrace({ address }: FlowTraceProps) {
 
   return (
     <section>
-      <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW TRACE</h2>
-      <p className="mb-2 text-xs text-zinc-500">
-        Line thickness is the share of the destination's traced inflow. Green means the address still
-        holds what it received — the money stopped there.
+      <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">FOLLOW THE MONEY</h2>
+      <p className="mb-2 flex items-center gap-1.5 text-xs text-zinc-500">
+        Thicker lines carry more of the money.
+        <InfoPopover label="the trace">
+          Each column is one step further from the address you are looking at: to the left, where its
+          money came from; to the right, where it went. Line thickness is that source's share of what
+          the destination received. A highlighted box still holds everything traced into it, meaning
+          the money stopped there.
+        </InfoPopover>
       </p>
       <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
         <svg width={layout.width} height={layout.height} className="select-none">
@@ -216,7 +218,7 @@ export function FlowTrace({ address }: FlowTraceProps) {
                     focus
                       ? 'fill-sky-500/15 stroke-sky-400'
                       : node.unmoved
-                        ? 'fill-emerald-500/10 stroke-emerald-500/50'
+                        ? 'fill-sky-500/10 stroke-sky-500/40'
                         : 'fill-zinc-900 stroke-zinc-700'
                   }
                   strokeWidth={focus ? 2 : 1}
@@ -229,8 +231,8 @@ export function FlowTrace({ address }: FlowTraceProps) {
                   {node.labels.length > 0 ? ` · ${node.labels[0]}` : ''}
                 </text>
                 {node.unmoved && (
-                  <text x={BOX_W - 8} y={14} textAnchor="end" className="fill-emerald-400 text-[8px] font-semibold">
-                    UNMOVED
+                  <text x={BOX_W - 8} y={14} textAnchor="end" className="fill-sky-300 text-[8px] font-semibold">
+                    STILL HERE
                   </text>
                 )}
                 {node.frontier && (

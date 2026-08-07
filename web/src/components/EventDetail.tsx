@@ -13,9 +13,6 @@ import { HackTracer } from './HackTracer';
 import { LabelList } from './LabelList';
 import { TxGraph, type FlowLink } from './TxGraph';
 
-/** Max link overlays drawn before the graph turns into spaghetti. */
-const MAX_DRAWN_LINKS = 16;
-
 interface EventDetailProps {
   event: EventDetailType;
   onUpdate: (event: EventDetailType) => void;
@@ -48,9 +45,9 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
         });
       });
     });
-    return all
-      .sort((a, b) => Number(b.certain) - Number(a.certain) || b.probability - a.probability)
-      .slice(0, MAX_DRAWN_LINKS);
+    // every link is kept: the graph only draws those touching the coin under the
+    // cursor, so the full set costs nothing until it is asked for
+    return all.sort((a, b) => Number(b.certain) - Number(a.certain) || b.probability - a.probability);
   }, [event.meta]);
 
   const isCoinjoin = event.rules.includes('coinjoin');

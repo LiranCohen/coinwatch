@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import type { TxEntropy } from '@chainwatch/shared';
 
 import { satsToBtc } from '../lib/format';
+import { InfoPopover } from './InfoPopover';
 
 interface MappingMatrixProps {
   entropy: TxEntropy;
@@ -52,25 +53,27 @@ export function MappingMatrix({ entropy, inputs, outputs }: MappingMatrixProps) 
 
   return (
     <div>
-      <p className="mb-2 text-xs leading-relaxed text-zinc-400">
-        Every cell is one input-to-output pair. Dark means that pairing appears in{' '}
-        <strong className="font-semibold text-zinc-300">no</strong> valid reading of this transaction;
-        brighter blue means it appears in more of them; amber means it holds in{' '}
-        <strong className="font-semibold text-amber-300">every</strong> reading and is therefore
-        provable from the amounts alone.
-      </p>
-
-      <div className="mb-2 flex flex-wrap gap-3 text-[11px]">
-        <span className="text-zinc-500">
-          <span className="tnum font-mono text-zinc-200">{stats.impossible}</span> ruled out
+      <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]">
+        <span className="flex items-center gap-1.5 text-zinc-500">
+          <span className="inline-block h-3 w-3 rounded-sm bg-zinc-950 ring-1 ring-inset ring-zinc-700" />
+          <span className="tnum font-mono text-zinc-300">{stats.impossible}</span> ruled out
         </span>
-        <span className="text-zinc-500">
+        <span className="flex items-center gap-1.5 text-zinc-500">
+          <span className="inline-block h-3 w-3 rounded-sm bg-sky-400/60" />
           <span className="tnum font-mono text-sky-300">{stats.probable}</span> possible
         </span>
-        <span className="text-zinc-500">
+        <span className="flex items-center gap-1.5 text-zinc-500">
+          <span className="inline-block h-3 w-3 rounded-sm bg-amber-400" />
           <span className="tnum font-mono text-amber-300">{stats.certain}</span> certain
         </span>
-        <span className="text-zinc-600">of {stats.total} pairs</span>
+        <InfoPopover label="the pairing grid">
+          One square per input-to-output pair. Dark means that pairing fits{' '}
+          <strong className="font-semibold text-zinc-200">no</strong> valid reading of the amounts;
+          brighter blue means it fits more of them; amber means it holds in{' '}
+          <strong className="font-semibold text-amber-300">every</strong> reading, so it is provable
+          from the chain alone. Rows are inputs, columns are outputs, both labelled by amount. Hover a
+          square for the exact figure.
+        </InfoPopover>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-zinc-800 bg-zinc-950/50 p-2">
@@ -139,7 +142,7 @@ export function MappingMatrix({ entropy, inputs, outputs }: MappingMatrixProps) 
             textAnchor="end"
             className="fill-zinc-500 text-[8px] font-semibold tracking-wider"
           >
-            STRONGEST
+            EXPOSED
           </text>
           {entropy.outputLinkMax.map((strongest, j) => (
             <rect
@@ -158,10 +161,13 @@ export function MappingMatrix({ entropy, inputs, outputs }: MappingMatrixProps) 
         </svg>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-zinc-600">
-        The bar under each column is p(I,o) — the strongest link that output has to any single input.
-        A full amber bar means the output is pinned to one input regardless of the mixing; short bars
-        mean it is genuinely hidden among the others.
+      <p className="mt-2 flex items-center gap-1.5 text-[11px] text-zinc-600">
+        The bar under each column shows how exposed that output is.
+        <InfoPopover label="the exposure bar">
+          For each output, the strongest link it has to any single input. A full amber bar means the
+          output is pinned to one input whatever the mixing did; a short green bar means it is
+          genuinely hidden among the others. Researchers write this as p(I,o).
+        </InfoPopover>
       </p>
     </div>
   );
