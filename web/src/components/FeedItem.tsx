@@ -46,7 +46,7 @@ export function FeedItem({ event, selected, onSelect }: FeedItemProps) {
       {event.matchedLabels.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {event.matchedLabels.map((label) => (
-            <LabelBadge key={label.id} label={label} />
+            <LabelBadge key={label.id} label={label} link={false} />
           ))}
         </div>
       )}

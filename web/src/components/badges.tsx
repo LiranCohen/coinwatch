@@ -59,13 +59,9 @@ export function StatusBadge({ status }: { status: EventStatus }) {
   return <span className="text-xs text-zinc-500">evicted</span>;
 }
 
-export function LabelBadge({ label }: { label: Label }) {
-  return (
-    <Link
-      to={`/app/address/${label.address}`}
-      className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/60 px-2.5 py-0.5 text-xs text-zinc-200 hover:border-zinc-500"
-      title={label.address}
-    >
+export function LabelBadge({ label, link = true }: { label: Label; link?: boolean }) {
+  const inner = (
+    <>
       <span
         className={`inline-block h-1.5 w-1.5 shrink-0 rounded-full ${
           label.source === 'seed' ? 'bg-zinc-500' : 'bg-sky-400'
@@ -73,6 +69,24 @@ export function LabelBadge({ label }: { label: Label }) {
       />
       <span className="truncate">{label.tag}</span>
       <span className="tnum text-zinc-400">{label.score > 0 ? `+${label.score}` : label.score}</span>
+    </>
+  );
+  const className =
+    'inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/60 px-2.5 py-0.5 text-xs text-zinc-200';
+  if (!link) {
+    return (
+      <span className={className} title={label.address}>
+        {inner}
+      </span>
+    );
+  }
+  return (
+    <Link
+      to={`/app/address/${label.address}`}
+      className={`${className} hover:border-zinc-500`}
+      title={label.address}
+    >
+      {inner}
     </Link>
   );
 }
