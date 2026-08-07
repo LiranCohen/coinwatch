@@ -20,6 +20,8 @@ export interface Config {
   port: number;
   seedFile: string;
   dbFile: string;
+  /** Absolute URL of the web app (RSS item links). Falls back to the request host. */
+  publicSiteUrl: string;
 }
 
 type Env = Record<string, string | undefined>;
@@ -69,5 +71,6 @@ export function loadConfig(env: Env = process.env): Config {
     port: num(env, 'PORT', 3001),
     seedFile: str(env, 'SEED_FILE', join(serverRoot, 'fixtures/seed-labels.json')),
     dbFile: str(env, 'DB_FILE', join(serverRoot, 'data/chainwatch.sqlite')),
+    publicSiteUrl: str(env, 'PUBLIC_SITE_URL', 'http://localhost:5173'),
   };
 }

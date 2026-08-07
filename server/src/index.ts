@@ -14,6 +14,7 @@ import type { Rule } from '@chainwatch/shared';
 import { createAuthApp } from './api/auth';
 import { createApiRoutes, involvedAddresses, serializeEventSummary } from './api/routes';
 import { createSseHub, type SseHub } from './api/sse';
+import { createRssRoutes } from './api/rss';
 import { createInjectApp } from './api/inject';
 import { createAnalystRoutes } from './api/analysts';
 import { createEntityRoutes } from './api/entities';
@@ -96,6 +97,7 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   app.use('*', cors({ origin: '*', allowHeaders: ['Content-Type', 'Authorization'], allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'] }));
   app.route('/', authApp);
   app.route('/', createApiRoutes({ db, hub, addressInfo: deps.addressInfo }));
+  app.route('/', createRssRoutes({ db, publicSiteUrl: config.publicSiteUrl }));
   app.route('/', createAnalystRoutes(db));
   app.route('/', createEntityRoutes(db));
   app.route('/', createCoinjoinRoutes(db));
