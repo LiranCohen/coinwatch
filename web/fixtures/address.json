@@ -39,6 +39,10 @@
       "source": "live",
       "aiStatus": "done",
       "aiTag": "whale-move",
+      "blockHeight": null,
+      "blockHash": null,
+      "blockTime": null,
+      "meta": null,
       "matchedLabels": []
     }
   ],

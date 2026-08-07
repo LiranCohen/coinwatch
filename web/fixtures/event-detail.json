@@ -8,6 +8,10 @@
   "source": "live",
   "aiStatus": "done",
   "aiTag": "whale-move",
+  "blockHeight": null,
+  "blockHash": null,
+  "blockTime": null,
+  "meta": null,
   "aiSummary": "A 42.15 BTC transfer out of a seeded Binance cold-wallet address into two fresh outputs. Size and source suggest treasury rebalancing rather than market selling, but the destination split warrants watching.",
   "inputs": [
     { "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", "valueSats": 4215300000 }

@@ -507,6 +507,10 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       source: 'demo',
       aiStatus: 'pending',
       aiTag: null,
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       matchedLabels: [],
     };
     mock.events.unshift(summary);

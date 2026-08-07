@@ -20,13 +20,14 @@ type Trace =
   | { kind: 'side'; hop: number; index: number };
 
 const HOP_W = 150;
-const HOP_H = 64;
+const MIN_HOP_H = 64;
 const SIDE_H = 44;
 const SIDE_GAP = 10;
 const TOP_PAD = 60;
 const COL_SPAN = 270;
 const IN_X = 0;
 const BOX_W = 140;
+const BAND_GAP = 4;
 
 function flowPath(x1: number, y1: number, x2: number, y2: number): string {
   const mx = (x1 + x2) / 2;
@@ -78,11 +79,31 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
   );
 
   const maxSide = sideOutputs.reduce((m, s) => Math.max(m, s.length), 0);
-  const cy = TOP_PAD;
+  const cy = TOP_PAD + 40;
+
+  /** band thickness proportional to value, with a floor so dust stays visible */
+  const bandW = (sats: number) => 2 + (Math.max(sats, 0) / total) * 40;
+  const inWidths = hops[0].inputs.map((io) => bandW(io.valueSats));
+  const outWidths = hops[n - 1].outputs.map((io) => bandW(io.valueSats));
+  const stackH = (ws: number[]) => ws.reduce((s, w) => s + w, 0) + BAND_GAP * Math.max(0, ws.length - 1);
+  const hopH = Math.max(MIN_HOP_H, stackH(inWidths) + 16, stackH(outWidths) + 16);
+
+  /** y-center of each band's attachment slot on a hop edge, stacked around the center */
+  const edgeSlots = (widths: number[]) => {
+    const totalW = stackH(widths);
+    let y = cy - totalW / 2;
+    return widths.map((w) => {
+      const c = y + w / 2;
+      y += w + BAND_GAP;
+      return c;
+    });
+  };
+  const inSlots = edgeSlots(inWidths);
+  const outSlots = edgeSlots(outWidths);
+
   const height = Math.max(
-    cy + HOP_H / 2 + 40,
-    cy + HOP_H / 2 + 24 + (maxSide > 0 ? maxSide * (SIDE_H + SIDE_GAP) + 20 : 0),
-    TOP_PAD,
+    cy + hopH / 2 + 40,
+    cy + hopH / 2 + 24 + (maxSide > 0 ? maxSide * (SIDE_H + SIDE_GAP) + 20 : 0),
   );
 
   const pathActive = trace.kind !== 'none' && trace.kind !== 'side';
@@ -96,8 +117,6 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
     setTrace((current) =>
       JSON.stringify(current) === JSON.stringify(next) ? { kind: 'none' } : next,
     );
-
-  const bandWidth = (sats: number) => 1.5 + Math.sqrt(Math.max(sats / total, 0.001)) * 22;
 
   const renderHop = (i: number) => {
     const hop = hops[i];
@@ -121,9 +140,9 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         </title>
         <rect
           x={x}
-          y={cy - HOP_H / 2}
+          y={cy - hopH / 2}
           width={HOP_W}
-          height={HOP_H}
+          height={hopH}
           rx={9}
           className={`${isCurrent ? 'fill-red-500/10' : 'fill-zinc-800'} ${
             active ? 'stroke-2' : ''
@@ -162,7 +181,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
     const x1 = hopX(i) + HOP_W;
     const x2 = hopX(i + 1);
     const sats = hops[i].carrySats;
-    const w = bandWidth(sats);
+    const w = bandW(sats);
     const emphasized = pathActive;
     return (
       <g key={`link-${i}`} style={{ transition: 'opacity 150ms' }} opacity={trace.kind === 'side' ? 0.12 : 1}>
@@ -170,7 +189,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
           d={flowPath(x1, cy, x2, cy)}
           fill="none"
           strokeWidth={w}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           className={emphasized ? 'stroke-red-400' : 'stroke-red-400/70'}
           opacity={emphasized ? 0.9 : 0.35}
           style={{ transition: 'opacity 150ms' }}
@@ -200,10 +219,10 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
     return (
       <g key={`in-${index}`} opacity={trace.kind === 'side' ? 0.12 : 1} style={{ transition: 'opacity 150ms' }}>
         <path
-          d={flowPath(IN_X + BOX_W, y, hopX(0), cy)}
+          d={flowPath(IN_X + BOX_W, y, hopX(0), inSlots[index])}
           fill="none"
-          strokeWidth={bandWidth(io.valueSats)}
-          strokeLinecap="round"
+          strokeWidth={inWidths[index]}
+          strokeLinecap="butt"
           className={pathActive ? 'stroke-rose-400' : 'stroke-rose-400/70'}
           opacity={pathActive ? 0.9 : 0.35}
           style={{ transition: 'opacity 150ms' }}
@@ -266,10 +285,10 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
     return (
       <g key={`out-${index}`} opacity={trace.kind === 'side' ? 0.12 : 1} style={{ transition: 'opacity 150ms' }}>
         <path
-          d={flowPath(hopX(n - 1) + HOP_W, cy, terminalX, y)}
+          d={flowPath(hopX(n - 1) + HOP_W, outSlots[index], terminalX, y)}
           fill="none"
-          strokeWidth={bandWidth(io.valueSats)}
-          strokeLinecap="round"
+          strokeWidth={outWidths[index]}
+          strokeLinecap="butt"
           className={pathActive ? 'stroke-emerald-400' : 'stroke-emerald-400/70'}
           opacity={pathActive ? 0.9 : 0.35}
           style={{ transition: 'opacity 150ms' }}
@@ -277,7 +296,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         {pathActive && (
           <text
             x={(hopX(n - 1) + HOP_W + terminalX) / 2}
-            y={(cy + y) / 2 - bandWidth(io.valueSats) / 2 - 6}
+            y={(outSlots[index] + y) / 2 - outWidths[index] / 2 - 6}
             textAnchor="middle"
             className="tnum fill-emerald-200 font-mono text-[10px]"
             style={LABEL_HALO}
@@ -336,13 +355,13 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
   const renderSideOutput = (hopIndex: number, index: number) => {
     const io = sideOutputs[hopIndex][index];
     const x = hopX(hopIndex) + 5;
-    const y = cy + HOP_H / 2 + 24 + index * (SIDE_H + SIDE_GAP);
+    const y = cy + hopH / 2 + 24 + index * (SIDE_H + SIDE_GAP);
     const emphasized = sideEmphasized(hopIndex, index);
     return (
       <g key={`side-${hopIndex}-${index}`} opacity={sideDimmed(hopIndex, index) ? 0.25 : 1} style={{ transition: 'opacity 150ms' }}>
         <line
           x1={hopX(hopIndex) + HOP_W / 2}
-          y1={cy + HOP_H / 2}
+          y1={cy + hopH / 2}
           x2={x + BOX_W / 2}
           y2={y}
           className={emphasized ? 'stroke-zinc-300' : 'stroke-zinc-600'}

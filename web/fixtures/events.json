@@ -10,6 +10,10 @@
       "source": "live",
       "aiStatus": "done",
       "aiTag": "whale-move",
+      "blockHeight": null,
+      "blockHash": null,
+      "blockTime": null,
+      "meta": null,
       "matchedLabels": [
         {
           "id": "lbl_seed_binance",
@@ -35,6 +39,10 @@
       "source": "live",
       "aiStatus": "done",
       "aiTag": "dormant-wake",
+      "blockHeight": 912847,
+      "blockHash": "00000000000000000002a7c4e1b2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1",
+      "blockTime": "2026-08-06T22:35:41.000Z",
+      "meta": null,
       "matchedLabels": []
     },
     {
@@ -47,6 +55,17 @@
       "source": "live",
       "aiStatus": "done",
       "aiTag": "coinjoin",
+      "blockHeight": 912846,
+      "blockHash": "00000000000000000001f3b8c2d4e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3",
+      "blockTime": "2026-08-06T22:29:02.000Z",
+      "meta": {
+        "coinjoin": {
+          "kind": "wasabi",
+          "denominationSats": 10000000,
+          "equalOutputCount": 7,
+          "participantCount": 7
+        }
+      },
       "matchedLabels": [
         {
           "id": "lbl_seed_wasabi",
@@ -73,6 +92,10 @@
       "aiStatus": "done",
       "aiTag": "exchange-flow",
       "hackId": "hack_001",
+      "blockHeight": null,
+      "blockHash": null,
+      "blockTime": null,
+      "meta": null,
       "matchedLabels": [
         {
           "id": "lbl_seed_binance",
@@ -99,6 +122,10 @@
       "aiStatus": "done",
       "aiTag": "exchange-flow",
       "hackId": "hack_001",
+      "blockHeight": 912846,
+      "blockHash": "00000000000000000001f3b8c2d4e5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3",
+      "blockTime": "2026-08-06T22:37:55.000Z",
+      "meta": null,
       "matchedLabels": []
     },
     {
@@ -112,6 +139,10 @@
       "aiStatus": "pending",
       "aiTag": null,
       "hackId": "hack_001",
+      "blockHeight": null,
+      "blockHash": null,
+      "blockTime": null,
+      "meta": null,
       "matchedLabels": [
         {
           "id": "lbl_seed_wasabi",
@@ -137,6 +168,10 @@
       "source": "live",
       "aiStatus": "failed",
       "aiTag": null,
+      "blockHeight": null,
+      "blockHash": null,
+      "blockTime": null,
+      "meta": null,
       "matchedLabels": []
     }
   ]

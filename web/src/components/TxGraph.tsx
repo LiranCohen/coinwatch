@@ -37,7 +37,8 @@ const COL_IN_X = 0;
 const COL_TX_X = 430;
 const COL_OUT_X = 860;
 const COL_W = 140;
-const TX_H = 64;
+const MIN_TX_H = 64;
+const BAND_GAP = 4;
 
 function columnGeometry(count: number): { boxes: BoxGeom[]; height: number } {
   const boxes: BoxGeom[] = [];
@@ -47,6 +48,22 @@ function columnGeometry(count: number): { boxes: BoxGeom[]; height: number } {
     y += ROW_H + ROW_GAP;
   }
   return { boxes, height: y - ROW_GAP + PAD_Y };
+}
+
+/** band thickness proportional to value, with a floor so dust stays visible */
+function bandWidth(valueSats: number, totalSats: number): number {
+  return 2 + (Math.max(valueSats, 0) / Math.max(totalSats, 1)) * 44;
+}
+
+/** y-center of each band's attachment slot on the tx box edge, stacked around the box center */
+function edgeSlots(widths: number[], centerY: number): number[] {
+  const total = widths.reduce((s, w) => s + w, 0) + BAND_GAP * Math.max(0, widths.length - 1);
+  let y = centerY - total / 2;
+  return widths.map((w) => {
+    const c = y + w / 2;
+    y += w + BAND_GAP;
+    return c;
+  });
 }
 
 function flowPath(x1: number, y1: number, x2: number, y2: number): string {
@@ -77,8 +94,15 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
 
   const inGeom = useMemo(() => columnGeometry(inputs.length), [inputs.length]);
   const outGeom = useMemo(() => columnGeometry(outputs.length), [outputs.length]);
-  const height = Math.max(inGeom.height, outGeom.height, HEADER_H + TX_H + 2 * PAD_Y);
-  const txY = height / 2;
+
+  const inWidths = inputs.map((io) => bandWidth(io.valueSats, totalOut));
+  const outWidths = outputs.map((io) => bandWidth(io.valueSats, totalOut));
+  const stackH = (ws: number[]) => ws.reduce((s, w) => s + w, 0) + BAND_GAP * Math.max(0, ws.length - 1);
+  const txH = Math.max(MIN_TX_H, stackH(inWidths) + 16, stackH(outWidths) + 16);
+  const height = Math.max(inGeom.height, outGeom.height, HEADER_H + txH + 2 * PAD_Y);
+  const txY = HEADER_H + PAD_Y + (height - HEADER_H - 2 * PAD_Y) / 2;
+  const inSlots = edgeSlots(inWidths, txY);
+  const outSlots = edgeSlots(outWidths, txY);
 
   const labelByAddress = useMemo(() => {
     const map = new Map<string, Label[]>();
@@ -206,7 +230,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
 
   const renderFlow = (io: IoEntry, geom: BoxGeom, side: 'in' | 'out', index: number) => {
     const share = io.valueSats / totalOut;
-    const width = 1.5 + Math.sqrt(Math.max(share, 0.001)) * 22;
+    const width = side === 'in' ? inWidths[index] : outWidths[index];
     const { opacity, emphasized } = flowState(side, index);
     const known = side === 'out' || io.address !== null;
 
@@ -215,10 +239,10 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
       x1 = COL_IN_X + COL_W;
       y1 = geom.y + geom.h / 2;
       x2 = COL_TX_X;
-      y2 = txY;
+      y2 = inSlots[index];
     } else {
       x1 = COL_TX_X + COL_W;
-      y1 = txY;
+      y1 = outSlots[index];
       x2 = COL_OUT_X;
       y2 = geom.y + geom.h / 2;
     }
@@ -254,7 +278,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
           d={flowPath(x1, y1, x2, y2)}
           fill="none"
           strokeWidth={width}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           className={
             emphasized
               ? 'stroke-sky-400'
@@ -343,9 +367,9 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
         <g>
           <rect
             x={COL_TX_X}
-            y={txY - TX_H / 2}
+            y={txY - txH / 2}
             width={COL_W}
-            height={TX_H}
+            height={txH}
             rx={9}
             className="fill-zinc-800 stroke-zinc-500"
           />
