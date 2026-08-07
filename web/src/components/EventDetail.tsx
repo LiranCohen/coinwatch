@@ -1,21 +1,43 @@
-import type { EventDetail as EventDetailType } from '@chainwatch/shared';
+import { useEffect, useState } from 'react';
 
-import { postVote } from '../api/client';
+import type { EventDetail as EventDetailType, Hack } from '@chainwatch/shared';
+
+import { getHack, postVote } from '../api/client';
 import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
-import { DemoBadge, RuleBadge, StatusBadge } from './badges';
+import { RuleBadge, SimulatedBadge, StatusBadge } from './badges';
+import { HackTracer } from './HackTracer';
 import { LabelList } from './LabelList';
 import { TxGraph } from './TxGraph';
 
 interface EventDetailProps {
   event: EventDetailType;
   onUpdate: (event: EventDetailType) => void;
+  onOpenEvent?: (eventId: string) => void;
 }
 
-export function EventDetail({ event, onUpdate }: EventDetailProps) {
+export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) {
   const { token } = useSession();
-  const isDemo = event.source === 'demo' || event.rules.includes('demo');
+  const isDemo = event.source === 'demo';
+  const [hack, setHack] = useState<Hack | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setHack(null);
+    if (event.hackId) {
+      getHack(event.hackId)
+        .then((h) => {
+          if (!cancelled) setHack(h);
+        })
+        .catch(() => {
+          if (!cancelled) setHack(null);
+        });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [event.id, event.hackId]);
 
   const vote = async (labelId: string, value: 1 | -1) => {
     if (!token) return;
@@ -35,7 +57,7 @@ export function EventDetail({ event, onUpdate }: EventDetailProps) {
             <RuleBadge key={rule} rule={rule} />
           ))}
           <StatusBadge status={event.status} />
-          {isDemo && <DemoBadge />}
+          {isDemo && <SimulatedBadge />}
           <span className="ml-auto text-xs text-zinc-500">detected {timeAgo(event.detectedAt)}</span>
         </div>
         <p className="tnum mt-3 font-mono text-4xl font-semibold text-zinc-50">
@@ -54,6 +76,27 @@ export function EventDetail({ event, onUpdate }: EventDetailProps) {
       </header>
 
       <AiCard event={event} onFeedback={(aiFeedback) => onUpdate({ ...event, aiFeedback })} />
+
+      {hack && (
+        <section>
+          <h3 className="mb-2 text-xs font-semibold tracking-wider text-red-400">MULTI-TX HACK</h3>
+          <div className="rounded-lg border border-red-900/50 bg-red-950/20 p-3">
+            <div className="mb-1 flex flex-wrap items-baseline gap-2">
+              <span className="text-sm font-semibold text-red-200">{hack.title}</span>
+              <span className="tnum text-xs text-red-300/80">
+                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops · {hack.status}
+              </span>
+            </div>
+            <p className="mb-3 text-xs leading-relaxed text-zinc-400">{hack.summary}</p>
+            <HackTracer
+              hack={hack}
+              currentEventId={event.id}
+              labels={event.labels.concat(event.matchedLabels)}
+              onOpenEvent={onOpenEvent}
+            />
+          </div>
+        </section>
+      )}
 
       <section>
         <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">

@@ -75,7 +75,7 @@ export function createInjectApp(deps: InjectDeps): Hono {
     }
 
     const rule: Rule = body.rule ?? 'whale';
-    const rules: Rule[] = rule === 'demo' ? ['demo'] : [rule, 'demo'];
+    const rules: Rule[] = [rule];
     const valueSats = body.valueSats ?? 2 * btcToSats(config.whaleThresholdBtc);
     const inputAddress = body.address ?? DEFAULT_DEMO_INPUT;
 

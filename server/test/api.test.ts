@@ -225,7 +225,7 @@ describe('GET /api/events', () => {
       rules: ['coinjoin'],
       source: 'demo',
     });
-    addEvent(db, { detectedAt: '2026-08-06T00:00:03.000Z', rules: ['demo'], source: 'demo' });
+    addEvent(db, { detectedAt: '2026-08-06T00:00:03.000Z', rules: ['hack'], source: 'demo' });
     db.query("UPDATE events SET status = 'evicted' WHERE id = ?").run(e1.id);
 
     const byRule = (await (await app.request('/api/events?rule=coinjoin')).json()) as EventsListResponse;
@@ -592,7 +592,7 @@ describe('dev injector', () => {
     expect(res.status).toBe(201);
     const detail = (await res.json()) as EventDetail;
     expect(detail.source).toBe('demo');
-    expect(detail.rules).toEqual(['coinjoin', 'demo']);
+    expect(detail.rules).toEqual(['coinjoin']);
     expect(detail.valueSats).toBe(42_000_000);
     expect(detail.aiStatus).toBe('pending');
     expect(detail.inputs[0].address).toBe(ADDR_IN);
@@ -630,7 +630,7 @@ describe('dev injector', () => {
     const received = await readSseUntil(streamRes.body!, [
       'event: event:new',
       '"source":"demo"',
-      '"rules":["whale","demo"]',
+      '"rules":["whale"]',
       'event: event:update',
       '"aiStatus":"done"',
       '"aiTag":"whale-move"',

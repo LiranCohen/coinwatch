@@ -10,7 +10,7 @@ import { TrendingLabels } from '../components/TrendingLabels';
 import { useSession } from '../session';
 
 const FEED_CAP = 50;
-const RULE_FILTERS: (Rule | 'all')[] = ['all', 'whale', 'dormant-wake', 'coinjoin', 'demo'];
+const RULE_FILTERS: (Rule | 'all')[] = ['all', 'whale', 'dormant-wake', 'coinjoin', 'hack'];
 const NODE_STALE_MS = 15_000;
 
 function SkeletonFeed() {
@@ -176,7 +176,7 @@ export function FeedPage() {
               onClick={() => void inject()}
               className="rounded border border-amber-500/50 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
             >
-              {injecting ? 'Injecting…' : 'Inject demo event'}
+              {injecting ? 'Injecting…' : 'Inject simulated event'}
             </button>
           )}
           <span className="text-xs text-zinc-600">
@@ -197,11 +197,11 @@ export function FeedPage() {
               <p className="text-sm text-zinc-300">Listening to your node. No matching events yet.</p>
               <p className="mt-2 text-xs text-zinc-500">
                 Active detection: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
-                outputs.
+                outputs · hack (multi-tx drain patterns).
               </p>
               {injectAvailable && (
                 <p className="mt-2 text-xs text-amber-300/80">
-                  Rehearsing? Use the inject button to fire a clearly-marked demo event through the pipeline.
+                  Rehearsing? Use the inject button to fire a clearly-marked simulated event through the pipeline.
                 </p>
               )}
             </div>
@@ -214,7 +214,7 @@ export function FeedPage() {
 
         <div className="min-w-0">
           {detail ? (
-            <EventDetail event={detail} onUpdate={setDetail} />
+            <EventDetail event={detail} onUpdate={setDetail} onOpenEvent={(id) => setSelectedId(id)} />
           ) : (
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center text-sm text-zinc-500">
               {selectedId ? 'Loading event…' : 'Select an event to inspect it.'}

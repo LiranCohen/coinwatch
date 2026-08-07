@@ -1,0 +1,46 @@
+{
+  "id": "hack_001",
+  "title": "Exchange cold-wallet drain",
+  "summary": "75 BTC left a seeded exchange cold wallet, peeled through two fresh addresses, then 45 BTC consolidated into a labeled CoinJoin coordinator. Classic drain-and-mix pattern.",
+  "detectedAt": "2026-08-06T22:29:44.000Z",
+  "status": "active",
+  "totalSats": 7500000000,
+  "hops": [
+    {
+      "txid": "d59b82f7c3e50a1846d9f2b73c08e5a4169f7d2b3a58e4c17091f2b63c08e5a7",
+      "eventId": "evt_004",
+      "inputs": [
+        { "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", "valueSats": 7500000000 }
+      ],
+      "outputs": [
+        { "address": "bc1q2w3e4r5t6y7u8i9o0p1a2s3d4f5g6h7j8k9l0z1x", "valueSats": 7499900000 },
+        { "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", "valueSats": 50000 }
+      ],
+      "carrySats": 7499900000
+    },
+    {
+      "txid": "f71d04b9e5a72c3a68f1b4d95e20a7c638b19f4d5c70a6e392b314d85e20a7c9",
+      "eventId": "evt_006",
+      "inputs": [
+        { "address": "bc1q2w3e4r5t6y7u8i9o0p1a2s3d4f5g6h7j8k9l0z1x", "valueSats": 7499900000 }
+      ],
+      "outputs": [
+        { "address": "bc1q0p9o8i7u6y5t4r3e2w1q0a9s8d7f6g5h4j3k2l1z0x9c", "valueSats": 6000000000 },
+        { "address": "bc1q5t6y7u8i9o0p1a2s3d4f5g6h7j8k9l0z1x2c3v4b5n6m", "valueSats": 1499850000 }
+      ],
+      "carrySats": 6000000000
+    },
+    {
+      "txid": "082e15c0f6b83d4b79a2c5e06f31b8d749c20a5e6d81b7f4a3c425e96f31b8d0",
+      "eventId": "evt_007",
+      "inputs": [
+        { "address": "bc1q0p9o8i7u6y5t4r3e2w1q0a9s8d7f6g5h4j3k2l1z0x9c", "valueSats": 6000000000 }
+      ],
+      "outputs": [
+        { "address": "bc1qs5d2lzt0sm8hqpxfk3k3s0rkja5shnqactpvwtss", "valueSats": 4500000000 },
+        { "address": "bc1q3r4t5y6u7i8o9p0a1s2d3f4g5h6j7k8l9z0x1c2v3b4n5m6q", "valueSats": 1499900000 }
+      ],
+      "carrySats": 0
+    }
+  ]
+}

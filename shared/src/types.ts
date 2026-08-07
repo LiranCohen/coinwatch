@@ -4,13 +4,13 @@
  * Types only: no runtime code except the RULES/STATUSES/SOURCES consts.
  */
 
-export type Rule = 'whale' | 'dormant-wake' | 'coinjoin' | 'demo';
+export type Rule = 'whale' | 'dormant-wake' | 'coinjoin' | 'hack';
 
 export type EventStatus = 'active' | 'confirmed' | 'evicted';
 
 export type AiStatus = 'pending' | 'done' | 'failed';
 
-export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'demo'] as const satisfies readonly Rule[];
+export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'hack'] as const satisfies readonly Rule[];
 export const STATUSES = ['active', 'confirmed', 'evicted'] as const satisfies readonly EventStatus[];
 export const SOURCES = ['live', 'demo'] as const satisfies readonly ('live' | 'demo')[];
 
@@ -61,6 +61,30 @@ export interface EventSummary {
   meta: EventMeta | null;
   /** labels on involved addresses, top 3 by score */
   matchedLabels: Label[];
+  /** set when the event is one hop of a multi-transaction hack */
+  hackId?: string;
+}
+
+/** Multi-transaction exploit: an ordered chain of hops linked by carried value. */
+export interface HackHop {
+  txid: string;
+  /** the feed event for this hop, when one exists */
+  eventId: string | null;
+  inputs: { address: string | null; valueSats: number }[];
+  outputs: { address: string | null; valueSats: number }[];
+  /** value carried into the next hop (0 on the terminal hop) */
+  carrySats: number;
+}
+
+export interface Hack {
+  id: string;
+  title: string;
+  summary: string;
+  detectedAt: string;
+  status: EventStatus;
+  /** total value that left the origin addresses */
+  totalSats: number;
+  hops: HackHop[];
 }
 
 export interface AiFeedback {

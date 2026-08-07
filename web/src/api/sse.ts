@@ -36,7 +36,7 @@ const MOCK_TEMPLATES: { rules: Rule[]; source: 'live' | 'demo'; sats: [number, n
   { rules: ['whale'], source: 'live', sats: [1_000_000_000, 25_000_000_000] },
   { rules: ['dormant-wake'], source: 'live', sats: [100_000_000, 900_000_000] },
   { rules: ['coinjoin'], source: 'live', sats: [20_000_000, 400_000_000] },
-  { rules: ['demo', 'whale'], source: 'demo', sats: [50_000_000_000, 250_000_000_000] },
+  { rules: ['hack'], source: 'live', sats: [2_000_000_000, 60_000_000_000] },
 ];
 
 function mockBroadcast(type: string, payload: unknown): void {
@@ -80,8 +80,9 @@ function startMockTimers(): void {
 
     const timer = setTimeout(() => {
       pendingAi.delete(event.id);
-      const ruleTag = template.rules.find((r) => r !== 'demo') ?? 'unknown';
-      mockBroadcast('event:update', { ...event, aiStatus: 'done', aiTag: ruleTag === 'whale' ? 'whale-move' : ruleTag });
+      const ruleTag = template.rules[0] ?? 'unknown';
+      const aiTag = ruleTag === 'whale' ? 'whale-move' : ruleTag === 'hack' ? 'exchange-flow' : ruleTag;
+      mockBroadcast('event:update', { ...event, aiStatus: 'done', aiTag });
     }, 6000);
     pendingAi.set(event.id, timer);
   }, 14000);

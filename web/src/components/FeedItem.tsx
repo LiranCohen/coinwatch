@@ -1,7 +1,7 @@
 import type { EventSummary } from '@chainwatch/shared';
 
 import { satsToBtc, timeAgo } from '../lib/format';
-import { DemoBadge, LabelBadge, RuleBadge, StatusBadge } from './badges';
+import { LabelBadge, RuleBadge, SimulatedBadge, StatusBadge } from './badges';
 
 interface FeedItemProps {
   event: EventSummary;
@@ -10,7 +10,7 @@ interface FeedItemProps {
 }
 
 export function FeedItem({ event, selected, onSelect }: FeedItemProps) {
-  const isDemo = event.source === 'demo' || event.rules.includes('demo');
+  const isDemo = event.source === 'demo';
   return (
     <button
       type="button"
@@ -33,7 +33,7 @@ export function FeedItem({ event, selected, onSelect }: FeedItemProps) {
           <RuleBadge key={rule} rule={rule} />
         ))}
         <StatusBadge status={event.status} />
-        {isDemo && <DemoBadge />}
+        {isDemo && <SimulatedBadge />}
         {event.aiStatus !== 'done' && (
           <span className="text-[11px] italic text-zinc-500">
             {event.aiStatus === 'pending' ? 'analysis pending' : 'analysis failed'}

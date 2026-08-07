@@ -8,14 +8,14 @@ const RULE_STYLES: Record<Rule, string> = {
   whale: 'border-sky-500/40 bg-sky-500/10 text-sky-300',
   'dormant-wake': 'border-violet-500/40 bg-violet-500/10 text-violet-300',
   coinjoin: 'border-teal-500/40 bg-teal-500/10 text-teal-300',
-  demo: 'border-amber-500/40 bg-amber-500/10 text-amber-300',
+  hack: 'border-red-500/40 bg-red-500/10 text-red-300',
 };
 
 const RULE_LABELS: Record<Rule, string> = {
   whale: 'WHALE',
   'dormant-wake': 'DORMANT WAKE',
   coinjoin: 'COINJOIN',
-  demo: 'DEMO',
+  hack: 'HACK',
 };
 
 export function RuleBadge({ rule }: { rule: Rule }) {
@@ -28,11 +28,11 @@ export function RuleBadge({ rule }: { rule: Rule }) {
   );
 }
 
-/** AE6: demo events must be unmistakable. */
-export function DemoBadge() {
+/** AE6: injected events must be unmistakable. */
+export function SimulatedBadge() {
   return (
     <span className="inline-flex items-center gap-1 rounded border-2 border-amber-400 bg-amber-400/15 px-2 py-0.5 text-[11px] font-bold tracking-widest text-amber-300">
-      DEMO EVENT
+      SIMULATED
     </span>
   );
 }
@@ -62,7 +62,7 @@ export function StatusBadge({ status }: { status: EventStatus }) {
 export function LabelBadge({ label }: { label: Label }) {
   return (
     <Link
-      to={`/address/${label.address}`}
+      to={`/app/address/${label.address}`}
       className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/60 px-2.5 py-0.5 text-xs text-zinc-200 hover:border-zinc-500"
       title={label.address}
     >

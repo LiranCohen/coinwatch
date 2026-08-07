@@ -4,6 +4,7 @@ import type {
   EventDetail,
   EventSummary,
   EventsResponse,
+  Hack,
   Identity,
   Label,
   LeaderboardResponse,
@@ -18,6 +19,7 @@ import type {
 import addressFixture from '../../fixtures/address.json';
 import eventDetailFixture from '../../fixtures/event-detail.json';
 import eventsFixture from '../../fixtures/events.json';
+import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
 import trendingFixture from '../../fixtures/trending.json';
 import { emitMockEvent } from './sse';
@@ -478,6 +480,15 @@ export async function getTrustGraph(): Promise<TrustGraphData> {
   return { nodes: [...nodes.values()], edges };
 }
 
+export async function getHack(id: string): Promise<Hack> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    if (id !== hackFixture.id) throw new ApiError(404, `unknown hack: ${id}`);
+    return structuredClone(hackFixture) as Hack;
+  }
+  return request<Hack>(`/api/hacks/${encodeURIComponent(id)}`);
+}
+
 export async function postInject(body: { rule?: string; valueSats?: number; address?: string }): Promise<EventDetail> {
   if (USE_FIXTURES) {
     ensureMock();
@@ -490,7 +501,7 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       id,
       txid,
       detectedAt: new Date().toISOString(),
-      rules: ['demo', 'whale'],
+      rules: ['whale'],
       valueSats: body.valueSats ?? 50_000_000_000,
       status: 'active',
       source: 'demo',
