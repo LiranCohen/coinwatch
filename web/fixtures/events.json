@@ -50,7 +50,7 @@
       "matchedLabels": [
         {
           "id": "lbl_seed_wasabi",
-          "address": "bc1qs5d2lzt0sm8hqpxfk3k3s0rkja5shnqactpvwtss",
+          "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
           "tag": "Wasabi CoinJoin",
           "note": null,
           "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
@@ -115,7 +115,7 @@
       "matchedLabels": [
         {
           "id": "lbl_seed_wasabi",
-          "address": "bc1qs5d2lzt0sm8hqpxfk3k3s0rkja5shnqactpvwtss",
+          "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
           "tag": "Wasabi CoinJoin",
           "note": null,
           "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",

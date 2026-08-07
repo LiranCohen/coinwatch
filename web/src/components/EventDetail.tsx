@@ -3,14 +3,15 @@ import { useEffect, useMemo, useState } from 'react';
 import type { EventDetail as EventDetailType, Hack } from '@chainwatch/shared';
 
 import { getHack, postVote } from '../api/client';
-import { enrichIo, guessLinks } from '../lib/demoFlow';
 import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
-import { RuleBadge, SimulatedBadge, StatusBadge } from './badges';
+import { RuleBadge, StatusBadge } from './badges';
+import { CoinjoinAnalysis } from './CoinjoinAnalysis';
+import { EntropyPanel } from './EntropyPanel';
 import { HackTracer } from './HackTracer';
 import { LabelList } from './LabelList';
-import { TxGraph } from './TxGraph';
+import { TxGraph, type FlowLink } from './TxGraph';
 
 interface EventDetailProps {
   event: EventDetailType;
@@ -20,14 +21,36 @@ interface EventDetailProps {
 
 export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) {
   const { token } = useSession();
-  const isDemo = false;
   const [hack, setHack] = useState<Hack | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const flow = useMemo(() => {
-    const io = enrichIo(event);
-    return { ...io, links: guessLinks(io.inputs, io.outputs) };
-  }, [event]);
+  /**
+   * Draw the link overlay only when the transaction is actually ambiguous. When
+   * entropy is zero the flow bands already tell the whole story and every link
+   * is certain, so the overlay would be noise.
+   */
+  const links = useMemo<FlowLink[]>(() => {
+    const entropy = event.meta?.entropy;
+    if (!entropy || entropy.status !== 'ok' || entropy.entropy === 0) return [];
+    const certain = new Set(entropy.deterministicLinks.map((l) => `${l.input}:${l.output}`));
+    const all: FlowLink[] = [];
+    entropy.linkProbability.forEach((row, inputIndex) => {
+      row.forEach((probability, outputIndex) => {
+        if (probability <= 0) return;
+        all.push({
+          inputIndex,
+          outputIndex,
+          probability,
+          certain: certain.has(`${inputIndex}:${outputIndex}`),
+        });
+      });
+    });
+    // every link is kept: the graph only draws those touching the coin under the
+    // cursor, so the full set costs nothing until it is asked for
+    return all.sort((a, b) => Number(b.certain) - Number(a.certain) || b.probability - a.probability);
+  }, [event.meta]);
+
+  const isCoinjoin = event.rules.includes('coinjoin');
 
   const copyTxid = async () => {
     try {
@@ -74,7 +97,6 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             <RuleBadge key={rule} rule={rule} />
           ))}
           <StatusBadge status={event.status} />
-          {isDemo && <SimulatedBadge />}
           <span className="ml-auto text-xs text-zinc-500">detected {timeAgo(event.detectedAt)}</span>
         </div>
         <p className="tnum mt-3 font-mono text-4xl font-semibold text-zinc-50">
@@ -98,7 +120,13 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
           {hack ? 'VALUE FLOW: THIS TRANSACTION' : 'VALUE FLOW'}
         </h3>
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <TxGraph txid={event.txid} inputs={flow.inputs} outputs={flow.outputs} links={flow.links} labels={event.labels} />
+          <TxGraph
+            txid={event.txid}
+            inputs={event.inputs}
+            outputs={event.outputs}
+            links={links}
+            labels={event.labels}
+          />
         </div>
       </section>
 
@@ -109,7 +137,7 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             <div className="mb-1 flex flex-wrap items-baseline gap-2">
               <span className="text-sm font-semibold text-red-200">{hack.title}</span>
               <span className="tnum text-xs text-red-300/80">
-                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops · {hack.status}
+                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops
               </span>
             </div>
             <p className="mb-3 text-xs leading-relaxed text-zinc-400">{hack.summary}</p>
@@ -121,6 +149,17 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             />
           </div>
         </section>
+      )}
+
+      {isCoinjoin && <CoinjoinAnalysis txid={event.txid} />}
+
+      {/* the coinjoin panel already reports entropy, in more depth */}
+      {!isCoinjoin && event.meta?.entropy && (
+        <EntropyPanel
+          entropy={event.meta.entropy}
+          nbInputs={event.inputs.length}
+          nbOutputs={event.outputs.length}
+        />
       )}
 
       <AiCard event={event} onFeedback={(aiFeedback) => onUpdate({ ...event, aiFeedback })} />

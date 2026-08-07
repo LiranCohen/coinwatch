@@ -39,6 +39,26 @@ export function isHttpUrl(value: string): boolean {
   }
 }
 
+/**
+ * A failed request carries the raw response body as its message, so showing it
+ * unchanged puts `{"error":"invalid or expired token"}` in front of a person.
+ * Accepts the error object or an already-extracted message string, because the
+ * session exposes its failure as a string.
+ */
+export function readApiMessage(error: unknown, fallback: string): string {
+  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : '';
+  if (raw.length === 0) return fallback;
+  try {
+    const body: unknown = JSON.parse(raw);
+    if (body !== null && typeof body === 'object' && 'error' in body && typeof body.error === 'string') {
+      return body.error;
+    }
+  } catch {
+    // a proxy or the dev server answered with HTML instead of the API
+  }
+  return raw;
+}
+
 export function base64UrlEncode(bytes: Uint8Array): string {
   let binary = '';
   for (const byte of bytes) binary += String.fromCharCode(byte);

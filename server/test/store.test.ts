@@ -14,7 +14,8 @@ import {
   parseEventMeta,
 } from '../src/store/db';
 import { applyLabelVote, getLabelsForAddressScored } from '../src/store/apiQueries';
-import { importSeedEntries, seedDatabase, isBitcoinAddress } from '../src/store/seed';
+import { importSeedEntries, seedDatabase } from '../src/store/seed';
+import { isBitcoinAddress } from '@chainwatch/shared';
 import fixture from '../fixtures/seed-labels.json';
 
 const SAMPLE_EVENT = {
@@ -195,7 +196,7 @@ describe('labels and votes', () => {
 describe('seed import', () => {
   test('fresh DB imports fixture seed rows with evidence URLs preserved', () => {
     const db = openDatabase(':memory:');
-    const result = seedDatabase(db);
+    const result = seedDatabase(db, { demoData: true });
     expect(result.imported).toBe(fixture.length);
     expect(result.skipped).toBe(0);
 
@@ -214,8 +215,8 @@ describe('seed import', () => {
 
   test('double import produces no duplicates', () => {
     const db = openDatabase(':memory:');
-    seedDatabase(db);
-    const second = seedDatabase(db);
+    seedDatabase(db, { demoData: true });
+    const second = seedDatabase(db, { demoData: true });
     const count = (db.query("SELECT COUNT(*) AS n FROM labels WHERE source = 'seed'").get() as { n: number }).n;
     expect(count).toBe(fixture.length);
     expect(second.imported).toBe(fixture.length);
@@ -241,7 +242,45 @@ describe('seed import', () => {
     expect(rows[0].evidence_url).toBe('https://example.com/evidence');
   });
 
-  test('fixture contains only plausible bitcoin addresses', () => {
+  test('checksum-broken addresses are rejected even though their shape is right', () => {
+    const db = openDatabase(':memory:');
+    const warnings: string[] = [];
+    // each of these is one character off a real address, so only the checksum
+    // separates them from the entries the importer is meant to accept
+    const broken = [
+      '1JvXhnHCi6XqcanvrZJ5s2Qiv4tsmm2UMz',
+      'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5',
+      'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg32v7',
+    ];
+    const result = importSeedEntries(
+      db,
+      broken.map((address) => ({ address, tag: 'Typo', evidenceUrl: null })),
+      (m) => warnings.push(m),
+    );
+    expect(result.imported).toBe(0);
+    expect(result.skipped).toBe(broken.length);
+    expect(warnings).toHaveLength(broken.length);
+    for (const address of broken) {
+      expect(getLabelsForAddress(db, address)).toHaveLength(0);
+    }
+  });
+
+  test('upper-case bech32 entries are stored under their canonical lower-case form', () => {
+    const db = openDatabase(':memory:');
+    const canonical = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
+    const result = importSeedEntries(db, [
+      { address: canonical.toUpperCase(), tag: 'Shouty', evidenceUrl: null },
+    ]);
+    expect(result).toEqual({ imported: 1, skipped: 0 });
+
+    // the read path only ever looks up the canonical form
+    const rows = getLabelsForAddress(db, canonical);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].address).toBe(canonical);
+    expect(getLabelsForAddress(db, canonical.toUpperCase())).toHaveLength(0);
+  });
+
+  test('every fixture address passes checksum validation', () => {
     for (const entry of fixture) {
       expect(isBitcoinAddress(entry.address)).toBe(true);
     }

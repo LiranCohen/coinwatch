@@ -19,8 +19,11 @@ describe('loadConfig', () => {
     expect(c.aiModel).toBeNull();
     expect(c.injectorEnabled).toBe(false);
     expect(c.port).toBe(3001);
-    expect(c.seedFile).toBe('server/fixtures/seed-labels.json');
-    expect(c.dbFile).toBe('server/data/chainwatch.sqlite');
+    // resolved against the server package so the paths hold regardless of cwd
+    expect(c.seedFile).toEndWith('server/fixtures/seed-labels.json');
+    expect(c.dbFile).toEndWith('server/data/chainwatch.sqlite');
+    expect(c.chainSource).toBe('auto');
+    expect(c.coinjoinMinDenominationBtc).toBe(0.001);
   });
 
   test('env overrides are parsed with correct types', () => {

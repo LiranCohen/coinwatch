@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { Label } from '@chainwatch/shared';
 
-import { isHttpUrl } from '../lib/format';
+import { isHttpUrl, readApiMessage } from '../lib/format';
 import { useSession } from '../session';
 
 interface LabelFormProps {
@@ -12,7 +12,7 @@ interface LabelFormProps {
 }
 
 export function LabelForm({ address, onSubmit, onCreated }: LabelFormProps) {
-  const { token, createAccount, busy } = useSession();
+  const { token, createAccount, busy, error: sessionError } = useSession();
   const [tag, setTag] = useState('');
   const [note, setNote] = useState('');
   const [evidenceUrl, setEvidenceUrl] = useState('');
@@ -29,8 +29,15 @@ export function LabelForm({ address, onSubmit, onCreated }: LabelFormProps) {
           onClick={() => void createAccount()}
           className="font-medium text-sky-300 hover:underline"
         >
-          Create an account. One click, no password
+          {busy ? 'Creating an account…' : 'Create an account. One click, no password'}
         </button>
+        {/* the address page links straight to this button, so a failure has to land here:
+            the header copy of the message is off-screen from where the click happened */}
+        {sessionError && (
+          <p className="mt-2 text-sm text-red-400">
+            {readApiMessage(sessionError, 'account creation failed')}
+          </p>
+        )}
       </div>
     );
   }
@@ -64,7 +71,7 @@ export function LabelForm({ address, onSubmit, onCreated }: LabelFormProps) {
       setNote('');
       setEvidenceUrl('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'failed to submit label');
+      setError(readApiMessage(err, 'failed to submit label'));
     } finally {
       setSubmitting(false);
     }

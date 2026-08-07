@@ -28,7 +28,12 @@ function txid(seed: string): string {
 function makeTx(overrides: Partial<NormalizedTx> = {}): NormalizedTx {
   return {
     txid: txid('0'),
-    inputs: [{ address: 'bc1qin', valueSats: SATS }],
+    // a coinjoin needs enough separate inputs to stand for its participants;
+    // tests that care about input structure override this explicitly
+    inputs: Array.from({ length: 12 }, (_, n) => ({
+      address: `bc1qin${n}`,
+      valueSats: SATS,
+    })),
     outputs: [{ address: 'bc1qout', valueSats: SATS }],
     totalOutputSats: SATS,
     ...overrides,
@@ -63,7 +68,11 @@ describe('classifyCoinjoin', () => {
   test('5 equal outputs without 5 equal inputs is generic', () => {
     const meta = classifyCoinjoin(
       makeTx({
-        inputs: [{ address: 'bc1qsolo', valueSats: 260_000_000 }],
+        inputs: [
+          { address: 'bc1qa', valueSats: 130_000_000 },
+          { address: 'bc1qb', valueSats: 90_000_000 },
+          { address: 'bc1qc', valueSats: 40_000_000 },
+        ],
         outputs: equalIo('out', 5, 50_000_000),
         totalOutputSats: 250_000_000,
       }),
@@ -71,7 +80,52 @@ describe('classifyCoinjoin', () => {
     );
     expect(meta?.kind).toBe('generic');
     expect(meta?.equalOutputCount).toBe(5);
-    expect(meta?.participantCount).toBe(1);
+    expect(meta?.participantCount).toBe(3);
+  });
+
+  describe('rejects transactions that only look like coinjoins', () => {
+    test('a single payer batching equal outputs is not a join', () => {
+      const meta = classifyCoinjoin(
+        makeTx({
+          inputs: [{ address: 'bc1qexchange', valueSats: 260_000_000 }],
+          outputs: equalIo('out', 8, 50_000_000),
+          totalOutputSats: 400_000_000,
+        }),
+        5,
+      );
+      expect(meta).toBeNull();
+    });
+
+    test('dust-value equal outputs are spray, not mixing', () => {
+      const meta = classifyCoinjoin(
+        makeTx({ outputs: equalIo('out', 20, 546), totalOutputSats: 20 * 546 }),
+        5,
+      );
+      expect(meta).toBeNull();
+    });
+
+    test('far more equal outputs than inputs is a payout batch', () => {
+      const meta = classifyCoinjoin(
+        makeTx({
+          inputs: [
+            { address: 'bc1qa', valueSats: 500_000_000 },
+            { address: 'bc1qb', valueSats: 500_000_000 },
+          ],
+          outputs: equalIo('out', 40, 20_000_000),
+          totalOutputSats: 800_000_000,
+        }),
+        5,
+      );
+      expect(meta).toBeNull();
+    });
+
+    test('the denomination floor is configurable', () => {
+      const tx = makeTx({ outputs: equalIo('out', 6, 5_000), totalOutputSats: 30_000 });
+      expect(classifyCoinjoin(tx, { minEqualOutputs: 5 })).toBeNull();
+      expect(
+        classifyCoinjoin(tx, { minEqualOutputs: 5, minDenominationSats: 1_000 })?.equalOutputCount,
+      ).toBe(6);
+    });
   });
 
   test('6-9 equal outputs is generic (wasabi boundary)', () => {
@@ -256,7 +310,12 @@ describe('coinjoin pipeline integration', () => {
     await harness.pipeline.poll();
     const round1 = coinjoinRawTx('a', WHIRLPOOL_INPUTS('a'));
     await detectRound(harness, round1);
-    const round2 = coinjoinRawTx('b', [{ address: 'bc1qaout0', btc: 2.4 }]);
+    // a remix round is still a full round: the prior round's output joins four
+    // other participants rather than funding the whole transaction alone
+    const round2 = coinjoinRawTx('b', [
+      { address: 'bc1qaout0', btc: 0.5 },
+      ...Array.from({ length: 4 }, (_, n) => ({ address: `bc1qbin${n}`, btc: 0.5 })),
+    ]);
     await detectRound(harness, round2);
 
     const batch1 = findBatchByTxid(harness.db, round1.txid);

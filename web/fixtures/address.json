@@ -56,13 +56,13 @@
       "eventId": "evt_004"
     },
     {
-      "txid": "6c2e91a4f7d83b05c1a6e9f24d75b8c3e09a1f62d48c7b5e93a06f1d2c48e7b5a",
+      "txid": "6c2e91a4f7d83b05c1a6e9f24d75b8c3e09a1f62d48c7b5e93a06f1d2c48e7b5",
       "time": "2026-08-05T14:12:38.000Z",
       "deltaSats": 12500000000,
       "eventId": null
     },
     {
-      "txid": "1f8a4c7e2b95d0618f3e7a24c96b5d8e4f07a2c31d84b6e90f27c3a58e16b94d2",
+      "txid": "1f8a4c7e2b95d0618f3e7a24c96b5d8e4f07a2c31d84b6e90f27c3a58e16b94d",
       "time": "2026-08-04T09:03:11.000Z",
       "deltaSats": -85000000,
       "eventId": null

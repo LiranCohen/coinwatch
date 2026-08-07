@@ -37,13 +37,44 @@ A lightweight feed where:
 ### Architecture
 
 ```
-Bitcoin node RPC ──► detection pipeline ──► SQLite ──► REST + SSE API ──► frontend
-mempool.space ─────► address lookups              ▲
-AI provider ───────► first-pass summaries          │ labels / votes / signed challenges
-                                              crowd via enbox DIDs
+chain source ──► detection rules ──► entropy engine ──► SQLite ──► REST + SSE ──► frontend
+   │                                                        ▲
+   ├─ bitcoind RPC (your own node)                          │ labels / votes / signed challenges
+   └─ Esplora explorers (mempool.space, blockstream)    crowd via enbox DIDs
 ```
 
-Stack: Bun + Hono + SQLite (bun:sqlite), `@enbox/dids` for identity, Vite + React frontend (separate workspace). Sponsor framing: production deployment stands up on QuickNode Bitcoin endpoints with OKX.AI as the analysis provider.
+Stack: Bun + Hono + SQLite (bun:sqlite), `@enbox/dids` for identity, Vite + React frontend (separate workspace).
+
+**Chain sources.** The pipeline reads through a `ChainSource` interface (`server/src/ingest/source.ts`), so the same detection rules run against either your own node or public Esplora explorers. `CHAIN_SOURCE=auto` (the default) prefers your node and falls back to explorers when it is unreachable, so a misconfigured node degrades to working-with-real-data rather than to silence. A node exposes the whole mempool, so arrivals are found by diffing snapshots; explorers only expose a recent sample, so the pipeline additionally walks confirmed blocks page by page with a resumable cursor.
+
+---
+
+### Transaction entropy
+
+Every detected transaction is scored with a Boltzmann analysis (`server/src/analytics/boltzmann.ts`), the measure LaurentMT developed and OXT / kycp.org were built on.
+
+An *interpretation* is one way of partitioning a transaction's inputs and outputs into matched groups where each group's inputs could have funded its outputs. Counting them yields:
+
+| Metric | Meaning |
+| --- | --- |
+| **entropy** | `log2(interpretations)` — bits of ambiguity. Zero means the transaction reveals exactly who paid whom. |
+| **link probability** | `P(input i funded output j)` across all interpretations. |
+| **deterministic links** | Links that hold in *every* interpretation, and are therefore provable from the chain alone. |
+| **efficiency** | How much of the entropy achievable for this input/output shape the transaction actually reaches. |
+
+A perfect coinjoin of a given shape is the ceiling, computed in closed form from a one-dimensional recurrence; efficiency is measured against it. Canonical cases are pinned in `server/test/boltzmann.test.ts` (a 2×2 equal-value coinjoin has exactly 3 interpretations, 1.58 bits, and no certain links).
+
+**Numeric mappings.** Counting by enumerating coin subsets is exponential in the number of coins, which puts real coinjoins out of reach — exactly the transactions worth analyzing. Following Kajaba et al., *[Analysis of Input-Output Mappings in Coinjoin Transactions with Arbitrary Values](https://arxiv.org/abs/2510.17284)*, the search instead runs over **value classes**: coins of equal value are interchangeable, so mappings are enumerated only up to a permutation of same-valued coins. Each numeric mapping is then weighted by how many labelled arrangements it stands for, so the counts are identical to coin-level enumeration — only the cost changes.
+
+The effect is large where it matters. An 85-input/85-output equal-value round needs 85 states instead of 2⁸⁵ coin subsets, and resolves in ~10 ms. Backfilling the engine over an existing index turned 181 previously-undecidable transactions into exact analyses. Cost now tracks *distinct values* rather than coin count, so a 40-input join drawn from four denominations is cheap while a 20-input transaction of all-distinct amounts is not — the opposite of what a coin-count limit assumes.
+
+Bounds are on reachable states and search steps rather than transaction size. When the engine cannot finish it says so; it never publishes a guessed entropy.
+
+Also implemented from that paper: **p(I, o)** — for each output, the strongest link probability to any single input. It is the conservative read of how well an output is mixed, and it is what the bar under each column of the mapping matrix shows.
+
+**Detection honesty.** Equal outputs alone do not make a coinjoin — exchange payout batches and inscription sprays look identical by that test. A transaction is classified as a coinjoin only if it also carries enough separate inputs to plausibly represent the participants claiming those equal outputs, at a denomination worth mixing (`COINJOIN_MIN_DENOMINATION_BTC`). On live mainnet blocks this is the difference between 16 dust false positives and 3 genuine Wasabi rounds.
+
+**Demo data is opt-in.** `DEMO_SEED=false` by default: a real deployment shows real chain activity, not invented history. The curated GraphSense TagPacks address labels always load — those are real reference data.
 
 ---
 
@@ -53,8 +84,9 @@ See **docs/development.md** for the live demo tunnel URL and local run instructi
 
 ```bash
 bun install
-cd server && bun test        # 114 tests
-PORT=3100 INJECTOR_ENABLED=true bun run src/index.ts
+cd server && bun test        # 159 tests
+# no node required: reads real chain data from public explorers
+CHAIN_SOURCE=esplora PORT=3100 bun run src/index.ts
 ```
 
 ---

@@ -33,12 +33,22 @@ describe('whale rule', () => {
 });
 
 describe('coinjoin rule', () => {
-  test('hits when >= min equal-value outputs', () => {
+  const participants = (count: number, valueSats: number) =>
+    Array.from({ length: count }, (_, n) => ({ address: `bc1qin${n}`, valueSats }));
+
+  test('hits when enough participants share equal-value outputs', () => {
     const outputs = Array.from({ length: 5 }, () => ({
       address: 'bc1qeq',
       valueSats: 100_000,
     }));
-    expect(coinjoin(makeTx({ outputs }), 5)).toBe(true);
+    const inputs = participants(5, 120_000);
+    expect(coinjoin(makeTx({ inputs, outputs }), 5)).toBe(true);
+  });
+
+  test('misses when one payer batches equal outputs to many recipients', () => {
+    const outputs = Array.from({ length: 8 }, () => ({ address: 'bc1qeq', valueSats: 100_000 }));
+    const inputs = [{ address: 'bc1qpayer', valueSats: 900_000 }];
+    expect(coinjoin(makeTx({ inputs, outputs }), 5)).toBe(false);
   });
 
   test('misses below min equal-value outputs', () => {
@@ -52,7 +62,8 @@ describe('coinjoin rule', () => {
       address: 'bc1qeq',
       valueSats: 2 * SATS,
     }));
-    const tx = makeTx({ outputs, totalOutputSats: 12 * SATS });
+    const inputs = participants(6, 2 * SATS);
+    const tx = makeTx({ inputs, outputs, totalOutputSats: 12 * SATS });
     const rules = [whale(tx, 10 * SATS) && 'whale', coinjoin(tx, 5) && 'coinjoin'].filter(Boolean);
     expect(rules).toEqual(['whale', 'coinjoin']);
   });

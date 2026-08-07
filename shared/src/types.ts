@@ -41,8 +41,66 @@ export interface CoinjoinMeta {
   participantCount: number;
 }
 
+/**
+ * Boltzmann transaction entropy: how many distinct ways an observer could map
+ * this transaction's inputs onto its outputs, and what that implies about which
+ * links are certain. Entropy of 0 means the transaction leaks its full
+ * structure; higher values mean more plausible interpretations.
+ */
+export interface TxEntropy {
+  /** 'skipped'/'aborted' mean the analysis was declined, not that entropy is zero */
+  status: 'ok' | 'skipped' | 'aborted';
+  reason: string | null;
+  /** number of valid input-to-output interpretations */
+  combinations: number;
+  /** log2(combinations), in bits */
+  entropy: number;
+  /** entropy of a perfect coinjoin with the same input/output counts */
+  maxEntropy: number;
+  /** share of the achievable entropy this transaction reaches, in [0, 1] */
+  efficiency: number;
+  /** entropy per input+output, comparable across transaction sizes */
+  density: number;
+  /** linkProbability[input][output] = P(that input funded that output) */
+  linkProbability: number[][];
+  /** links that hold in every interpretation */
+  deterministicLinks: { input: number; output: number }[];
+  /**
+   * p(I, o): for each output, the strongest link probability to any single
+   * input. A conservative read of how well that output is mixed — 1 means it is
+   * pinned to an input, low values mean it is genuinely hidden in the crowd.
+   */
+  outputLinkMax: number[];
+  /** value-class states explored; a measure of how hard the count actually was */
+  states: number;
+}
+
 export interface EventMeta {
   coinjoin?: CoinjoinMeta;
+  entropy?: TxEntropy;
+  feeSats?: number;
+}
+
+/** A mined block, as shown in the chain ticker. */
+export interface BlockSummary {
+  height: number;
+  hash: string;
+  /** ISO 8601 */
+  time: string | null;
+  txCount: number;
+  sizeBytes: number;
+  weight: number;
+  /** mining pool, when the upstream source can attribute it */
+  miner: string | null;
+  /** sat/vB */
+  medianFeeRate: number | null;
+}
+
+export interface BlocksResponse {
+  tipHeight: number;
+  blocks: BlockSummary[];
+  /** which upstream produced this: the operator's node or public explorers */
+  source: string;
 }
 
 export interface EventSummary {
@@ -115,10 +173,162 @@ export interface AddressInfo {
   address: string;
   balanceSats: number | null;
   txCount: number | null;
+  /** total detections for this address, independent of how many are returned below */
+  eventCount: number;
   labels: Label[];
+  /** most recent detections, capped by the server */
   recentEvents: EventSummary[];
   /** history observed by the operator's own node, newest first */
   history: AddressHistoryEntry[];
+}
+
+/**
+ * A transaction touching an address, read from the chain rather than from the
+ * detection index. This is what an address has actually done, as opposed to the
+ * subset of it that tripped a CoinWatch rule.
+ */
+export interface AddressChainTx {
+  txid: string;
+  /** ISO 8601 block time, null while unconfirmed */
+  time: string | null;
+  blockHeight: number | null;
+  confirmed: boolean;
+  /** signed from this address's perspective: negative = outflow */
+  deltaSats: number;
+  feeSats: number;
+  inputCount: number;
+  outputCount: number;
+  /** privacy analysis of this transaction, null when it could not be run */
+  entropy: TxEntropy | null;
+  /** the CoinWatch event for this transaction, when one exists */
+  eventId: string | null;
+}
+
+export interface AddressChainTxsResponse {
+  address: string;
+  transactions: AddressChainTx[];
+  /** false when the chain source could not be reached; the list is then empty */
+  available: boolean;
+}
+
+/**
+ * Forensic address graph.
+ *
+ * Nodes are addresses and edges are aggregate value movements between them,
+ * laid out by hop distance from the address under investigation: negative hops
+ * funded it, positive hops received from it. This is the "follow the money"
+ * view — where value came from, where it went, and where it stopped.
+ */
+export interface FlowNode {
+  address: string;
+  /** negative = upstream (funded the focus), 0 = focus, positive = downstream */
+  hop: number;
+  balanceSats: number | null;
+  txCount: number | null;
+  /** value that moved along the traced path through this address */
+  tracedSats: number;
+  /** crowd/seed labels we hold for this address */
+  labels: string[];
+  /** true when this address still holds everything it was traced receiving */
+  unmoved: boolean;
+  /** expansion stopped here because a bound was hit, not because the trail ended */
+  frontier: boolean;
+}
+
+export interface FlowEdge {
+  from: string;
+  to: string;
+  valueSats: number;
+  /** transactions carrying this flow, newest first */
+  txids: string[];
+  /** share of the destination's traced inflow supplied by this edge, 0..1 */
+  share: number;
+}
+
+export interface AddressFlow {
+  focus: string;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  /** a bound was reached, so the graph is a sample rather than the whole trail */
+  truncated: boolean;
+  note: string | null;
+  available: boolean;
+}
+
+/**
+ * Addresses provably controlled together, via the common-input-ownership
+ * heuristic: signing one transaction with several inputs proves one party held
+ * all those keys at once. This is the strongest link available from chain data
+ * alone, and the basis of OXT-style wallet clustering.
+ */
+export interface ClusterMember {
+  address: string;
+  /** how many co-spending transactions tie this address to the cluster */
+  cospends: number;
+  balanceSats: number | null;
+  labels: string[];
+}
+
+export interface AddressCluster {
+  focus: string;
+  members: ClusterMember[];
+  /** transactions whose multi-input signatures bind the cluster together */
+  bindingTxids: string[];
+  /** notable structure observed while clustering */
+  patterns: string[];
+  truncated: boolean;
+  note: string | null;
+  available: boolean;
+}
+
+/** A later transaction that spent several of a coinjoin's mixed outputs together. */
+export interface CoinjoinLinkage {
+  spendTxid: string;
+  /** vout indexes this transaction consolidated */
+  outputs: number[];
+  valueSats: number;
+  /**
+   * How many of them shared the modal denomination. Anonymity lives inside an
+   * equal-value group, so only these erode the anonymity set — but every
+   * consolidation here still proves the outputs share an owner.
+   */
+  denominatedOutputs: number;
+}
+
+/**
+ * What can and cannot be said about a coinjoin.
+ *
+ * Clustering across a coinjoin's inputs is invalid by construction — they
+ * belong to different people on purpose — so this reports the mixing quality
+ * instead, plus the one thing that genuinely undoes it: participants
+ * consolidating their mixed outputs afterwards.
+ */
+export interface CoinjoinAnalysis {
+  txid: string;
+  isCoinjoin: boolean;
+  denominationSats: number;
+  /** outputs sharing the mixed denomination */
+  equalOutputs: number;
+  inputCount: number;
+  outputCount: number;
+  /** distinct input addresses, an upper bound on parties present */
+  participants: number;
+  entropy: TxEntropy;
+  /** coin values, in vin/vout order, for labelling the mapping matrix */
+  inputValues: number[];
+  outputValues: number[];
+  /** indistinguishable outputs at the moment of mixing */
+  anonymitySet: number;
+  /** what survives after post-mix consolidations are accounted for */
+  effectiveAnonymitySet: number;
+  /** share of the original anonymity set lost, 0..1 */
+  degradation: number;
+  spentMixedOutputs: number;
+  linkages: CoinjoinLinkage[];
+  /** false when spend status could not be read; linkages are then unknown, not absent */
+  linkageAvailable: boolean;
+  blockHeight: number | null;
+  time: string | null;
 }
 
 export interface LeaderboardEntry {
@@ -272,6 +482,25 @@ export interface LeaderboardResponse {
   analysts: LeaderboardEntry[];
 }
 
+/**
+ * Detection thresholds the server is actually running with. Operators change
+ * these through the environment, so a client that hardcodes them will quietly
+ * describe rules that are not the ones firing.
+ */
+export interface DetectionConfig {
+  whaleThresholdBtc: number;
+  dormantBlocks: number;
+  dormantMinValueBtc: number;
+  coinjoinMinEqualOutputs: number;
+  coinjoinMinDenominationBtc: number;
+}
+
+export interface ServerMeta {
+  detection: DetectionConfig;
+  /** name of the active chain ingestion source */
+  chainSource: string;
+}
+
 export interface InjectRequest {
   rule?: Rule;
   valueSats?: number;
@@ -283,3 +512,5 @@ export interface HealthMessage {
 }
 
 export type SseMessageName = 'event:new' | 'event:update' | 'label:new' | 'health';
+
+export * from './address';

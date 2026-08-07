@@ -1,5 +1,10 @@
 import type {
+  AddressChainTxsResponse,
+  AddressCluster,
+  CoinjoinAnalysis,
+  AddressFlow,
   AddressInfo,
+  BlocksResponse,
   ChallengeResponse,
   EventDetail,
   EventSummary,
@@ -8,6 +13,7 @@ import type {
   Identity,
   Label,
   LeaderboardResponse,
+  ServerMeta,
   TrustGraphData,
   TrustGraphEdge,
   TrustGraphNode,
@@ -22,7 +28,6 @@ import eventsFixture from '../../fixtures/events.json';
 import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
 import trendingFixture from '../../fixtures/trending.json';
-import { COLDCARD_HACK, decorateHackEvent } from '../lib/coldcardHack';
 import { emitMockEvent } from './sse';
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true';
@@ -60,14 +65,28 @@ interface MockSession {
   identity: Identity;
 }
 
+/**
+ * The address fixture predates `eventCount`, and its `recentEvents` is one entry
+ * against a history naming two detections — the capped-page shape a real server
+ * serves. The total is counted off the fixture's own rows so the mock cannot teach
+ * a number the fixture does not contain.
+ */
+function fixtureAddress(): AddressInfo {
+  const info = structuredClone(addressFixture) as unknown as AddressInfo;
+  const detections = new Set<string>(info.recentEvents.map((event) => event.id));
+  for (const entry of info.history) {
+    if (entry.eventId !== null) detections.add(entry.eventId);
+  }
+  const withTotal = { ...info, eventCount: detections.size };
+  return withTotal;
+}
+
 const mock = {
   events: structuredClone(eventsFixture.events) as EventSummary[],
   details: new Map<string, EventDetail>([
     ['evt_001', structuredClone(eventDetailFixture) as EventDetail],
   ]),
-  addresses: new Map<string, AddressInfo>([
-    [addressFixture.address, structuredClone(addressFixture) as AddressInfo],
-  ]),
+  addresses: new Map<string, AddressInfo>([[addressFixture.address, fixtureAddress()]]),
   labels: new Map<string, Label>(),
   sessions: new Map<string, MockSession>(),
   aiFeedback: new Map<string, EventDetail['aiFeedback']>(),
@@ -134,7 +153,10 @@ function detailFromSummary(summary: EventSummary): EventDetail {
         : null,
     inputs: [{ address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', valueSats: summary.valueSats + 50_000 }],
     outputs: [
-      { address: 'bc1q9x4k2m8v7n3p5d6f1g0h4j8l2s7a5q9w3e6r1t4y', valueSats: summary.valueSats },
+      {
+        address: 'bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3',
+        valueSats: summary.valueSats,
+      },
       { address: null, valueSats: 50_000 },
     ],
     labels: summary.matchedLabels,
@@ -189,6 +211,46 @@ export async function patchHandle(handle: string, token: string): Promise<Identi
 }
 
 // ---------------------------------------------------------------------------
+// Server meta
+// ---------------------------------------------------------------------------
+
+/**
+ * Fixture-lane detection settings. These describe the fixtures themselves, not
+ * any deployment, which is why the source names itself: a real server reads all
+ * five numbers from its own config and no caller may assume these. The values
+ * mirror the server defaults (server/src/config.ts) so the fixtures cannot
+ * quietly teach a number no deployment uses.
+ */
+const FIXTURE_META: ServerMeta = {
+  detection: {
+    whaleThresholdBtc: 10,
+    dormantBlocks: 4320,
+    dormantMinValueBtc: 1,
+    coinjoinMinEqualOutputs: 5,
+    coinjoinMinDenominationBtc: 0.001,
+  },
+  chainSource: 'fixtures',
+};
+
+/** Detection thresholds and chain source of the server actually being talked to. */
+export async function getServerMeta(): Promise<ServerMeta> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return clone(FIXTURE_META);
+  }
+  return request<ServerMeta>('/api/meta');
+}
+
+// ---------------------------------------------------------------------------
+// Chain
+// ---------------------------------------------------------------------------
+
+/** Recent blocks straight from the chain, for the ticker. */
+export async function getBlocks(limit = 6): Promise<BlocksResponse> {
+  return request<BlocksResponse>(`/api/blocks?limit=${limit}`);
+}
+
+// ---------------------------------------------------------------------------
 // Events
 // ---------------------------------------------------------------------------
 
@@ -210,16 +272,12 @@ export async function getEvents(query: EventsQuery = {}): Promise<EventsResponse
     if (query.source) events = events.filter((e) => e.source === query.source);
     return { events: clone(events.slice(0, query.limit ?? 50)) };
   }
-  // the backend doesn't know the hack rule; it's stamped on client-side
-  const hackFilter = query.rule === 'hack';
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(hackFilter ? { ...query, rule: undefined } : query)) {
+  for (const [key, value] of Object.entries(query)) {
     if (value !== undefined) params.set(key, String(value));
   }
   const qs = params.toString();
-  const res = await request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
-  const events = res.events.map(decorateHackEvent);
-  return { ...res, events: hackFilter ? events.filter((e) => e.rules.includes('hack')) : events };
+  return request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
 }
 
 export async function getEvent(id: string, token?: string | null): Promise<EventDetail> {
@@ -230,7 +288,25 @@ export async function getEvent(id: string, token?: string | null): Promise<Event
     if (!summary) throw new ApiError(404, `unknown event: ${id}`);
     return clone(detailFromSummary(summary));
   }
-  return decorateHackEvent(await request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token));
+  return request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token);
+}
+
+/** null when the transaction exists on-chain but matched no detection rule, so it was never indexed */
+export async function getEventByTxid(txid: string, token?: string | null): Promise<EventDetail | null> {
+  if (USE_FIXTURES) {
+    ensureMock();
+    await mockLatency();
+    const needle = txid.toLowerCase();
+    const summary = mock.events.find((e) => e.txid.toLowerCase() === needle);
+    if (!summary) return null;
+    return clone(detailFromSummary(summary));
+  }
+  try {
+    return await request<EventDetail>(`/api/events/by-txid/${encodeURIComponent(txid)}`, undefined, token);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
 
 export async function postAiFeedback(
@@ -271,6 +347,52 @@ export async function postAiFeedback(
 // Addresses, labels, votes
 // ---------------------------------------------------------------------------
 
+/**
+ * What the address has actually done on chain, as opposed to the subset of it
+ * CoinWatch has indexed. Never throws on an unreachable chain source: the
+ * response carries `available: false` so the page can say so.
+ */
+export async function getAddressTransactions(address: string): Promise<AddressChainTxsResponse> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return { address, transactions: [], available: false };
+  }
+  return request<AddressChainTxsResponse>(
+    `/api/addresses/${encodeURIComponent(address)}/transactions`,
+  );
+}
+
+/** Mixing quality of a coinjoin, and any post-mix consolidation that undid it. */
+export async function getCoinjoinAnalysis(txid: string): Promise<CoinjoinAnalysis> {
+  return request<CoinjoinAnalysis>(`/api/coinjoins/${encodeURIComponent(txid)}/analysis`);
+}
+
+/** Bounded forensic walk of the chain around an address; slow by nature. */
+export async function getAddressFlow(address: string): Promise<AddressFlow> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return { focus: address, nodes: [], edges: [], truncated: false, note: null, available: false };
+  }
+  return request<AddressFlow>(`/api/addresses/${encodeURIComponent(address)}/flow`);
+}
+
+/** Addresses proven to share control with this one, by common input ownership. */
+export async function getAddressCluster(address: string): Promise<AddressCluster> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return {
+      focus: address,
+      members: [],
+      bindingTxids: [],
+      patterns: [],
+      truncated: false,
+      note: null,
+      available: false,
+    };
+  }
+  return request<AddressCluster>(`/api/addresses/${encodeURIComponent(address)}/cluster`);
+}
+
 export async function getAddress(address: string, token?: string | null): Promise<AddressInfo> {
   if (USE_FIXTURES) {
     ensureMock();
@@ -278,14 +400,17 @@ export async function getAddress(address: string, token?: string | null): Promis
     const known = mock.addresses.get(address);
     if (known) return clone(known);
     const labels = [...mock.labels.values()].filter((l) => l.address === address);
-    return {
+    // an address the fixtures never indexed has a countable zero, not an unknown
+    const unindexed = {
       address,
       balanceSats: null,
       txCount: null,
+      eventCount: 0,
       labels: clone(labels),
       recentEvents: [],
       history: [],
     };
+    return unindexed;
   }
   return request<AddressInfo>(`/api/addresses/${encodeURIComponent(address)}`, undefined, token);
 }
@@ -487,7 +612,6 @@ export async function getTrustGraph(): Promise<TrustGraphData> {
 }
 
 export async function getHack(id: string): Promise<Hack> {
-  if (id === COLDCARD_HACK.id) return structuredClone(COLDCARD_HACK);
   if (USE_FIXTURES) {
     await mockLatency();
     if (id !== hackFixture.id) throw new ApiError(404, `unknown hack: ${id}`);
@@ -508,6 +632,10 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       id,
       txid,
       detectedAt: new Date().toISOString(),
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       rules: ['whale'],
       valueSats: body.valueSats ?? 50_000_000_000,
       status: 'active',

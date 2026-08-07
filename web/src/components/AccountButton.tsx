@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { downloadIdentityBackup, storedDidUri } from '../identity/enbox';
-import { truncateDid } from '../lib/format';
+import { readApiMessage, truncateDid } from '../lib/format';
 import { useSession } from '../session';
 import { ReputationBadge } from './badges';
 
@@ -21,6 +21,8 @@ export function AccountButton() {
     document.addEventListener('mousedown', close);
     return () => document.removeEventListener('mousedown', close);
   }, [menuOpen]);
+
+  const errorMessage = error === null ? null : readApiMessage(error, 'account action failed');
 
   if (!token) {
     return (
@@ -43,7 +45,11 @@ export function AccountButton() {
         >
           {busy ? 'Working…' : hasIdentity ? 'New account' : 'Create account'}
         </button>
-        {error && <span className="max-w-48 truncate text-xs text-red-400" title={error}>{error}</span>}
+        {errorMessage && (
+          <span className="max-w-48 truncate text-xs text-red-400" title={errorMessage}>
+            {errorMessage}
+          </span>
+        )}
       </div>
     );
   }
