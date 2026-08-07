@@ -18,6 +18,7 @@ import type {
 
 import addressFixture from '../../fixtures/address.json';
 import eventDetailFixture from '../../fixtures/event-detail.json';
+import { formatCoins } from '../lib/format';
 import eventsFixture from '../../fixtures/events.json';
 import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
@@ -130,7 +131,7 @@ function detailFromSummary(summary: EventSummary): EventDetail {
     ...summary,
     aiSummary:
       summary.aiStatus === 'done'
-        ? `A ${(summary.valueSats / 1e8).toFixed(2)} BTC transaction matched the ${summary.rules.join(', ')} rule${summary.rules.length > 1 ? 's' : ''}. Destination profile is consistent with routine movement; no seeded labels are involved.`
+        ? `A ${formatCoins(summary.valueSats)} transaction matched the ${summary.rules.join(', ')} rule${summary.rules.length > 1 ? 's' : ''}. Destination profile is consistent with routine movement; no seeded labels are involved.`
         : null,
     inputs: [{ address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', valueSats: summary.valueSats + 50_000 }],
     outputs: [

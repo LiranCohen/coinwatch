@@ -1,12 +1,38 @@
-const SATS_PER_BTC = 100_000_000;
+/**
+ * Coin Standard display (https://coinsymbol.wtf):
+ * ¢ for coins, ₿ for whole bitcoin, symbol first with a space.
+ * One coin = one satoshi on-chain; only display changes.
+ * ₿ 1 = ¢ 100,000,000 (¢ 100m).
+ */
 
-const btcFormatter = new Intl.NumberFormat('en-US', {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 8,
-});
+export const COIN = '¢';
+export const BITCOIN = '₿';
+export const COINS_PER_BITCOIN = 100_000_000;
 
-export function satsToBtc(sats: number): string {
-  return btcFormatter.format(sats / SATS_PER_BTC);
+const group = (n: number): string => new Intl.NumberFormat('en-US').format(n);
+
+/** Whole-bitcoin rendering: ₿ 1, ₿ 1.5, ₿ 2.345 — trimmed to at most 8 decimals. */
+export function formatBitcoin(coins: number): string {
+  const btc = coins / COINS_PER_BITCOIN;
+  const fixed = btc.toFixed(8).replace(/\.?0+$/, '');
+  const [int, frac] = fixed.split('.');
+  return `${BITCOIN} ${group(Number(int))}${frac ? `.${frac}` : ''}`;
+}
+
+/** Always ¢: ¢ 25,000; exact millions become ¢ 25m (never lossy). */
+export function formatCoinsExact(coins: number): string {
+  const n = Math.round(Math.abs(coins));
+  if (n >= 1_000_000 && n % 1_000_000 === 0) return `${COIN} ${group(n / 1_000_000)}m`;
+  return `${COIN} ${group(n)}`;
+}
+
+/**
+ * Auto mode: everyday amounts in coins, whole bitcoin in ₿ once the amount
+ * crosses ₿ 1 — "collect coins to earn bitcoin".
+ */
+export function formatCoins(coins: number): string {
+  const n = Math.round(Math.abs(coins));
+  return n >= COINS_PER_BITCOIN ? formatBitcoin(n) : formatCoinsExact(n);
 }
 
 export function truncateMiddle(value: string, head = 10, tail = 8): string {

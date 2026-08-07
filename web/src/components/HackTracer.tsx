@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { Hack, Label } from '@chainwatch/shared';
 
-import { satsToBtc, truncateMiddle } from '../lib/format';
+import { formatCoins, truncateMiddle } from '../lib/format';
 
 interface HackTracerProps {
   hack: Hack;
@@ -156,7 +156,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
           textAnchor="middle"
           className="tnum fill-zinc-500 font-mono text-[10px]"
         >
-          {satsToBtc(hop.inputs.reduce((s, io) => s + io.valueSats, 0))} BTC in
+          {formatCoins(hop.inputs.reduce((s, io) => s + io.valueSats, 0))} in
         </text>
       </g>
     );
@@ -189,7 +189,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             className="tnum fill-red-200 font-mono text-[10px]"
             style={LABEL_HALO}
           >
-            {satsToBtc(sats)} BTC · {fmtShare(sats / total)} of stolen
+            {formatCoins(sats)} · {fmtShare(sats / total)} of stolen
           </text>
         )}
       </g>
@@ -247,8 +247,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             </text>
           )}
           <text x={IN_X + 10} y={y + 12} className="tnum fill-zinc-200 font-mono text-[12px]">
-            {satsToBtc(io.valueSats)}
-            <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
+            {formatCoins(io.valueSats)}
           </text>
           {labeled && (
             <text x={IN_X + 10} y={y + 21} className="fill-red-300 text-[9px]">
@@ -286,7 +285,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             className="tnum fill-emerald-200 font-mono text-[10px]"
             style={LABEL_HALO}
           >
-            {satsToBtc(io.valueSats)} BTC · {fmtShare(io.valueSats / total)}
+            {formatCoins(io.valueSats)} · {fmtShare(io.valueSats / total)}
           </text>
         )}
         <g
@@ -324,8 +323,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             </text>
           )}
           <text x={terminalX + 10} y={y + 12} className="tnum fill-zinc-200 font-mono text-[12px]">
-            {satsToBtc(io.valueSats)}
-            <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
+            {formatCoins(io.valueSats)}
           </text>
           {labeled && (
             <text x={terminalX + 10} y={y + 21} className="fill-red-300 text-[9px]">
@@ -391,8 +389,8 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             </text>
           )}
           <text x={x + 8} y={y + 32} className="tnum fill-zinc-300 font-mono text-[11px]">
-            {satsToBtc(io.valueSats)}
-            <tspan className="fill-zinc-500 text-[9px]"> BTC peeled</tspan>
+            {formatCoins(io.valueSats)}
+            <tspan className="fill-zinc-500 text-[9px]"> peeled</tspan>
           </text>
         </g>
       </g>
@@ -425,7 +423,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
           </button>
         </div>
         <span className="text-[11px] text-zinc-500">
-          {satsToBtc(total)} BTC stolen across {n} hops. Hover any element to light the trail. Click a hop to open its event.
+          {formatCoins(total)} stolen across {n} hops. Hover any element to light the trail. Click a hop to open its event.
         </span>
       </div>
 

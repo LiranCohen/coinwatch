@@ -1,6 +1,6 @@
 import type { EventSummary } from '@chainwatch/shared';
 
-import { satsToBtc, timeAgo } from '../lib/format';
+import { formatCoins, timeAgo } from '../lib/format';
 import { LabelBadge, RuleBadge, SimulatedBadge, StatusBadge } from './badges';
 
 interface FeedItemProps {
@@ -23,8 +23,7 @@ export function FeedItem({ event, selected, onSelect }: FeedItemProps) {
     >
       <div className="flex items-baseline justify-between gap-3">
         <span className="tnum font-mono text-2xl font-semibold text-zinc-50">
-          {satsToBtc(event.valueSats)}
-          <span className="ml-1 text-sm font-normal text-zinc-500">BTC</span>
+          {formatCoins(event.valueSats)}
         </span>
         <span className="shrink-0 text-xs text-zinc-500">{timeAgo(event.detectedAt)}</span>
       </div>

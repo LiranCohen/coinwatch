@@ -1,5 +1,7 @@
 import type { EventDetail, EventSummary, Hack } from '@chainwatch/shared';
 
+import { formatCoins } from './format';
+
 /**
  * Coldcard supply-chain breach (mock dataset, Aug 2026): funds drained from
  * many compromised hardware wallets, peeled through two staging addresses,
@@ -27,13 +29,13 @@ const PEEL_1 = 'bc1qa9dk2vt57mwx4eq8rn0zpc3jf6hu1sy5b8g2l7';
 const PEEL_2 = 'bc1qh4sn8mz61wtp3vq7re2kcf9dj0ua5xy8b3g6l2';
 
 const BTC = 1e8;
-const TOTAL = VICTIMS.reduce((s, [, v]) => s + v, 0); // 24.13 BTC
+const TOTAL = VICTIMS.reduce((s, [, v]) => s + v, 0);
 
 export const COLDCARD_HACK: Hack = {
   id: COLDCARD_HACK_ID,
   title: 'Coldcard supply-chain breach',
   summary:
-    `${TOTAL.toFixed(2)} BTC drained from ${VICTIMS.length} compromised Coldcard wallets within a two-hour window, ` +
+    `${formatCoins(Math.round(TOTAL * BTC))} drained from ${VICTIMS.length} compromised Coldcard wallets within a two-hour window, ` +
     'staged through two fresh addresses, then consolidated into a single collection address. ' +
     'Victim devices shared a tampered firmware batch; the sweep keys were exfiltrated at setup.',
   detectedAt: '2026-08-06T21:12:00.000Z',

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import type { Label } from '@chainwatch/shared';
 
-import { satsToBtc, truncateMiddle } from '../lib/format';
+import { formatCoins, truncateMiddle } from '../lib/format';
 import type { LinkGuess } from '../lib/demoFlow';
 
 interface IoEntry {
@@ -194,8 +194,7 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
           </text>
         )}
         <text x={x + 10} y={geom.y + 36} className="tnum fill-zinc-200 font-mono text-[12px]">
-          {satsToBtc(io.valueSats)}
-          <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
+          {formatCoins(io.valueSats)}
         </text>
         {labeled && (
           <text x={x + 10} y={geom.y + geom.h - 5} className="fill-sky-300 text-[9px]">
@@ -229,20 +228,20 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
     const label = (() => {
       if (trace.kind === 'in') {
         if (side === 'in' && trace.index === index) {
-          return `${satsToBtc(io.valueSats)} BTC traced`;
+          return `${formatCoins(io.valueSats)} traced`;
         }
         if (side === 'out' && sharesValid) {
           const s = inputShare(trace.index, io.valueSats);
-          return `≈ ${satsToBtc(s)} BTC · ${fmtShare(s / Math.max(io.valueSats, 1))} of this output`;
+          return `≈ ${formatCoins(s)} · ${fmtShare(s / Math.max(io.valueSats, 1))} of this output`;
         }
       }
       if (trace.kind === 'out') {
         if (side === 'out' && trace.index === index) {
-          return `${satsToBtc(io.valueSats)} BTC · ${fmtShare(share)} of total`;
+          return `${formatCoins(io.valueSats)} · ${fmtShare(share)} of total`;
         }
         if (side === 'in' && sharesValid) {
           const s = inputShare(index, outputs[trace.index].valueSats);
-          return `≈ ${satsToBtc(s)} BTC`;
+          return `≈ ${formatCoins(s)}`;
         }
       }
       return null;
@@ -412,7 +411,7 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
             textAnchor="middle"
             className="tnum fill-zinc-100 font-mono text-[13px] font-semibold"
           >
-            {satsToBtc(totalOut)} BTC
+            {formatCoins(totalOut)}
           </text>
           <text
             x={COL_TX_X + COL_W / 2}
