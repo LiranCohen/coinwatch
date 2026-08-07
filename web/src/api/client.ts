@@ -3,6 +3,7 @@ import type {
   AddressCluster,
   BlockDetail,
   BlockTxsResponse,
+  ChainStats,
   SearchResolution,
   TxDetail,
   CoinjoinAnalysis,
@@ -248,6 +249,11 @@ export async function getServerMeta(): Promise<ServerMeta> {
 // ---------------------------------------------------------------------------
 // Chain
 // ---------------------------------------------------------------------------
+
+/** Chain-wide figures for the dashboard strip. */
+export async function getChainStats(): Promise<ChainStats> {
+  return request<ChainStats>('/api/chain-stats');
+}
 
 /** Ask the server what a search string refers to; 64-hex is ambiguous until checked. */
 export async function resolveSearch(query: string): Promise<SearchResolution> {

@@ -331,6 +331,21 @@ export interface CoinjoinAnalysis {
   time: string | null;
 }
 
+/** Chain-wide numbers for the dashboard. */
+export interface ChainStats {
+  tipHeight: number;
+  /** unconfirmed transactions waiting */
+  mempoolCount: number;
+  mempoolVsizeBytes: number;
+  /** sat/vB to get into roughly the next block */
+  fastestFee: number | null;
+  /** sat/vB for a ~6 block wait */
+  hourFee: number | null;
+  /** detections CoinWatch has indexed */
+  indexedEvents: number;
+  available: boolean;
+}
+
 /** What a search string turned out to refer to. */
 export interface SearchResolution {
   kind: 'address' | 'tx' | 'block' | 'unknown';

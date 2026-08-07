@@ -4,6 +4,7 @@ import {
   classifySearchInput,
   isTxid,
   type BlockDetail,
+  type ChainStats,
   type BlockTxsResponse,
   type Label,
   type Rule,
@@ -40,6 +41,47 @@ export interface ExplorerDeps {
 export function createExplorerRoutes(deps: ExplorerDeps): Hono {
   const warn = deps.warn ?? ((message: string) => console.warn(message));
   const app = new Hono();
+
+  app.get('/api/chain-stats', async (c) => {
+    try {
+      const [tipHeight, mempool, fees] = await Promise.all([
+        withTimeout(deps.esplora.tipHeight(), LOOKUP_TIMEOUT_MS),
+        withTimeout(deps.esplora.mempoolStats(), LOOKUP_TIMEOUT_MS),
+        withTimeout(deps.esplora.feeEstimates(), LOOKUP_TIMEOUT_MS).catch(
+          (): Record<string, number> => ({}),
+        ),
+      ]);
+      const indexed = deps.db.query('SELECT COUNT(*) AS total FROM events').get() as {
+        total: number;
+      };
+      const body: ChainStats = {
+        tipHeight,
+        mempoolCount: mempool.count,
+        mempoolVsizeBytes: mempool.vsizeBytes,
+        // Esplora keys estimates by confirmation target in blocks
+        fastestFee: fees['1'] ?? fees['2'] ?? null,
+        hourFee: fees['6'] ?? null,
+        indexedEvents: indexed.total,
+        available: true,
+      };
+      return c.json(body);
+    } catch (err) {
+      warn(`chain stats unavailable: ${errMessage(err)}`);
+      const indexed = deps.db.query('SELECT COUNT(*) AS total FROM events').get() as {
+        total: number;
+      };
+      const body: ChainStats = {
+        tipHeight: 0,
+        mempoolCount: 0,
+        mempoolVsizeBytes: 0,
+        fastestFee: null,
+        hourFee: null,
+        indexedEvents: indexed.total,
+        available: false,
+      };
+      return c.json(body);
+    }
+  });
 
   app.get('/api/search', async (c) => {
     const raw = c.req.query('q') ?? '';

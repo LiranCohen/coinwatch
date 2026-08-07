@@ -13,12 +13,15 @@ import {
 import { getEvent, getEventByTxid, getEvents, getServerMeta } from '../api/client';
 import { useEventStream } from '../api/sse';
 import { BlocksStrip } from '../components/BlocksStrip';
+import { ChainStatsBar } from '../components/ChainStatsBar';
 import { EventDetail } from '../components/EventDetail';
 import { FeedItem } from '../components/FeedItem';
 import { TrendingLabels } from '../components/TrendingLabels';
 import { useSession } from '../session';
 
 const FEED_CAP = 50;
+/** detections shown per page in the left column */
+const LIST_PAGE = 8;
 // 'hack' is a multi-transaction pattern the detector does not yet emit, so it
 // is not offered as a filter that would always come back empty
 const RULE_FILTERS: (Rule | 'all')[] = ['all', 'whale', 'dormant-wake', 'coinjoin'];
@@ -212,6 +215,7 @@ export function FeedPage() {
   const [detail, setDetail] = useState<EventDetailType | null>(null);
   const [ruleFilter, setRuleFilter] = useState<Rule | 'all'>('all');
   const [blockFilter, setBlockFilter] = useState<number | null>(null);
+  const [listPage, setListPage] = useState(0);
   const [nodeStale, setNodeStale] = useState(false);
   const [txidLookup, setTxidLookup] = useState<TxidLookup | null>(null);
   const [txidAttempt, setTxidAttempt] = useState(0);
@@ -415,9 +419,14 @@ export function FeedPage() {
     );
   }, [setSearchParams]);
 
-  const visible = (events ?? []).filter(
+  const matching = (events ?? []).filter(
     (event) => blockFilter === null || event.blockHeight === blockFilter,
   );
+  // The feed is unbounded by nature, so the column shows a page of it rather
+  // than growing without limit. Scrolling a thousand rows is not browsing.
+  const pageCount = Math.max(1, Math.ceil(matching.length / LIST_PAGE));
+  const page = Math.min(listPage, pageCount - 1);
+  const visible = matching.slice(page * LIST_PAGE, page * LIST_PAGE + LIST_PAGE);
 
   const hitListState: HitListState =
     events === null
@@ -428,6 +437,7 @@ export function FeedPage() {
 
   return (
     <div className="space-y-4">
+      <ChainStatsBar />
       <BlocksStrip selectedHeight={blockFilter} onSelectHeight={setBlockFilter} />
       {nodeStale && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
@@ -453,6 +463,7 @@ export function FeedPage() {
               onClick={() => {
                 setEvents(null);
                 setRuleFilter(rule);
+                setListPage(0);
               }}
               className={`rounded-full border px-3 py-1 text-xs font-medium ${
                 ruleFilter === rule
@@ -499,9 +510,40 @@ export function FeedPage() {
               </p>
             </div>
           ) : (
-            visible.map((event) => (
-              <FeedItem key={event.id} event={event} selected={event.id === selectedId} onSelect={select} />
-            ))
+            <>
+              {visible.map((event) => (
+                <FeedItem
+                  key={event.id}
+                  event={event}
+                  selected={event.id === selectedId}
+                  onSelect={select}
+                />
+              ))}
+              {pageCount > 1 && (
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={page === 0}
+                    onClick={() => setListPage(page - 1)}
+                    className="rounded border border-zinc-700 px-2 py-0.5 text-[11px] text-zinc-300 disabled:opacity-30 hover:border-zinc-500"
+                  >
+                    ‹ newer
+                  </button>
+                  <span className="tnum text-[11px] text-zinc-500">
+                    {page * LIST_PAGE + 1}–{Math.min((page + 1) * LIST_PAGE, matching.length)} of{' '}
+                    {matching.length}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={page >= pageCount - 1}
+                    onClick={() => setListPage(page + 1)}
+                    className="rounded border border-zinc-700 px-2 py-0.5 text-[11px] text-zinc-300 disabled:opacity-30 hover:border-zinc-500"
+                  >
+                    older ›
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
 

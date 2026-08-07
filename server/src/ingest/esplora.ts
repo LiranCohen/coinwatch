@@ -67,6 +67,12 @@ export interface EsploraOutspend {
   blockHeight: number | null;
 }
 
+export interface EsploraMempool {
+  count: number;
+  vsizeBytes: number;
+  totalFeeSats: number;
+}
+
 export interface EsploraAddress {
   address: string;
   /** Confirmed balance (funded minus spent), in sats. */
@@ -169,6 +175,12 @@ interface RawAddressStats {
   tx_count?: number;
   funded_txo_sum?: number;
   spent_txo_sum?: number;
+}
+
+interface RawMempool {
+  count?: number;
+  vsize?: number;
+  total_fee?: number;
 }
 
 interface RawOutspend {
@@ -427,6 +439,27 @@ export class EsploraClient {
       vin: typeof entry.vin === 'number' ? entry.vin : null,
       blockHeight: entry.status?.block_height ?? null,
     }));
+  }
+
+  /** Mempool size and fee pressure, for the dashboard. */
+  async mempoolStats(): Promise<EsploraMempool> {
+    const raw = (await this.get('/mempool', { parse: 'json', ttlMs: this.cacheTtlMs })) as
+      | RawMempool
+      | null;
+    if (raw === null) throw new EsploraError('esplora: mempool unavailable', 404);
+    return {
+      count: raw.count ?? 0,
+      vsizeBytes: raw.vsize ?? 0,
+      totalFeeSats: raw.total_fee ?? 0,
+    };
+  }
+
+  /** Confirmation-target fee estimates in sat/vB, keyed by target in blocks. */
+  async feeEstimates(): Promise<Record<string, number>> {
+    const raw = (await this.get('/fee-estimates', { parse: 'json', ttlMs: this.cacheTtlMs })) as
+      | Record<string, number>
+      | null;
+    return raw ?? {};
   }
 
   /** Address summary stats, or null if the host reports it unknown (404). */
