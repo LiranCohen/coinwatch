@@ -1,0 +1,1402 @@
+[
+  {
+    "address": "16RtSf2McLsAewZGy3DWDSLGqZMJS9BVeK",
+    "tag": "10xBitco.in",
+    "evidenceUrl": "https://www.walletexplorer.com/address/16RtSf2McLsAewZGy3DWDSLGqZMJS9BVeK"
+  },
+  {
+    "address": "1FWk3pn6r3dhzU7Xer1ALQQPGaZwG1LLcm",
+    "tag": "175btc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1LZcEKMCFfg9ARpgw3jG3yZxAV5kPt8mM9",
+    "tag": "175btc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1F1xcRt8H8Wa623KqmkEontwAAVqDSAWCV",
+    "tag": "1hash",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "15vgygQ7ZsWdvZpctmTZK4673QBHsos6Sh",
+    "tag": "1THash&58COIN",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "3Kd2qAXwEoGfgChtDxF12THb7PyiTYFeJJ",
+    "tag": "1THash&58COIN",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "15rQXUSBQRubShPpiJfDLxmwS8ze2RUm4z",
+    "tag": "21 inc.",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1CdJi2xRTXJF6CEJqNHYyQDNEcM3X7fUhD",
+    "tag": "21 inc.",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "145UHBQAmGRpdsXVKhdHtFndnJ8XN8fLjq",
+    "tag": "50btc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1JVQw1siukrxGFTZykXFDtcf6SExJVuTVE",
+    "tag": "50btc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12NzgD8f3t8CFgVhNXYmqv4XrMyUhyoVuQ",
+    "tag": "50BTC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12NzgD8f3t8CFgVhNXYmqv4XrMyUhyoVuQ"
+  },
+  {
+    "address": "198i5jrY1B4xGnQwbiDVuQzcq17thzaH1s",
+    "tag": "50BTC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/198i5jrY1B4xGnQwbiDVuQzcq17thzaH1s"
+  },
+  {
+    "address": "1PaGc2CUvmS8W3qxELxcehzyughnDVyVH5",
+    "tag": "50BTC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1PaGc2CUvmS8W3qxELxcehzyughnDVyVH5"
+  },
+  {
+    "address": "14DjTuAUh87cwRsbU1z6W8hZY6FnEkpfLS",
+    "tag": "58coin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "199EDJoCpqV672qESEkfFgEqNT1iR2gj3t",
+    "tag": "58coin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "18WsHUKZ3D6DPTjWcDGS99E1uL2xYaxDaW",
+    "tag": "777Coin.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/18WsHUKZ3D6DPTjWcDGS99E1uL2xYaxDaW"
+  },
+  {
+    "address": "1EdiJAgeX91JvVie2LbHgNXhP4pdMxAUdn",
+    "tag": "796.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1EdiJAgeX91JvVie2LbHgNXhP4pdMxAUdn"
+  },
+  {
+    "address": "1JLc3JxvpdL1g5zoX8sKLP4BkJQiwnJftU",
+    "tag": "7pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Hk9gD8xMo2XBUhE73y5zXEM8xqgffTB5f",
+    "tag": "8baochi",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1NGSrBs4BAazQRfD3PafjHB9jwJocoNy6i",
+    "tag": "999Dice.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1NGSrBs4BAazQRfD3PafjHB9jwJocoNy6i"
+  },
+  {
+    "address": "13DavHXHVQGUCNUP7eouc5kCZBhVDV2TDS",
+    "tag": "A-xbt",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1MFsp2txCPwMMBJjNNeKaduGGs8Wi1Ce7X",
+    "tag": "A-xbt",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12QVFmJH2b4455YUHkMpEnWLeRY3eJ4Jb5",
+    "tag": "AAO Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1ECiZTrN8TLcbcS8NRM8JJaRTvbYqvpRVQ",
+    "tag": "AbraxasMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1ECiZTrN8TLcbcS8NRM8JJaRTvbYqvpRVQ"
+  },
+  {
+    "address": "1CmBsU9zR3HYsv6hMEqMpjZ7yYF8H6DznY",
+    "tag": "ActionCrypto.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1CmBsU9zR3HYsv6hMEqMpjZ7yYF8H6DznY"
+  },
+  {
+    "address": "12X7NuzuSNQpQwmcXkQwUKp9oXx51Ea2FB",
+    "tag": "AdmiralCoin.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12X7NuzuSNQpQwmcXkQwUKp9oXx51Ea2FB"
+  },
+  {
+    "address": "15eqQ718wxdZubN6dBhJFLZwPaMaffrB5N",
+    "tag": "AgoraMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/15eqQ718wxdZubN6dBhJFLZwPaMaffrB5N"
+  },
+  {
+    "address": "166J5Rppb6v36LunHFTaKycFsZfNMhsNBa",
+    "tag": "AllCoin.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/166J5Rppb6v36LunHFTaKycFsZfNMhsNBa"
+  },
+  {
+    "address": "1EMgTErvxqcKFi6gkMnmyvTRxWrgD2dnDk",
+    "tag": "AllCrypt.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1EMgTErvxqcKFi6gkMnmyvTRxWrgD2dnDk"
+  },
+  {
+    "address": "13xq4uaSh9RSXofnBudVBSfx1Fmo6YqS1W",
+    "tag": "AlphaBayMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13xq4uaSh9RSXofnBudVBSfx1Fmo6YqS1W"
+  },
+  {
+    "address": "1M6AsDG1XEKHkbDxkfBhFndKASNiVQGWnU",
+    "tag": "AlphaBayMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1M6AsDG1XEKHkbDxkfBhFndKASNiVQGWnU"
+  },
+  {
+    "address": "15tRxqGyKzmyzobfzSsxZfDmNyS8CZzBjr",
+    "tag": "AnoniBet.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/15tRxqGyKzmyzobfzSsxZfDmNyS8CZzBjr"
+  },
+  {
+    "address": "1B7ZBX2C39b26M9chHLURGSFTJA6DDQkZv",
+    "tag": "AntPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1FrHkVsW7csAYYaRbUUcrKSmv91hcQnsqQ",
+    "tag": "AntPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1GuMujABuc8kvzDTyVJFpcf4vszPUgsjiU",
+    "tag": "Antpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Mp3atombUR6iLLYoLEdN9uPfPscsKBXfi",
+    "tag": "Antpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1GuMujABuc8kvzDTyVJFpcf4vszPUgsjiU",
+    "tag": "AntPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1GuMujABuc8kvzDTyVJFpcf4vszPUgsjiU"
+  },
+  {
+    "address": "1JUD4U3DJtG9sVapWP3c1JPmm63nJsxrR8",
+    "tag": "AntPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1JUD4U3DJtG9sVapWP3c1JPmm63nJsxrR8"
+  },
+  {
+    "address": "1KM7w12SkjzJ1FYV2g1UCMzHjv3pkMgkEb",
+    "tag": "AntPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1KM7w12SkjzJ1FYV2g1UCMzHjv3pkMgkEb"
+  },
+  {
+    "address": "1QEiAhdHdMhBgVbDM7zUXWGkNhgEEJ6uLd",
+    "tag": "ArkPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1HtUGfbDcMzTeHWx2Dbgnhc6kYnj1Hp24i",
+    "tag": "Asicminer",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1NyZo89LWsnAfbWoZ3kymebcKpdWXUsWGB",
+    "tag": "ASICMiner",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1NyZo89LWsnAfbWoZ3kymebcKpdWXUsWGB"
+  },
+  {
+    "address": "1PcYJ8zoFbTikkEUDQ2ipTwVk7ALCHYbRe",
+    "tag": "Asicminer",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "3Nz8KABPqaHWYRfmrizpk8KKJJtNANMNtP",
+    "tag": "B2pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1NVwBHFavtnpETyRAJohXJkfZED2sXzgoG",
+    "tag": "BabylonMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1NVwBHFavtnpETyRAJohXJkfZED2sXzgoG"
+  },
+  {
+    "address": "1A5uojZdwuf5TUApwzcFQ2XvnSKb91hHJv",
+    "tag": "Banx.io",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1A5uojZdwuf5TUApwzcFQ2XvnSKb91hHJv"
+  },
+  {
+    "address": "1H4Bdvtc6ri4iRfjRJoeST7or3vDqY3Tnq",
+    "tag": "Banx.io",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1H4Bdvtc6ri4iRfjRJoeST7or3vDqY3Tnq"
+  },
+  {
+    "address": "1LRGtCGbJQNqmCBs3mmCdWdTCcEZBjDVf4",
+    "tag": "Banx.io",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1LRGtCGbJQNqmCBs3mmCdWdTCcEZBjDVf4"
+  },
+  {
+    "address": "167ApWWxUSFQmz2jdz9xop3oAKdLejvMML",
+    "tag": "Batpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Hd9vGm43s7oL96fJXnJnzDfvSccQESk3a",
+    "tag": "Batpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1E18BNyobcoiejcDYAz5SjbrzifNDEpM88",
+    "tag": "Bcmonster",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "19RZPWsNmVM2cVVDMtkzo2UtkFBFc6nFE8",
+    "tag": "Bcpool.io",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1PsQV5i36pUX12ucLViQmrfwyDQwyxym3W",
+    "tag": "Bcpool.io",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "19tXb4GqTdfeoeXFJXEyKZPVEmL5ZGn2ZF",
+    "tag": "Betcoin.ag",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19tXb4GqTdfeoeXFJXEyKZPVEmL5ZGn2ZF"
+  },
+  {
+    "address": "1A9FVK5ZyXeo2LbweazbpYsd62a2CrvPHX",
+    "tag": "Betcoin.ag",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1A9FVK5ZyXeo2LbweazbpYsd62a2CrvPHX"
+  },
+  {
+    "address": "16kcGmLcJGPGY7FXkRF2VGU9Ei58WzAjqn",
+    "tag": "Betcoin.tm",
+    "evidenceUrl": "https://www.walletexplorer.com/address/16kcGmLcJGPGY7FXkRF2VGU9Ei58WzAjqn"
+  },
+  {
+    "address": "1Bet56kWEpCq8ugG9tqAkLNXqaAQ4eUALp",
+    "tag": "BetcoinDice.tm",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Bet56kWEpCq8ugG9tqAkLNXqaAQ4eUALp"
+  },
+  {
+    "address": "14CL3a7xwcFr9ed34v95p9J8w9dcrC6E5U",
+    "tag": "Betcoins.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14CL3a7xwcFr9ed34v95p9J8w9dcrC6E5U"
+  },
+  {
+    "address": "1A2F5TxEGRmJW9WXSi7fKQWPrguQPdWgBX",
+    "tag": "BetMoose.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1A2F5TxEGRmJW9WXSi7fKQWPrguQPdWgBX"
+  },
+  {
+    "address": "1H3pTUTVKRxpDKezfubjAJoxSGqCfgB9W4",
+    "tag": "BetsOfBitco.in",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1H3pTUTVKRxpDKezfubjAJoxSGqCfgB9W4"
+  },
+  {
+    "address": "1JvXhnHCi6XqcanvrZJ5s2Qiv4tsmm2UMy",
+    "tag": "Binance Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "bc1qx9t2l3pyny2spqpqlye8svce70nppwtaxwdrp4",
+    "tag": "Binance Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+    "tag": "binance reserve wallets BTC",
+    "evidenceUrl": "https://www.binance.com/en/blog/community/our-commitment-to-transparency-2895840147147652626"
+  },
+  {
+    "address": "3LYJfcfHPXYJreMsASk2jkn69LWEYKzexb",
+    "tag": "binance reserve wallets BTC",
+    "evidenceUrl": "https://www.binance.com/en/blog/community/our-commitment-to-transparency-2895840147147652626"
+  },
+  {
+    "address": "3M219KR5vEneNb47ewrPfWyb5jQ2DjxRP6",
+    "tag": "binance reserve wallets BTC",
+    "evidenceUrl": "https://www.binance.com/en/blog/community/our-commitment-to-transparency-2895840147147652626"
+  },
+  {
+    "address": "bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h",
+    "tag": "binance reserve wallets BTC",
+    "evidenceUrl": "https://www.binance.com/en/blog/community/our-commitment-to-transparency-2895840147147652626"
+  },
+  {
+    "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+    "tag": "Binance.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe"
+  },
+  {
+    "address": "bc1ql42rmpvvq488tkqxvg8wmaa7j3jsrkxgnm8cy6",
+    "tag": "Binance.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/bc1ql42rmpvvq488tkqxvg8wmaa7j3jsrkxgnm8cy6"
+  },
+  {
+    "address": "34UmEXBUdBb4PcSZt6s2uJRHcyEBS5FJfc",
+    "tag": "Bit-x.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/34UmEXBUdBb4PcSZt6s2uJRHcyEBS5FJfc"
+  },
+  {
+    "address": "1FqL6bbHgLLKgmKhoqBrmzRtCBHhw4Xgn9",
+    "tag": "BitAces.me",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1FqL6bbHgLLKgmKhoqBrmzRtCBHhw4Xgn9"
+  },
+  {
+    "address": "1Gkrccykb4yNkCM3nAs6q5CJKfq8bC8Kth",
+    "tag": "BitAces.me",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Gkrccykb4yNkCM3nAs6q5CJKfq8bC8Kth"
+  },
+  {
+    "address": "1HTejfsPZQGi3afCMEZTn2xdmoNzp13n3F",
+    "tag": "Bitalo",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "13ozh1W6FDf8vtFsaLxTJtZgKtWm2WYBZC",
+    "tag": "BitBargain.co.uk",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13ozh1W6FDf8vtFsaLxTJtZgKtWm2WYBZC"
+  },
+  {
+    "address": "14ubK5amkDXXHwXNKCxUfTxC8wsq12134r",
+    "tag": "BitBay.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14ubK5amkDXXHwXNKCxUfTxC8wsq12134r"
+  },
+  {
+    "address": "131BxXXEvuEBzwkVPv36EWsoHWzKuXr6Rn",
+    "tag": "Bitbond.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/131BxXXEvuEBzwkVPv36EWsoHWzKuXr6Rn"
+  },
+  {
+    "address": "1J5DbUnxn25s5s3ZcM3bzGSuMkgxHSoCCY",
+    "tag": "Bitcash.cz",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1J5DbUnxn25s5s3ZcM3bzGSuMkgxHSoCCY"
+  },
+  {
+    "address": "13Fes87EQbbGgCmpT3nGTeL2LSnWPcrZzb",
+    "tag": "BitClix.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13Fes87EQbbGgCmpT3nGTeL2LSnWPcrZzb"
+  },
+  {
+    "address": "155fzsEBHy9Ri2bMQ8uuuR3tv1YzcDywd4",
+    "tag": "Bitclub network",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12xQyJSnpYMsjH55ditWR3TWNEPYtDVJxT",
+    "tag": "Bitcoin affiliate network",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1BCESmGbSpDpEUbi6CLgc5DF27i6MRQMak",
+    "tag": "Bitcoin affiliate network",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1AZ6BkCo4zgTuuLpRStJH8iNsehXTMp456",
+    "tag": "Bitcoin india",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12AJNRZ6Ct3kgQHanT3pUigjNUHJNFAdiQ",
+    "tag": "Bitcoin-24.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12AJNRZ6Ct3kgQHanT3pUigjNUHJNFAdiQ"
+  },
+  {
+    "address": "12ha5LUjqq18MzCQDT3RyqjPMN9zjkB8SG",
+    "tag": "Bitcoin-24.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12ha5LUjqq18MzCQDT3RyqjPMN9zjkB8SG"
+  },
+  {
+    "address": "1Num28t7MtuKkES4nviZhtjwt8R6N17CBX",
+    "tag": "Bitcoin-Roulette.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Num28t7MtuKkES4nviZhtjwt8R6N17CBX"
+  },
+  {
+    "address": "1LhbiLp78MBdbB3emxTmGLWHXbg3xKrq7T",
+    "tag": "Bitcoin-ukraine",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "15ikPd3KBehPNRsGsuLfvtbNefCZ9aBwEa",
+    "tag": "Bitcoin.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1B3rBvdvFeB62gkx5TCsZArVinU3aGCZcd",
+    "tag": "Bitcoin.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1D5bvwaJqvG9S682YFE31TQRjZSnkhE8cy",
+    "tag": "Bitcoin.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1FjjzDjrvpc9vP3xnPmjJs2AUFnMQiKaCy",
+    "tag": "Bitcoin.de",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1FjjzDjrvpc9vP3xnPmjJs2AUFnMQiKaCy"
+  },
+  {
+    "address": "1MyQmLuSxsdBcCpZXEdBE1eTCdYQk4toK9",
+    "tag": "Bitcoin.de",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1MyQmLuSxsdBcCpZXEdBE1eTCdYQk4toK9"
+  },
+  {
+    "address": "3Hd4H9djrv9vyQ9S2T86oVK42Fv3NUs4cM",
+    "tag": "BitcoinFog",
+    "evidenceUrl": "https://www.walletexplorer.com/address/3Hd4H9djrv9vyQ9S2T86oVK42Fv3NUs4cM"
+  },
+  {
+    "address": "19WsmzLuZW25WtvGLmhzVjCcRDf4KAmjYz",
+    "tag": "Bitcoinica.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19WsmzLuZW25WtvGLmhzVjCcRDf4KAmjYz"
+  },
+  {
+    "address": "1M9SmrPPCvNEKf7guVLCWbYAmctoRTga4x",
+    "tag": "Bitcoinica.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1M9SmrPPCvNEKf7guVLCWbYAmctoRTga4x"
+  },
+  {
+    "address": "1ELgRHHUS5nzBCBLZXHwZCjTVko6g5jTTf",
+    "tag": "BitcoinPokerTables.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1ELgRHHUS5nzBCBLZXHwZCjTVko6g5jTTf"
+  },
+  {
+    "address": "14R2r9FkyDmyxGB9xUVwVLdgsX9YfdVamk",
+    "tag": "Bitcoinrussia",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "165GCEAx81wce33FWEnPCRhdjcXCrBJdKn",
+    "tag": "Bitcoinrussia",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1JPyXzZ2DipMTieYsf9GWLHa4X5rRBtXRD",
+    "tag": "BitcoinRussia",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1PhzzX4J2QKcBuUVFqefDmYMsxoBsKZ8PL",
+    "tag": "BitcoinRussia",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "13e5iVURsR9NnkTCxco9nC2jgN2n6mmaVZ",
+    "tag": "BitcoinVideoCasino.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13e5iVURsR9NnkTCxco9nC2jgN2n6mmaVZ"
+  },
+  {
+    "address": "1Lmnst93apNjzDijcgNq98U9VMxV8a4vDX",
+    "tag": "BitcoinVideoCasino.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Lmnst93apNjzDijcgNq98U9VMxV8a4vDX"
+  },
+  {
+    "address": "1NJ1zEBXavR6d8EjVJBcHjdL7N2NBB2kaS",
+    "tag": "BitcoinVideoCasino.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1NJ1zEBXavR6d8EjVJBcHjdL7N2NBB2kaS"
+  },
+  {
+    "address": "12HLwCH3haK8nA8J7hGtraxM3PgjXyt48a",
+    "tag": "BitcoinVietnam.com.vn",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12HLwCH3haK8nA8J7hGtraxM3PgjXyt48a"
+  },
+  {
+    "address": "14xGktVgDJaDrSSJnF15d2kwXpwyeG3J2D",
+    "tag": "BitcoinWallet.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14xGktVgDJaDrSSJnF15d2kwXpwyeG3J2D"
+  },
+  {
+    "address": "1KePeYZbB3G96y7N3xwdviq4Xk5QUB1vrW",
+    "tag": "BitcoinWeBank.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1KePeYZbB3G96y7N3xwdviq4Xk5QUB1vrW"
+  },
+  {
+    "address": "18SvPRMG3o6DWAcQPgvDZRr3VSnACR5pfZ",
+    "tag": "Bitcurex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/18SvPRMG3o6DWAcQPgvDZRr3VSnACR5pfZ"
+  },
+  {
+    "address": "1CBG46uY2KrYodgbMh7Xpna4bGHu2BNnMK",
+    "tag": "BitElfin.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1CBG46uY2KrYodgbMh7Xpna4bGHu2BNnMK"
+  },
+  {
+    "address": "3GvEGtnvgeBJ3p3EpdZhvUkxY4pDARkbjd",
+    "tag": "Bitfarms",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "3JZq4atUahhuA9rLhXLMhhTo133J9rF97j",
+    "tag": "bitfinex BTC cold wallet",
+    "evidenceUrl": "https://github.com/bitfinexcom/pub/blob/main/wallets.txt"
+  },
+  {
+    "address": "bc1qgdjqv0av3q56jvd82tkdjpy7gdp9ut8tlqmgrpmv24sq90ecnvqqjwvw97",
+    "tag": "bitfinex BTC cold wallet",
+    "evidenceUrl": "https://github.com/bitfinexcom/pub/blob/main/wallets.txt"
+  },
+  {
+    "address": "1Kr6QSydW9bFQG1mXiPNNu6WpJGmUa9i1g",
+    "tag": "bitfinex BTC hot wallet",
+    "evidenceUrl": "https://github.com/bitfinexcom/pub/blob/main/wallets.txt"
+  },
+  {
+    "address": "1129A9dFqy4ABDsGQ8RGusbMWYBoZc4myc",
+    "tag": "Bitfinex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1129A9dFqy4ABDsGQ8RGusbMWYBoZc4myc"
+  },
+  {
+    "address": "16TTYQEwSM5krF5MkQx6d1ePaHk4DPeq7a",
+    "tag": "Bitfinex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/16TTYQEwSM5krF5MkQx6d1ePaHk4DPeq7a"
+  },
+  {
+    "address": "1HPM1sNGef6Hq3YYd2hYQkpnRhQkkaWGVK",
+    "tag": "Bitfinex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1HPM1sNGef6Hq3YYd2hYQkpnRhQkkaWGVK"
+  },
+  {
+    "address": "14yfxkcpHnju97pecpM7fjuTkVdtbkcfE6",
+    "tag": "Bitfury",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1AcAj9p6zJn4xLXdvmdiuPCtY7YkBPTAJo",
+    "tag": "Bitfury",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1q3rvasrQpJ1wP9kUpKozP2hM7wUbzvpn",
+    "tag": "Bitfury.org",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1q3rvasrQpJ1wP9kUpKozP2hM7wUbzvpn"
+  },
+  {
+    "address": "19xL684pZ2LjUQecg2sRgCuiapSCWutZXd",
+    "tag": "BitKonan.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19xL684pZ2LjUQecg2sRgCuiapSCWutZXd"
+  },
+  {
+    "address": "1DLKdw2MgL6biQnevCKVTU3otYJNyN8NN5",
+    "tag": "BitLaunder.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1DLKdw2MgL6biQnevCKVTU3otYJNyN8NN5"
+  },
+  {
+    "address": "171Mu3bBKQ9yBMjafJLEGEPKkNQAVeJj6R",
+    "tag": "BitMillions.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/171Mu3bBKQ9yBMjafJLEGEPKkNQAVeJj6R"
+  },
+  {
+    "address": "19PkHafEN18mquJ9ChwZt5YEFoCdPP5vYB",
+    "tag": "Bitminter",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1LQNQhwk5WSSQ3uFfzkywXitrVXn1myNC4",
+    "tag": "BitMinter.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1LQNQhwk5WSSQ3uFfzkywXitrVXn1myNC4"
+  },
+  {
+    "address": "1MBrBQWfQeD9w15JVCdkw1egCGVYmQ1Mi5",
+    "tag": "Bitmit.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1MBrBQWfQeD9w15JVCdkw1egCGVYmQ1Mi5"
+  },
+  {
+    "address": "19zWBh7iS8aaB2mkTLMkw2hz1fMQoHsYqW",
+    "tag": "BitNZ.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19zWBh7iS8aaB2mkTLMkw2hz1fMQoHsYqW"
+  },
+  {
+    "address": "18x18ZoDXLTEtWrM8m258wze3Ne3ktQzTZ",
+    "tag": "BitoEX.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/18x18ZoDXLTEtWrM8m258wze3Ne3ktQzTZ"
+  },
+  {
+    "address": "1HVnhAshA2HT5fpsfUtarZM2qkBKD6aUmM",
+    "tag": "BIToomBa.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1HVnhAshA2HT5fpsfUtarZM2qkBKD6aUmM"
+  },
+  {
+    "address": "1NkTMQhYs84PjrsTvE4ckFjw73NCjpsHTj",
+    "tag": "Bitparking",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Cnc6HdErHyxmMXn8i8k9RWQDVCoM52BNv",
+    "tag": "BitPay.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Cnc6HdErHyxmMXn8i8k9RWQDVCoM52BNv"
+  },
+  {
+    "address": "1HfEsg8ywgGneUFd7h48jpK45aU7TbbfD2",
+    "tag": "BitPay.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1HfEsg8ywgGneUFd7h48jpK45aU7TbbfD2"
+  },
+  {
+    "address": "1LrEDfQr96WbaySJtqBXHbckgpaHPFs91e",
+    "tag": "BitPay.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1LrEDfQr96WbaySJtqBXHbckgpaHPFs91e"
+  },
+  {
+    "address": "1JRij36KPEyusBNdUtwZZSmgqMd7aRiXYZ",
+    "tag": "Bitso.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1JRij36KPEyusBNdUtwZZSmgqMd7aRiXYZ"
+  },
+  {
+    "address": "18zRehBcA2YkYvsC7dfQiFJNyjmWvXsvon",
+    "tag": "Bitsolo",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "19jQz2ajiCN1hmavUkCrxKWnZwCfhQgJ9e",
+    "tag": "Bitstamp.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19jQz2ajiCN1hmavUkCrxKWnZwCfhQgJ9e"
+  },
+  {
+    "address": "3Fh9p2W79ZHG54ettRJupkPTs23XcjrkT2",
+    "tag": "Bitstamp.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/3Fh9p2W79ZHG54ettRJupkPTs23XcjrkT2"
+  },
+  {
+    "address": "1Ltv6pjkGGBZZprYDqJ5AUieKuxBKPp2gx",
+    "tag": "BitStarz.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Ltv6pjkGGBZZprYDqJ5AUieKuxBKPp2gx"
+  },
+  {
+    "address": "1JoFwz68wWLPHmEBeiBHA9XkanVLcWALNt",
+    "tag": "Bittrex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1JoFwz68wWLPHmEBeiBHA9XkanVLcWALNt"
+  },
+  {
+    "address": "1AggqtjcbkBwvrRFn3Vb3j8itR9cHJziCW",
+    "tag": "BitVC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1AggqtjcbkBwvrRFn3Vb3j8itR9cHJziCW"
+  },
+  {
+    "address": "1KCL6vv1vm1sxb6UdkTXcQbXtgRdigeiyd",
+    "tag": "BitYes.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1KCL6vv1vm1sxb6UdkTXcQbXtgRdigeiyd"
+  },
+  {
+    "address": "1bonesrnVHLNMW8aXB7hVrTUcLDgS9aZv",
+    "tag": "BitZillions.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1bonesrnVHLNMW8aXB7hVrTUcLDgS9aZv"
+  },
+  {
+    "address": "1G1NwZrAiHiPdv1t2epwUNdFy9RzpbJzeQ",
+    "tag": "BitZino.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1G1NwZrAiHiPdv1t2epwUNdFy9RzpbJzeQ"
+  },
+  {
+    "address": "1AeTnARKQhdp8MMYk7LiRTnoJURwjgD7SN",
+    "tag": "BitZlato.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1AeTnARKQhdp8MMYk7LiRTnoJURwjgD7SN"
+  },
+  {
+    "address": "13hQVEstgo4iPQZv9C7VELnLWF7UWtF4Q3",
+    "tag": "Bixin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1KsFhYKLs8qb1GHqrPxHoywNQpet2CtP9t",
+    "tag": "Bixin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "15CcnXEmFSxF7ekkSJwGgxXj4PabA6tzdp",
+    "tag": "BlackBankMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/15CcnXEmFSxF7ekkSJwGgxXj4PabA6tzdp"
+  },
+  {
+    "address": "1Js5P9JVjTgPWfhf7xvWQB47jBZ4LbxBtj",
+    "tag": "Bleutrade.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Js5P9JVjTgPWfhf7xvWQB47jBZ4LbxBtj"
+  },
+  {
+    "address": "1BfnVVzcWpToA2uEcgt9n7LiTUGpC8DAt1",
+    "tag": "BlockTrades.us",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1BfnVVzcWpToA2uEcgt9n7LiTUGpC8DAt1"
+  },
+  {
+    "address": "18asyPgcKVqDUEpvcFtGUu6bYq7sGpRM95",
+    "tag": "BlueSkyMarketplace",
+    "evidenceUrl": "https://www.walletexplorer.com/address/18asyPgcKVqDUEpvcFtGUu6bYq7sGpRM95"
+  },
+  {
+    "address": "14KxdJ7DfAPsxCYkpcDTcKotjeProcfRPo",
+    "tag": "Bravo mining",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1McGKcYG228cfuTECQ3J7qfn4VU7a2Xxp4",
+    "tag": "Brawker.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1McGKcYG228cfuTECQ3J7qfn4VU7a2Xxp4"
+  },
+  {
+    "address": "1BwZeHJo7b7M2op7VDfYnsmcpXsUYEcVHm",
+    "tag": "Btc nuggets",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1PmRrdp1YSkp1LxPyCfcmBHDEipG5X4eJB",
+    "tag": "Btc pool party",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "13hejvFY71WzJN3yAwcTDZpvAA35a6DruE",
+    "tag": "BTC-e.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13hejvFY71WzJN3yAwcTDZpvAA35a6DruE"
+  },
+  {
+    "address": "1Csp5E15vii9HvPhLy3gkgWYXShXB8aQCw",
+    "tag": "Btc.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "38WJFZccL9YDMoppsMw2m7TC6Pjxr8x7JD",
+    "tag": "BTC.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "3GUVS1N3yNQmjGUsxcnSacpEZQn9xgwSLq",
+    "tag": "BTC.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "3NA8hsjfdgVkmmVS9moHmkZsVCoLxUkvvv",
+    "tag": "Btc.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Hz96kJKF2HLPGY15JWLB5m9qGNxvt8tHJ",
+    "tag": "Btc.top",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Nf7CzkenrwEhsYFAjZCJ5TP1nzy9tT93R",
+    "tag": "Btc.top",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "13xcqLTZYxaxYb1q4cnaKcYrTTGnpFiZ3e",
+    "tag": "Btc38.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/13xcqLTZYxaxYb1q4cnaKcYrTTGnpFiZ3e"
+  },
+  {
+    "address": "152f1muMCNa7goXYhYAQC61hxEgGacmncB",
+    "tag": "Btcc pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1MG3LEnxt4qBewi3BCy5Q6M2jCqgiDdtTC",
+    "tag": "Btcc pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "153XRu5aS1JmnxnGfboVmZj46k9pfXDMSF",
+    "tag": "BTCC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/153XRu5aS1JmnxnGfboVmZj46k9pfXDMSF"
+  },
+  {
+    "address": "175bAuvzF6iE5YN1B9AB2LZZoiqEgTjnhN",
+    "tag": "BTCC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/175bAuvzF6iE5YN1B9AB2LZZoiqEgTjnhN"
+  },
+  {
+    "address": "19RvvJxhLz9BNNQPgVgGQ6XhL9VCGoHthg",
+    "tag": "BTCC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19RvvJxhLz9BNNQPgVgGQ6XhL9VCGoHthg"
+  },
+  {
+    "address": "1AvJbFTUMipcdp6DY4uJQTdpwzWdmSyRB8",
+    "tag": "BTCCPool",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1AvJbFTUMipcdp6DY4uJQTdpwzWdmSyRB8"
+  },
+  {
+    "address": "1BTCDicei8W5eHzLzv1eqzfSGhhinNqkzd",
+    "tag": "BtcDice.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1BTCDicei8W5eHzLzv1eqzfSGhhinNqkzd"
+  },
+  {
+    "address": "15MxzsutVroEE9XiDckLxUHTCDAEZgPZJi",
+    "tag": "Btcdig",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Dmc1cdaeE6adH8FKVPNreEqTwMqCidNas",
+    "tag": "BtcExchange.ro",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Dmc1cdaeE6adH8FKVPNreEqTwMqCidNas"
+  },
+  {
+    "address": "16xYc2eGsUEeAaYcJ6w9vWDo87tEQdiXFL",
+    "tag": "Btcguild.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1KUCp7YP5FP8ViRxhfszSUJCTAajK6viGy",
+    "tag": "Btcguild.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1PsbZbPCFuLSuqfyftGhTUbuxybYhCTpEP",
+    "tag": "BTCGuild.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1PsbZbPCFuLSuqfyftGhTUbuxybYhCTpEP"
+  },
+  {
+    "address": "1FBdATuiou5nC13tGBAXfSQNMJ1NE92Tb6",
+    "tag": "BTCJam.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1FBdATuiou5nC13tGBAXfSQNMJ1NE92Tb6"
+  },
+  {
+    "address": "1J2n69nCj3c1sFjKxxW1w7ytkNwXW6ym2w",
+    "tag": "BTCLend.org",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1J2n69nCj3c1sFjKxxW1w7ytkNwXW6ym2w"
+  },
+  {
+    "address": "15cNN9rkvbNjKTKppYuCHwJDEXMeghUrC4",
+    "tag": "BtcMarkets.net",
+    "evidenceUrl": "https://www.walletexplorer.com/address/15cNN9rkvbNjKTKppYuCHwJDEXMeghUrC4"
+  },
+  {
+    "address": "1KBnd5634jwmiyR6hBY9965g3NF7u6uCT9",
+    "tag": "Btcmp",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1jKSjMLnDNup6NPgCjveeP9tUn4YpT94Y",
+    "tag": "Btcmp",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1HRZDfV5wryukGtu9UBRP99kz2UURYLZju",
+    "tag": "BTCOracle.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1HRZDfV5wryukGtu9UBRP99kz2UURYLZju"
+  },
+  {
+    "address": "1J4UEn8dauHCpaU8zfuAqkZJ7U1556gmEf",
+    "tag": "Btcpoolman",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "135J3XAVdDvCadgidoZsGx6tWpemQkVAA8",
+    "tag": "BTCPop.co",
+    "evidenceUrl": "https://www.walletexplorer.com/address/135J3XAVdDvCadgidoZsGx6tWpemQkVAA8"
+  },
+  {
+    "address": "1HauZrib4ZsacSYvsj5QbeMV5PCbZNX5Qi",
+    "tag": "Btcserv",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1HDG83XDDDb5D8koLD5y8M8vx3UfnraLY8",
+    "tag": "Btcst.com-pirateat40",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1HDG83XDDDb5D8koLD5y8M8vx3UfnraLY8"
+  },
+  {
+    "address": "1L59UBU5Ve7N2bGdxoMNxcXnz8pkyXk6sK",
+    "tag": "BTCt.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1L59UBU5Ve7N2bGdxoMNxcXnz8pkyXk6sK"
+  },
+  {
+    "address": "1CtV38vefpRDJXo6GwpmYr73e9XsNs6LG4",
+    "tag": "BtcTrade.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1CtV38vefpRDJXo6GwpmYr73e9XsNs6LG4"
+  },
+  {
+    "address": "14Fg9xfaNi5pcLD8WJpQEKiEiCB4vwjYYd",
+    "tag": "Bter.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14Fg9xfaNi5pcLD8WJpQEKiEiCB4vwjYYd"
+  },
+  {
+    "address": "14Hs9wrbKRBzmHXwasKs9KFVzRfa4Zr3KC",
+    "tag": "Bter.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14Hs9wrbKRBzmHXwasKs9KFVzRfa4Zr3KC"
+  },
+  {
+    "address": "14ovrGnLzrf5EZdvTTrZRqVynJN5gQhDqS",
+    "tag": "Bter.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/14ovrGnLzrf5EZdvTTrZRqVynJN5gQhDqS"
+  },
+  {
+    "address": "19NuSmWEaCzvrFipZPWEQgZBKspbirsUmh",
+    "tag": "Btpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "19eC3KhGNKoAij7tTX41cvS3wL6K4w3kBC",
+    "tag": "Btpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12HzwqW7tH1Mf9SpiyyQwj8bJfXb2jVkDY",
+    "tag": "BTradeAustralia.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12HzwqW7tH1Mf9SpiyyQwj8bJfXb2jVkDY"
+  },
+  {
+    "address": "13RBRTMVPppaSMf2gu81grhdMSnv5RkyrP",
+    "tag": "Bw.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1JLRXD8rjRgQtTS9MvfQALfHgGWau9L9ky",
+    "tag": "Bw.com",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Q7JG9GEn5L6EL8URrbsUomz3czbJrZSiC",
+    "tag": "BW.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1Q7JG9GEn5L6EL8URrbsUomz3czbJrZSiC"
+  },
+  {
+    "address": "1DP9ESTJFbmkCPEpcJwAx4i1XMP3jk1W8Q",
+    "tag": "BX.in.th",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1DP9ESTJFbmkCPEpcJwAx4i1XMP3jk1W8Q"
+  },
+  {
+    "address": "1GrwDkr33gT6LuumniYjKEGjTLhsL5kmqC",
+    "tag": "Bybit reserve wallets",
+    "evidenceUrl": "https://www.bybithelp.com/bybitHC_Article?id=000001880"
+  },
+  {
+    "address": "bc1q2qqqt87kh33s0er58akh7v9cwjgd83z5smh9rp",
+    "tag": "Bybit reserve wallets",
+    "evidenceUrl": "https://blog.bybit.com/en-US/post/statement-from-ben-on-bybit-s-wallets-bltfb7a70c50462875b/"
+  },
+  {
+    "address": "bc1q9w4g79ndel72lygvwtqzem67z6uqv4yncvqjz3yn8my9swnwflxsutg4cx",
+    "tag": "Bybit reserve wallets",
+    "evidenceUrl": "https://blog.bybit.com/en-US/post/statement-from-ben-on-bybit-s-wallets-bltfb7a70c50462875b/"
+  },
+  {
+    "address": "bc1qjysjfd9t9aspttpjqzv68k0ydpe7pvyd5vlyn37868473lell5tqkz456m",
+    "tag": "Bybit reserve wallets",
+    "evidenceUrl": "https://blog.bybit.com/en-US/post/statement-from-ben-on-bybit-s-wallets-bltfb7a70c50462875b/"
+  },
+  {
+    "address": "12nWEXvsZ9UMnkun54TDR7xnQPnLibFe4o",
+    "tag": "Bylls.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12nWEXvsZ9UMnkun54TDR7xnQPnLibFe4o"
+  },
+  {
+    "address": "39m5Wvn9ZqyhYmCYpsyHuGMt5YYw4Vmh1Z",
+    "tag": "BytePool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "12sfMXwNtTkWTvk6aPWzxRKmnzgsPCwuLK",
+    "tag": "C-Cex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/12sfMXwNtTkWTvk6aPWzxRKmnzgsPCwuLK"
+  },
+  {
+    "address": "18xNZC5xNC4H9zfQui949r4CPPAexJPPDq",
+    "tag": "C-Cex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/18xNZC5xNC4H9zfQui949r4CPPAexJPPDq"
+  },
+  {
+    "address": "1GLTa4dVQzM4SfwXRsr5LCtYwR2ttKmxAV",
+    "tag": "CampBX.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1GLTa4dVQzM4SfwXRsr5LCtYwR2ttKmxAV"
+  },
+  {
+    "address": "1LWYWLoLDJp63D4wP6QPy9egad9y2xZCxU",
+    "tag": "CampBX.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1LWYWLoLDJp63D4wP6QPy9egad9y2xZCxU"
+  },
+  {
+    "address": "1KjRtR8Aoc8u7G2nVuM73pCtzYZP9kPHqs",
+    "tag": "CannabisRoadMarket",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1KjRtR8Aoc8u7G2nVuM73pCtzYZP9kPHqs"
+  },
+  {
+    "address": "147SwRQdpCfj5p8PnfsXV2SsVVpVcz3aPq",
+    "tag": "Canoe",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1Afcpc2FpPnREU6i52K3cicmHdvYRAH9Wo",
+    "tag": "Canoe",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1NN7YrRe9muJM4XZLpNd6vwsYRRkEaMqaE",
+    "tag": "Cavirtex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1NN7YrRe9muJM4XZLpNd6vwsYRRkEaMqaE"
+  },
+  {
+    "address": "19FConZdZrhKEat2hgjfpZDPouqXde8Eq5",
+    "tag": "Ccedk.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19FConZdZrhKEat2hgjfpZDPouqXde8Eq5"
+  },
+  {
+    "address": "1GwePtfuQKtV8YfUADi77RDVX5YKxNbFmp",
+    "tag": "Cex.io",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1GwePtfuQKtV8YfUADi77RDVX5YKxNbFmp"
+  },
+  {
+    "address": "1ChainN1SGSsWSpkEfBDCVaFPmTfGtB52j",
+    "tag": "Chainroll.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1ChainN1SGSsWSpkEfBDCVaFPmTfGtB52j"
+  },
+  {
+    "address": "1J17B4Vd4Ueehf6ESjrMFJtapoZbJ51gxB",
+    "tag": "Chainroll.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1J17B4Vd4Ueehf6ESjrMFJtapoZbJ51gxB"
+  },
+  {
+    "address": "16reEBPhkZdMyLSsQFanCFq5tU6EbaJ5aj",
+    "tag": "ChangeTip.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/16reEBPhkZdMyLSsQFanCFq5tU6EbaJ5aj"
+  },
+  {
+    "address": "19WAMAnJXfeZaZZiXyqLqLARJVZM9fuhbD",
+    "tag": "ChangeTip.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19WAMAnJXfeZaZZiXyqLqLARJVZM9fuhbD"
+  },
+  {
+    "address": "161gTqw3CHVqiBfmC3vCLrXPob6wLQSKP4",
+    "tag": "chatbot",
+    "evidenceUrl": "https://www.walletexplorer.com/address/161gTqw3CHVqiBfmC3vCLrXPob6wLQSKP4"
+  },
+  {
+    "address": "1M9uRdnapve2E2qkka737dwgZceQwKA5sh",
+    "tag": "ChBtc.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1M9uRdnapve2E2qkka737dwgZceQwKA5sh"
+  },
+  {
+    "address": "14m3sd9HCCFJW4LymahJCKMabAxTK4DAqW",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "3LhhDLBVWBZChNQv8Dn4nDKFnCyojG1FqN",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "3QsGsAXQ4rqRNvh5pEW55hf3F9PEyb7rVq",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "bc1q4c8n5t00jmj8temxdgcc3t32nkg2wjwz24lywv",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "bc1qpy4jwethqenp4r7hqls660wy8287vw0my32lmy",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "bc1qr4dl5wa7kl8yu792dceg9z5knl2gkn220lk7a9",
+    "tag": "crypto.com reserves wallets",
+    "evidenceUrl": "https://twitter.com/kris/status/1591036632664518657"
+  },
+  {
+    "address": "13JJ1nxDeX5fMsDeyGHiLoK8rF2ayGq1cX",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "1932eKraQ3Ad9MeNBHb14WFQbNrLaKeEpT",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "1MDq7zyLw6oKichbFiDDZ3aaK59byc6CT8",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "1MdrdcEzfiJdvs6eVSwUx6bWboPX8if5U3",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "35WHp4Hid61peyH4tuhNunwRj2gtNB41Lo",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "bc1qa3phj5uhnuauk6r62cku6r6fl9rawqx4n6d690",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "bc1qtq5zfllw9fs9w6stnfgalf9v59fgrcxxyawuvm",
+    "tag": "deribit reserves",
+    "evidenceUrl": "https://insights.deribit.com/exchange-updates/deribit-wallet-holdings/"
+  },
+  {
+    "address": "17K6RT4s3RidxRhq5gPwkLARs86wUQvk7C",
+    "tag": "F2Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1BabyMaoATf5vQBR3TBrSet3HCbKp637mC",
+    "tag": "F2Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1KFHE7w8BhaENAswwryaoccDb6qcT6DbYY",
+    "tag": "F2pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1LoveYoURwCeQu6dURqTQ7hrhYXDA4eJyn",
+    "tag": "F2pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "19dENFt4wVwos6xtgwStA6n8bbA57WCS58",
+    "tag": "Foundry USA",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1FFxkVijzvUPUeHgkFjBk2Qw8j3wQY2cDw",
+    "tag": "Foundry USA",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "3QTzR5VNRBJScnwdrXXRFNxnXgGUe3zZj5",
+    "tag": "HaoBTC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/3QTzR5VNRBJScnwdrXXRFNxnXgGUe3zZj5"
+  },
+  {
+    "address": "19W1qPcx2addfmSRsRem6rFVLpnvd41A1P",
+    "tag": "HitBtc.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19W1qPcx2addfmSRsRem6rFVLpnvd41A1P"
+  },
+  {
+    "address": "19n49Jd8qN5zoKCoQhNMBbTZ3KPa5q7peD",
+    "tag": "HitBtc.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/19n49Jd8qN5zoKCoQhNMBbTZ3KPa5q7peD"
+  },
+  {
+    "address": "18Zcyxqna6h7Z7bRjhKvGpr8HSfieQWXqj",
+    "tag": "Huobi",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1EepjXgvWUoRyNvuLSAxjiqZ1QqKGDANLW",
+    "tag": "Huobi",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1EVzaFkkNNXq6RJh2oywwJMn8JPiq8ikDi",
+    "tag": "Huobi mining pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "3HuobiNg2wHjdPU2mQczL9on8WF7hZmaGd",
+    "tag": "Huobi mining pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "12qTdZHx6f77aQ74CPCZGSY47VaRwYjVD8",
+    "tag": "huobi reserve wallets BTC",
+    "evidenceUrl": "https://www.huobi.com/support/en-us/detail/24922606430831"
+  },
+  {
+    "address": "143gLvWYUojXaWZRrxquRKpVNTkhmr415B",
+    "tag": "huobi reserve wallets BTC",
+    "evidenceUrl": "https://www.huobi.com/support/en-us/detail/24922606430831"
+  },
+  {
+    "address": "14XKsv8tT6tt8P8mfDQZgNF8wtN5erNu5D",
+    "tag": "huobi reserve wallets BTC",
+    "evidenceUrl": "https://www.huobi.com/support/en-us/detail/24922606430831"
+  },
+  {
+    "address": "1H3nwrL8acJDhejt2mW7ianBrQtTw9LTvn",
+    "tag": "Huobi.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1H3nwrL8acJDhejt2mW7ianBrQtTw9LTvn"
+  },
+  {
+    "address": "1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG",
+    "tag": "Huobi.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1vdXJDiDSzeUAoM7eAcWZPhM9wEKmH8dG"
+  },
+  {
+    "address": "196pUYs6kGpwii2KjV138SXrJ2hwKLaMVr",
+    "tag": "Kraken.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/196pUYs6kGpwii2KjV138SXrJ2hwKLaMVr"
+  },
+  {
+    "address": "3G3VG4X1WquWjqXT27JRwrRoyZgdyWf1dT",
+    "tag": "Kraken.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/3G3VG4X1WquWjqXT27JRwrRoyZgdyWf1dT"
+  },
+  {
+    "address": "38fJPq4dYGPoJizEUGCL9yWkqg73cJmC2n",
+    "tag": "kucoin reserve wallets",
+    "evidenceUrl": "https://www.kucoin.com/blog/transparency-and-trust-a-detailed-list-of-kucoin-s-wallets"
+  },
+  {
+    "address": "bc1q080rkmk3kj86pxvf5nkxecdrw6nrx3zzy9xl7q",
+    "tag": "kucoin reserve wallets",
+    "evidenceUrl": "https://www.kucoin.com/blog/transparency-and-trust-a-detailed-list-of-kucoin-s-wallets"
+  },
+  {
+    "address": "bc1q8yja3gw33ngd8aunmfr4hj820adc9nlsv0syvz",
+    "tag": "kucoin reserve wallets",
+    "evidenceUrl": "https://www.kucoin.com/blog/transparency-and-trust-a-detailed-list-of-kucoin-s-wallets"
+  },
+  {
+    "address": "bc1qgrxsrmrhsapvh9addyx6sh8j4rw0sn9xtur9uq",
+    "tag": "kucoin reserve wallets",
+    "evidenceUrl": "https://www.kucoin.com/blog/transparency-and-trust-a-detailed-list-of-kucoin-s-wallets"
+  },
+  {
+    "address": "1ArTPjj6pV3aNRhLPjJVPYoxB98VLBzUmb",
+    "tag": "KuCoinPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1JEbMUo2EbaSHqVaF8dhccXTsjSVr1R2x2",
+    "tag": "LakeBTC.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1JEbMUo2EbaSHqVaF8dhccXTsjSVr1R2x2"
+  },
+  {
+    "address": "19VBqLkbMywnX5QMUg7LsHgbzsLh9as4MS",
+    "tag": "MARA Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1A32KFEX7JNPmU1PVjrtiXRrTQcesT3Nf1",
+    "tag": "MARA Pool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "3DPNFXGoe8QGiEXEApQ3QtHb8wM15VCQU3",
+    "tag": "OKExPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "13jTtHxBPFwZkaCdm6BwJMMJkqvTpBZccw",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "13rCGm4Z3PDeYwo5a7GTT4jFYnRFBZbKr1",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "14kHu26yWkVD8qAnBfcFXHXxgquNoSpKum",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "15Exz1BAVan4Eweagy1rcPJnfyc6KJ4GvL",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "162z6mSSHzfTqb2Sn3NUk5r1Y2oGoCMCoM",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "16rF2zwSJ9goQ9fZfYoti5LsUqqegb5RnA",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "1AumBaQDRaCC3cKKQVRHeyvoSPWNdDzsKP",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "1DnHx95d2t5URq2SYvVk6kxGryvTEbTnTs",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "1FTgXfXZRxMQcKSNeuFvWYVPsNgurTJ7BZ",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "1FfgXrQUjX5nQ4zsiLBWjvFwW61jQHCqn",
+    "tag": "okx reserves wallets",
+    "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624"
+  },
+  {
+    "address": "17Jhdq75dX77ZdkVQrcozMXd54WGHAxrw",
+    "tag": "Poloniex.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/17Jhdq75dX77ZdkVQrcozMXd54WGHAxrw"
+  },
+  {
+    "address": "14vcvqZadz6jvpWGPi27baTaBFxyKE7irK",
+    "tag": "Poolin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "18neJ2M7z1VDTkUVdW7r9xLnJhSYFdDp6D",
+    "tag": "Poolin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "36n452uGq1x4mK7bfyZR8wgE47AnBb2pzi",
+    "tag": "Poolin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "3KJrsjfg1dD6CrsTeHdHVH3KqMpvL2XWQn",
+    "tag": "Poolin",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1AqTMY7kmHZxBuLUR5wJjPFUvqGs23sesr",
+    "tag": "Slushpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1B1ZSGbUXiu4GtgC6jQBzrTakhU2LDLqt3",
+    "tag": "SlushPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1CK6KHY6MHgYvmRQ4PAafKYDrg1ejbH1cE",
+    "tag": "Slushpool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "1EvsY2mFDUzzNFZkUskitAReZy18ehKPJy",
+    "tag": "SlushPool",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/"
+  },
+  {
+    "address": "1EWserziorhx2vweWKQ8vogHSaQyVkUh41",
+    "tag": "SlushPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1EWserziorhx2vweWKQ8vogHSaQyVkUh41"
+  },
+  {
+    "address": "1GXEB71GsmPWV622kW7HqNPqST41wZKoiA",
+    "tag": "SlushPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/1GXEB71GsmPWV622kW7HqNPqST41wZKoiA"
+  },
+  {
+    "address": "3Eppdmq9SrPjT5dCD7z2Guv2oPKLSYoMUM",
+    "tag": "SlushPool.com",
+    "evidenceUrl": "https://www.walletexplorer.com/address/3Eppdmq9SrPjT5dCD7z2Guv2oPKLSYoMUM"
+  },
+  {
+    "address": "15yrnonRCitfjsVxw3g6j95qRE4q6Mcyro",
+    "tag": "Viabtc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  },
+  {
+    "address": "18cBEMRxXHqzWWCxZNtU91F5sbUNKhL5PX",
+    "tag": "Viabtc",
+    "evidenceUrl": "https://github.com/MatteoRomiti/Deep_Dive_BTC_Mining_Pools/blob/master/dataset/miners.json"
+  }
+]
