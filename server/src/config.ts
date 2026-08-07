@@ -1,3 +1,7 @@
+import { join } from 'node:path';
+
+const serverRoot = join(import.meta.dir, '..');
+
 export interface Config {
   bitcoindRpcUrl: string;
   bitcoindRpcUser: string | null;
@@ -63,7 +67,7 @@ export function loadConfig(env: Env = process.env): Config {
     aiModel: strOrNull(env, 'AI_MODEL'),
     injectorEnabled: bool(env, 'INJECTOR_ENABLED', false),
     port: num(env, 'PORT', 3001),
-    seedFile: str(env, 'SEED_FILE', 'server/fixtures/seed-labels.json'),
-    dbFile: str(env, 'DB_FILE', 'server/data/chainwatch.sqlite'),
+    seedFile: str(env, 'SEED_FILE', join(serverRoot, 'fixtures/seed-labels.json')),
+    dbFile: str(env, 'DB_FILE', join(serverRoot, 'data/chainwatch.sqlite')),
   };
 }

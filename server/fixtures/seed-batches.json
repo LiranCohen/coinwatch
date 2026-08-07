@@ -1,0 +1,140 @@
+[
+  {
+    "id": "3d6f1c2a-9b0e-4f3d-9c2b-2f6a3c5f7a01",
+    "kind": "curated",
+    "title": "Binance.com hot wallet — 2018 cold-storage consolidations",
+    "description": "Large 2018 consolidations touching the seed-labeled Binance.com hot wallet 16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe, assembled at build time from mempool.space.",
+    "source": "seed",
+    "txs": [
+      {
+        "txid": "b0a67b6a06f146b6cbcd39c75742bf15799c50d010eef96b68d136fd48573cd6",
+        "blockHeight": 550156,
+        "blockHash": "000000000000000000206f23a85c7f0de127adfc7137a87580c6d180046a4e43",
+        "blockTime": "2018-11-15T06:47:07.000Z",
+        "valueSats": 10973560239500,
+        "linkReason": "sends 109,234.3313 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "0d8a2b3e0214741030179f3cc2ea929edc18612a964d696b900330cbfc7d6ae7",
+        "blockHeight": 546541,
+        "blockHash": "00000000000000000004bff03560bd029310e2bb9d77df1cca3c3ca6fd194851",
+        "blockTime": "2018-10-20T08:42:17.000Z",
+        "valueSats": 3892702006400,
+        "linkReason": "sends 38,888.0001 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "23cba99d138757cc135e05b348f84ee4fe1b266378cafae422edb55f89cced12",
+        "blockHeight": 546528,
+        "blockHash": "00000000000000000016d6f837db0bb189d56715f91e1e9c88ac34851e32dca5",
+        "blockTime": "2018-10-20T06:34:03.000Z",
+        "valueSats": 1071966624800,
+        "linkReason": "sends 8,888.0001 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "f50dbbbe1105306d031fa8af537fa01f5fbcd327832e3978dc68cd2c92184e20",
+        "blockHeight": 550923,
+        "blockHash": "0000000000000000001915676d8b40b5ce5e734b4c1fd267e9d680415073bcde",
+        "blockTime": "2018-11-21T06:21:48.000Z",
+        "valueSats": 999999954200,
+        "linkReason": "sends 8,888.0005 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "c70adf71eb16b52302de5c128c4ddfbc2e747ad8003123c42c6b0b1181a5eb8e",
+        "blockHeight": 550928,
+        "blockHash": "000000000000000000054058cb421254c58d7c12c4e18970a07ef41d0cbc170e",
+        "blockTime": "2018-11-21T07:39:59.000Z",
+        "valueSats": 772489740773,
+        "linkReason": "sends 7,724.9048 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "ee3ff1c68da37763bc6cfc6ae8295d7351d6dffd244a10a8d84df8978b5d737d",
+        "blockHeight": 550823,
+        "blockHash": "0000000000000000000823259cc43e1d275afa5f853cc8c0d29f74438c936a54",
+        "blockTime": "2018-11-20T11:00:05.000Z",
+        "valueSats": 199999987800,
+        "linkReason": "sends 801.0001 BTC from Binance.com hot wallet 16ftSEQ…"
+      },
+      {
+        "txid": "87d91f3d57b5e698016d7764a46283d31eafa1981118bff5a749b6ce94620192",
+        "blockHeight": 545922,
+        "blockHash": "0000000000000000000af28c868d7ddf7fb77079a7bc1f385c72fb99083a0594",
+        "blockTime": "2018-10-15T21:38:30.000Z",
+        "valueSats": 200000792812,
+        "linkReason": "receives 2,000 BTC to Binance.com hot wallet 16ftSEQ…"
+      }
+    ]
+  },
+  {
+    "id": "7a2e5b41-5c8d-4e6a-8d1f-4b9c0e2a6f53",
+    "kind": "curated",
+    "title": "OKX proof-of-reserves wallets — 2019 funding and recent sweeps",
+    "description": "Funding transactions that seeded the OKX proof-of-reserves wallets in 2019 plus recent full-balance sweeps, assembled at build time from mempool.space.",
+    "source": "seed",
+    "txs": [
+      {
+        "txid": "3ff964b637e2865adddf07381a0638facdf5da42eaa8ddaf32d1df1ca8a86287",
+        "blockHeight": 585046,
+        "blockHash": "000000000000000000190921afa3043ce1d574d3da94cdbb29cd06e7040ea96e",
+        "blockTime": "2019-07-12T08:20:54.000Z",
+        "valueSats": 300314395920,
+        "linkReason": "funds OKX reserve wallet 1AumBa… with 3,000 BTC"
+      },
+      {
+        "txid": "b65b07147b30a5a32d276eb42275034ed1df96e07eadf040729a094b20718b38",
+        "blockHeight": 593182,
+        "blockHash": "000000000000000000155ba72d7c42f0705cc532306d6260d69b3316eda5888e",
+        "blockTime": "2019-09-04T07:44:51.000Z",
+        "valueSats": 302027291425,
+        "linkReason": "funds OKX reserve wallet 13rCGm… with 3,000 BTC"
+      },
+      {
+        "txid": "ad032dc5c3b435e8536150d610e15c2602a41b10e7f892548b485cc6fd7c21dd",
+        "blockHeight": 593182,
+        "blockHash": "000000000000000000155ba72d7c42f0705cc532306d6260d69b3316eda5888e",
+        "blockTime": "2019-09-04T07:44:51.000Z",
+        "valueSats": 300966239208,
+        "linkReason": "funds OKX reserve wallet 15Exz1… with 3,000 BTC"
+      },
+      {
+        "txid": "f884c0311df2fc93a840466ff87ffe1754c7cc479ef7cd69b4a9050e0df063ea",
+        "blockHeight": 593183,
+        "blockHash": "0000000000000000000982e4c66588097cdeaecc9b64fb8f7160975e9334bcc7",
+        "blockTime": "2019-09-04T07:58:07.000Z",
+        "valueSats": 310649007717,
+        "linkReason": "funds OKX reserve wallet 13jTtH… with 3,000 BTC"
+      },
+      {
+        "txid": "bc5f7c7cf0a70f57545c6c80e3bc32c1d9f8537c66e9bedfb514e052cebe28a0",
+        "blockHeight": 593183,
+        "blockHash": "0000000000000000000982e4c66588097cdeaecc9b64fb8f7160975e9334bcc7",
+        "blockTime": "2019-09-04T07:58:07.000Z",
+        "valueSats": 324838855016,
+        "linkReason": "funds OKX reserve wallet 14kHu2… with 3,000 BTC"
+      },
+      {
+        "txid": "6bc87e5d5c5d45ad60be58f36d641d86f6091576a420be630f2315d83fdb09dd",
+        "blockHeight": 904578,
+        "blockHash": "000000000000000000004e28839186a6c04415d2cd80a288ff15396c495bbcb5",
+        "blockTime": "2025-07-08T09:29:29.000Z",
+        "valueSats": 299999996985,
+        "linkReason": "sweeps 3,000 BTC out of OKX reserve wallet 1AumBa…"
+      },
+      {
+        "txid": "620d7bd1f934cc90131f44b7008222b3f58ced735b531457976b90c71ebc52bb",
+        "blockHeight": 941685,
+        "blockHash": "00000000000000000000abbee8e2f25254f41e3561051849961ac5c633bc12db",
+        "blockTime": "2026-03-22T09:31:22.000Z",
+        "valueSats": 299999997000,
+        "linkReason": "sweeps 3,000 BTC out of OKX reserve wallet 162z6m…"
+      },
+      {
+        "txid": "07bfb68ad83ac6564bbdf837ec5ffcda3effa6240a33c4e1cf5e7df29bdc41d5",
+        "blockHeight": 954679,
+        "blockHash": "000000000000000000001f0ddc38c37b84089101290ea89e593e3e0defcffe23",
+        "blockTime": "2026-06-21T09:04:36.000Z",
+        "valueSats": 299999997000,
+        "linkReason": "sweeps 3,000 BTC out of OKX reserve wallet 13rCGm…"
+      }
+    ]
+  }
+]
