@@ -1,9 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
-import { validateBitcoinAddress, type AddressInfo, type Label } from '@chainwatch/shared';
+import {
+  validateBitcoinAddress,
+  type AddressChainTxsResponse,
+  type AddressInfo,
+  type Label,
+} from '@chainwatch/shared';
 
-import { ApiError, getAddress, postLabel, postVote } from '../api/client';
+import { ApiError, getAddress, getAddressTransactions, postLabel, postVote } from '../api/client';
 import { FeedItem } from '../components/FeedItem';
 import { LabelForm } from '../components/LabelForm';
 import { LabelList } from '../components/LabelList';
@@ -129,6 +134,103 @@ function ErrorCard({ title, children }: { title: string; children: React.ReactNo
         </Link>
       </p>
     </div>
+  );
+}
+
+function ChainActivity({ address }: { address: string }) {
+  const [state, setState] = useState<AddressChainTxsResponse | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setState(null);
+    setFailed(false);
+    getAddressTransactions(address)
+      .then((res) => {
+        if (!cancelled) setState(res);
+      })
+      .catch(() => {
+        if (!cancelled) setFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [address]);
+
+  return (
+    <section>
+      <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">ON-CHAIN ACTIVITY</h2>
+      <p className="mb-2 text-xs text-zinc-500">
+        Read from the chain, not from the detection index — this is what the address has done,
+        whether or not any of it tripped a rule.
+      </p>
+      {failed || state?.available === false ? (
+        <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
+          The chain source could not be reached, so recent activity is unavailable. This is not a
+          statement that the address is idle.
+        </p>
+      ) : state === null ? (
+        <div className="cw-pulse h-24 rounded-lg border border-zinc-800 bg-zinc-900/40" />
+      ) : state.transactions.length === 0 ? (
+        <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
+          No transactions on this address.
+        </p>
+      ) : (
+        <>
+          <div className="overflow-hidden rounded-lg border border-zinc-800">
+            {state.transactions.map((tx, i) => (
+              <div
+                key={tx.txid}
+                className={`flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2.5 text-xs ${
+                  i % 2 === 0 ? 'bg-zinc-900/60' : 'bg-zinc-900/30'
+                }`}
+              >
+                <span className="tnum w-20 shrink-0 text-zinc-500">
+                  {tx.confirmed ? timeAgo(tx.time ?? '') : 'in mempool'}
+                </span>
+                <span className="tnum font-mono text-zinc-300">{truncateMiddle(tx.txid, 10, 8)}</span>
+                <span className="text-[10px] text-zinc-600">
+                  {tx.inputCount} in → {tx.outputCount} out
+                </span>
+                {tx.entropy?.status === 'ok' && (
+                  <span
+                    className={`rounded border px-1.5 py-0.5 text-[10px] ${
+                      tx.entropy.entropy > 0
+                        ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300'
+                        : 'border-zinc-700 text-zinc-500'
+                    }`}
+                    title="Boltzmann entropy: bits of ambiguity about which input funded which output"
+                  >
+                    {tx.entropy.entropy.toFixed(2)} bits
+                  </span>
+                )}
+                <span
+                  className={`tnum ml-auto font-mono font-semibold ${
+                    tx.deltaSats < 0 ? 'text-red-300' : 'text-emerald-300'
+                  }`}
+                >
+                  {tx.deltaSats < 0 ? '−' : '+'}
+                  {satsToBtc(Math.abs(tx.deltaSats))} BTC
+                </span>
+                {tx.eventId && (
+                  <Link
+                    to={`/app?event=${tx.eventId}`}
+                    className="rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-sky-300 hover:bg-sky-500/20"
+                  >
+                    TRACKED
+                  </Link>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-xs text-zinc-500">
+            The {state.transactions.length} most recent transactions the chain source returns. Bits
+            shown are this transaction's entropy — 0 means its input-to-output mapping is fully
+            determined.
+          </p>
+        </>
+      )}
+    </section>
   );
 }
 
@@ -348,6 +450,8 @@ export function AddressPage() {
           </p>
         )}
       </section>
+
+      {!offNetwork && <ChainActivity address={current.address} />}
 
       <section>
         <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">LABELS</h2>

@@ -21,6 +21,7 @@ import { createEntityRoutes } from './api/entities';
 import { createCoinjoinRoutes } from './api/coinjoins';
 import { createBatchRoutes } from './api/batches';
 import { createBlockRoutes } from './api/blocks';
+import { createAddressTxRoutes } from './api/addressTxs';
 import { EsploraClient } from './ingest/esplora';
 import { selectChainSource } from './ingest/source';
 
@@ -118,6 +119,7 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
         sourceName: deps.sourceName ?? (() => 'esplora'),
       }),
     );
+    app.route('/', createAddressTxRoutes({ db, esplora: deps.esplora }));
   }
   app.route('/', hub.app);
   app.route(
@@ -139,8 +141,14 @@ async function main(): Promise<void> {
   const rpc = new BitcoinRpcClient(config);
   // public explorers rate-limit aggressively; pace requests rather than get 429'd
   const esplora = new EsploraClient({
-    endpoints: [config.mempoolApi, config.blockstreamApi],
+    endpoints: config.chainApis,
     minIntervalMs: 400,
+    // A dead endpoint must not eat the whole failover budget: a healthy Esplora
+    // answers well under a second, so a short per-request bound with no retry
+    // lets the chain reach a working mirror quickly. The client then prefers
+    // whichever endpoint last succeeded, so only the first call pays for it.
+    timeoutMs: 3000,
+    retries: 0,
   });
   const addressInfo = createEsploraAddressInfo(esplora);
   const emitter = new EventEmitter();

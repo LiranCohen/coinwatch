@@ -1,4 +1,5 @@
 import type {
+  AddressChainTxsResponse,
   AddressInfo,
   BlocksResponse,
   ChallengeResponse,
@@ -342,6 +343,21 @@ export async function postAiFeedback(
 // ---------------------------------------------------------------------------
 // Addresses, labels, votes
 // ---------------------------------------------------------------------------
+
+/**
+ * What the address has actually done on chain, as opposed to the subset of it
+ * CoinWatch has indexed. Never throws on an unreachable chain source: the
+ * response carries `available: false` so the page can say so.
+ */
+export async function getAddressTransactions(address: string): Promise<AddressChainTxsResponse> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return { address, transactions: [], available: false };
+  }
+  return request<AddressChainTxsResponse>(
+    `/api/addresses/${encodeURIComponent(address)}/transactions`,
+  );
+}
 
 export async function getAddress(address: string, token?: string | null): Promise<AddressInfo> {
   if (USE_FIXTURES) {

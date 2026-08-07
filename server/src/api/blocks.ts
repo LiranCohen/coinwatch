@@ -5,6 +5,12 @@ import { errMessage } from '../util';
 
 const MAX_BLOCKS = 12;
 const DEFAULT_BLOCKS = 6;
+/**
+ * The ticker is decoration: a wedged upstream must not hold the request open
+ * for the client's whole patience budget. Failing fast lets the UI say the
+ * chain head is unavailable instead of showing skeletons indefinitely.
+ */
+const BLOCKS_TIMEOUT_MS = 12_000;
 
 export interface BlockRoutesDeps {
   esplora: EsploraClient;
@@ -28,7 +34,7 @@ export function createBlockRoutes(deps: BlockRoutesDeps): Hono {
       ? Math.min(MAX_BLOCKS, Math.max(1, Math.trunc(requested)))
       : DEFAULT_BLOCKS;
     try {
-      const blocks = await deps.esplora.recentBlocks(limit);
+      const blocks = await withTimeout(deps.esplora.recentBlocks(limit), BLOCKS_TIMEOUT_MS);
       const body: BlocksResponse = {
         tipHeight: blocks[0]?.height ?? 0,
         source: deps.sourceName(),
@@ -53,4 +59,21 @@ export function createBlockRoutes(deps: BlockRoutesDeps): Hono {
   });
 
   return app;
+}
+
+/** Reject once the bound elapses; the upstream promise is left to settle unobserved. */
+function withTimeout<T>(work: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`timed out after ${ms}ms`)), ms);
+    work.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
 }

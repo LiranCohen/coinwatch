@@ -20,6 +20,12 @@ export interface Config {
   coinjoinMinDenominationBtc: number;
   mempoolApi: string;
   blockstreamApi: string;
+  /**
+   * Esplora-compatible endpoints tried in order. A single public provider going
+   * down or rate-limiting should not take chain data with it, so the default
+   * list spans independent operators.
+   */
+  chainApis: string[];
   aiBaseUrl: string | null;
   aiApiKey: string | null;
   aiModel: string | null;
@@ -59,6 +65,31 @@ function bool(env: Env, key: string, fallback: boolean): boolean {
   return v === 'true' || v === '1';
 }
 
+/** independently operated mempool.space and Esplora instances */
+const DEFAULT_CHAIN_APIS = [
+  'https://mempool.space/api',
+  'https://mempool.emzy.de/api',
+  'https://mempool.bitaroo.net/api',
+  'https://blockstream.info/api',
+];
+
+function chainApis(env: Env): string[] {
+  const raw = env.CHAIN_APIS;
+  if (raw === undefined || raw.trim() === '') {
+    // honour the single-endpoint overrides when set, then fill in the rest
+    const preferred = [env.MEMPOOL_API, env.BLOCKSTREAM_API].filter(
+      (url): url is string => url !== undefined && url.trim() !== '',
+    );
+    return [...new Set([...preferred, ...DEFAULT_CHAIN_APIS])];
+  }
+  const list = raw
+    .split(',')
+    .map((url) => url.trim())
+    .filter((url) => url !== '');
+  if (list.length === 0) throw new Error('config: CHAIN_APIS must list at least one endpoint');
+  return list;
+}
+
 function chainSource(env: Env): Config['chainSource'] {
   const value = str(env, 'CHAIN_SOURCE', 'auto');
   if (value !== 'auto' && value !== 'bitcoind' && value !== 'esplora') {
@@ -81,6 +112,7 @@ export function loadConfig(env: Env = process.env): Config {
     coinjoinMinDenominationBtc: num(env, 'COINJOIN_MIN_DENOMINATION_BTC', 0.001),
     mempoolApi: str(env, 'MEMPOOL_API', 'https://mempool.space/api'),
     blockstreamApi: str(env, 'BLOCKSTREAM_API', 'https://blockstream.info/api'),
+    chainApis: chainApis(env),
     aiBaseUrl: strOrNull(env, 'AI_BASE_URL'),
     aiApiKey: strOrNull(env, 'AI_API_KEY'),
     aiModel: strOrNull(env, 'AI_MODEL'),

@@ -174,6 +174,35 @@ export interface AddressInfo {
   history: AddressHistoryEntry[];
 }
 
+/**
+ * A transaction touching an address, read from the chain rather than from the
+ * detection index. This is what an address has actually done, as opposed to the
+ * subset of it that tripped a CoinWatch rule.
+ */
+export interface AddressChainTx {
+  txid: string;
+  /** ISO 8601 block time, null while unconfirmed */
+  time: string | null;
+  blockHeight: number | null;
+  confirmed: boolean;
+  /** signed from this address's perspective: negative = outflow */
+  deltaSats: number;
+  feeSats: number;
+  inputCount: number;
+  outputCount: number;
+  /** privacy analysis of this transaction, null when it could not be run */
+  entropy: TxEntropy | null;
+  /** the CoinWatch event for this transaction, when one exists */
+  eventId: string | null;
+}
+
+export interface AddressChainTxsResponse {
+  address: string;
+  transactions: AddressChainTx[];
+  /** false when the chain source could not be reached; the list is then empty */
+  available: boolean;
+}
+
 export interface LeaderboardEntry {
   did: string;
   handle: string | null;

@@ -62,7 +62,7 @@ const TRENDING_WINDOW_MS = 24 * 60 * 60 * 1000;
  * of the response is local SQLite, so a wedged explorer must not decide when
  * the page renders; a healthy one answers in well under a second.
  */
-const ADDRESS_STATS_TIMEOUT_MS = 3000;
+const ADDRESS_STATS_TIMEOUT_MS = 8000;
 
 type ApiEnv = {
   Variables: {
