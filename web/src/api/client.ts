@@ -51,6 +51,16 @@ async function request<T>(path: string, init?: RequestInit, token?: string | nul
   return (await res.json()) as T;
 }
 
+function withBlockFields<T extends EventSummary>(event: T): T {
+  return {
+    ...event,
+    blockHeight: event.blockHeight ?? null,
+    blockHash: event.blockHash ?? null,
+    blockTime: event.blockTime ?? null,
+    meta: event.meta ?? null,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Fixtures mode: mutable in-memory store so writes (labels, votes, auth) are
 // fully exercisable with zero network (R16).
@@ -62,12 +72,20 @@ interface MockSession {
 }
 
 const mock = {
-  events: structuredClone(eventsFixture.events) as EventSummary[],
+  events: (structuredClone(eventsFixture.events) as unknown as EventSummary[]).map(withBlockFields),
   details: new Map<string, EventDetail>([
-    ['evt_001', structuredClone(eventDetailFixture) as EventDetail],
+    ['evt_001', withBlockFields(structuredClone(eventDetailFixture) as unknown as EventDetail)],
   ]),
   addresses: new Map<string, AddressInfo>([
-    [addressFixture.address, structuredClone(addressFixture) as AddressInfo],
+    [
+      addressFixture.address,
+      {
+        ...(structuredClone(addressFixture) as unknown as AddressInfo),
+        recentEvents: (
+          structuredClone(addressFixture.recentEvents) as unknown as EventSummary[]
+        ).map(withBlockFields),
+      },
+    ],
   ]),
   labels: new Map<string, Label>(),
   sessions: new Map<string, MockSession>(),
@@ -515,6 +533,10 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       source: 'demo',
       aiStatus: 'pending',
       aiTag: null,
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       matchedLabels: [],
     };
     mock.events.unshift(summary);
