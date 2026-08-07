@@ -1,5 +1,7 @@
 import type { EventDetail } from '@chainwatch/shared';
 
+import { COLDCARD_HACK, COLDCARD_HACK_ID } from './coldcardHack';
+
 interface Io {
   address: string | null;
   valueSats: number;
@@ -33,6 +35,13 @@ function fakeAddress(rand: () => number): string {
  * matched rule; real (labeled) addresses from the event are kept in place.
  */
 export function enrichIo(event: EventDetail): { inputs: Io[]; outputs: Io[] } {
+  if (event.hackId === COLDCARD_HACK_ID) {
+    // render the consolidation sweep: every victim wallet into one address
+    return {
+      inputs: COLDCARD_HACK.hops[0].inputs,
+      outputs: COLDCARD_HACK.hops[COLDCARD_HACK.hops.length - 1].outputs,
+    };
+  }
   if (event.source !== 'demo' || event.inputs.length > 1 || event.outputs.length > 1) {
     return { inputs: event.inputs, outputs: event.outputs };
   }

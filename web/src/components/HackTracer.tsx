@@ -78,9 +78,13 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
   );
 
   const maxSide = sideOutputs.reduce((m, s) => Math.max(m, s.length), 0);
-  const cy = TOP_PAD;
+  // origin/terminal columns fan out ±26px per entry around cy; grow the canvas
+  // instead of clipping when a hack has many victim wallets
+  const maxEnds = Math.max(hops[0].inputs.length, hops[n - 1].outputs.length);
+  const cy = Math.max(TOP_PAD, 34 + (maxEnds - 1) * 26);
   const height = Math.max(
     cy + HOP_H / 2 + 40,
+    cy + (maxEnds - 1) * 26 + 40,
     cy + HOP_H / 2 + 24 + (maxSide > 0 ? maxSide * (SIDE_H + SIDE_GAP) + 20 : 0),
     TOP_PAD,
   );
