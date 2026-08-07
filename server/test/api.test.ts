@@ -225,7 +225,7 @@ describe('GET /api/events', () => {
       rules: ['coinjoin'],
       source: 'demo',
     });
-    addEvent(db, { detectedAt: '2026-08-06T00:00:03.000Z', rules: ['demo'], source: 'demo' });
+    addEvent(db, { detectedAt: '2026-08-06T00:00:03.000Z', rules: ['hack'], source: 'demo' });
     db.query("UPDATE events SET status = 'evicted' WHERE id = ?").run(e1.id);
 
     const byRule = (await (await app.request('/api/events?rule=coinjoin')).json()) as EventsListResponse;
@@ -313,7 +313,7 @@ describe('POST /api/events/:id/ai-feedback', () => {
 });
 
 describe('GET /api/addresses/:address', () => {
-  test('returns contract-shaped AddressInfo with stats, labels, recent events and externalUrl', async () => {
+  test('returns contract-shaped AddressInfo with stats, labels, recent events and history', async () => {
     const { db, app } = makeHarness();
     const event = addEvent(db);
     insertLabel(db, { address: ADDR_IN, tag: 'old-miner', source: 'seed' });
@@ -328,7 +328,14 @@ describe('GET /api/addresses/:address', () => {
     expectLabelShape(info.labels[0]);
     expect(info.recentEvents.map((e) => e.id)).toEqual([event.id]);
     expectEventSummaryShape(info.recentEvents[0]);
-    expect(info.externalUrl).toBe(`https://mempool.space/address/${ADDR_IN}`);
+    expect(info.history).toEqual([
+      {
+        txid: event.txid,
+        time: event.detected_at,
+        deltaSats: -1_600_000_000,
+        eventId: event.id,
+      },
+    ]);
   });
 
   test('null balance/txCount when lookups fail', async () => {
@@ -592,7 +599,7 @@ describe('dev injector', () => {
     expect(res.status).toBe(201);
     const detail = (await res.json()) as EventDetail;
     expect(detail.source).toBe('demo');
-    expect(detail.rules).toEqual(['coinjoin', 'demo']);
+    expect(detail.rules).toEqual(['coinjoin']);
     expect(detail.valueSats).toBe(42_000_000);
     expect(detail.aiStatus).toBe('pending');
     expect(detail.inputs[0].address).toBe(ADDR_IN);
@@ -630,7 +637,7 @@ describe('dev injector', () => {
     const received = await readSseUntil(streamRes.body!, [
       'event: event:new',
       '"source":"demo"',
-      '"rules":["whale","demo"]',
+      '"rules":["whale"]',
       'event: event:update',
       '"aiStatus":"done"',
       '"aiTag":"whale-move"',

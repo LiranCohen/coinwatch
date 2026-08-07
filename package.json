@@ -1,9 +1,14 @@
 {
-  "name": "chainwatch",
+  "name": "coinwatch",
   "private": true,
+  "type": "module",
   "workspaces": [
-    "server",
     "shared",
-    "web"
-  ]
+    "web",
+    "server"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=@chainwatch/web",
+    "build": "npm run build --workspace=@chainwatch/web"
+  }
 }

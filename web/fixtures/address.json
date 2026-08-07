@@ -1,0 +1,71 @@
+{
+  "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+  "balanceSats": 2485971234000,
+  "txCount": 141,
+  "labels": [
+    {
+      "id": "lbl_seed_binance",
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "Binance cold wallet",
+      "note": null,
+      "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+      "author": null,
+      "source": "seed",
+      "score": 142,
+      "myVote": 0,
+      "createdAt": "2026-08-06T20:00:00.000Z"
+    },
+    {
+      "id": "lbl_crowd_treasury",
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "exchange treasury",
+      "note": "Outflows of this size have historically been internal reshuffles.",
+      "evidenceUrl": null,
+      "author": { "did": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5In0", "handle": "satoshisghost" },
+      "source": "crowd",
+      "score": 6,
+      "myVote": 0,
+      "createdAt": "2026-08-06T21:47:19.000Z"
+    }
+  ],
+  "recentEvents": [
+    {
+      "id": "evt_001",
+      "txid": "a3f91c7e2b84d6059f1e3a72c58b4d9e6f07a2c41d83b5e90f16c2a47d91b83e",
+      "detectedAt": "2026-08-06T22:41:07.000Z",
+      "rules": ["whale"],
+      "valueSats": 4215000000,
+      "status": "active",
+      "source": "live",
+      "aiStatus": "done",
+      "aiTag": "whale-move",
+      "matchedLabels": []
+    }
+  ],
+  "history": [
+    {
+      "txid": "a3f91c7e2b84d6059f1e3a72c58b4d9e6f07a2c41d83b5e90f16c2a47d91b83e",
+      "time": "2026-08-06T22:41:07.000Z",
+      "deltaSats": -4215300000,
+      "eventId": "evt_001"
+    },
+    {
+      "txid": "d59b82f7c3e50a1846d9f2b73c08e5a4169f7d2b3a58e4c17091f2b63c08e5a7",
+      "time": "2026-08-06T22:29:44.000Z",
+      "deltaSats": -7499950000,
+      "eventId": "evt_004"
+    },
+    {
+      "txid": "6c2e91a4f7d83b05c1a6e9f24d75b8c3e09a1f62d48c7b5e93a06f1d2c48e7b5a",
+      "time": "2026-08-05T14:12:38.000Z",
+      "deltaSats": 12500000000,
+      "eventId": null
+    },
+    {
+      "txid": "1f8a4c7e2b95d0618f3e7a24c96b5d8e4f07a2c31d84b6e90f27c3a58e16b94d2",
+      "time": "2026-08-04T09:03:11.000Z",
+      "deltaSats": -85000000,
+      "eventId": null
+    }
+  ]
+}

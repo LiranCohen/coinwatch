@@ -1,0 +1,240 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  --font-serif: "Instrument Serif", Georgia, serif;
+
+  /* CoinWatch brand — gunmetal, machined brass, anodized blue */
+  --color-ink: #060709;
+  --color-panel: #0c0f13;
+  --color-panel2: #10141a;
+  --color-line: #21252e;
+  --color-gold: #f2b33d;
+  --color-goldbright: #ffd97a;
+  --color-signal: #4c8dff;
+  --color-up: #2fbf8f;
+  --color-down: #f0516c;
+  --color-mist: #969daa;
+  /* annotation lacquer — reserved for technical callouts, never data */
+  --color-lacquer: #e5484d;
+
+  /* machined-steel remap of the zinc scale — reskins the whole app shell */
+  --color-zinc-50: #f3f4f6;
+  --color-zinc-100: #e7e9ee;
+  --color-zinc-200: #d2d6de;
+  --color-zinc-300: #b2b8c4;
+  --color-zinc-400: #8c93a1;
+  --color-zinc-500: #646b79;
+  --color-zinc-600: #4a505c;
+  --color-zinc-700: #343945;
+  --color-zinc-800: #21252e;
+  --color-zinc-900: #13161c;
+  --color-zinc-950: #090b0f;
+
+  --animate-ticker: ticker 48s linear infinite;
+  --animate-floaty: floaty 7s ease-in-out infinite;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-zinc-950 text-zinc-100 antialiased;
+  background-image: repeating-linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.014) 0 1px,
+    transparent 1px 3px
+  );
+}
+
+::selection {
+  background: rgba(242, 179, 61, 0.3);
+}
+
+:focus-visible {
+  outline: 2px solid rgba(242, 179, 61, 0.6);
+  outline-offset: 2px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #343945 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #262b34;
+  border: 3px solid #090b0f;
+  border-radius: 8px;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes cw-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.cw-pulse {
+  animation: cw-pulse 1.6s ease-in-out infinite;
+}
+
+/* ---- industrial material system ---- */
+
+@layer components {
+  /* brushed metal — fine horizontal striations */
+  .tex-brushed {
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.02) 0 1px,
+      transparent 1px 4px
+    );
+  }
+
+  /* knurled grip — diamond crosshatch */
+  .tex-knurl {
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 6px),
+      repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 6px);
+  }
+
+  /* machined seam — top highlight, bottom shadow */
+  .seam {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.55);
+  }
+
+  /* standard instrument panel */
+  .panel-metal {
+    background-color: var(--color-panel);
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.016) 0 1px,
+      transparent 1px 4px
+    );
+    border: 1px solid var(--color-line);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .btn-brass {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #8a6414;
+    background-color: #e7ac37;
+    color: #171106;
+    font-weight: 600;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 240, 200, 0.5),
+      inset 0 -1px 0 rgba(61, 41, 5, 0.6),
+      0 2px 6px rgba(0, 0, 0, 0.45);
+    transition: background-color 0.2s ease, transform 0.1s ease;
+  }
+  .btn-brass:hover {
+    background-color: #f6c04a;
+  }
+  .btn-brass:active {
+    transform: translateY(1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 240, 200, 0.35),
+      inset 0 -1px 0 rgba(61, 41, 5, 0.6);
+  }
+
+  .btn-steel {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid var(--color-line);
+    background-color: #12161d;
+    background-image: repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.03) 0 1px,
+      transparent 1px 4px
+    );
+    color: var(--color-zinc-200);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-steel:hover {
+    border-color: rgba(242, 179, 61, 0.45);
+    color: var(--color-goldbright);
+  }
+
+  /* chamfered plate — 1px machined edge via nested clip-paths */
+  .chamfer {
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+  }
+  .chamfer-inner {
+    clip-path: polygon(13px 0, 100% 0, 100% calc(100% - 13px), calc(100% - 13px) 100%, 0 100%, 0 13px);
+  }
+}
+
+/* ---- landing motion primitives ---- */
+
+@keyframes ticker {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(-7px); }
+  50% { transform: translateY(7px); }
+}
+
+/* the watch-hand sweep: starts at 2 o'clock (60deg) — a rising trend line */
+@keyframes cw-sweep {
+  from { transform: rotate(60deg); }
+  to { transform: rotate(420deg); }
+}
+
+.cw-needle-sweep {
+  animation: cw-sweep 60s linear infinite;
+  transform-origin: 32px 32px;
+  transform-box: view-box;
+}
+
+.cw-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 0.6, 0.2, 1);
+}
+
+.cw-reveal-in {
+  opacity: 1;
+  transform: none;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cw-reveal { opacity: 1; transform: none; transition: none; }
+  .cw-needle-sweep { animation: none; transform: rotate(60deg); }
+  .animate-ticker, .animate-floaty { animation: none; }
+}

@@ -8,5 +8,7 @@
       "types": "./src/types.ts",
       "default": "./src/types.ts"
     }
-  }
+  },
+  "types": "./src/types.ts",
+  "main": "./src/types.ts"
 }

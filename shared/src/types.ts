@@ -1,10 +1,16 @@
-export type Rule = 'whale' | 'dormant-wake' | 'coinjoin' | 'demo';
+/**
+ * CoinWatch API contract types (R15/R16).
+ * The fixed interface both lanes (server/ and web/) compile against.
+ * Types only: no runtime code except the RULES/STATUSES/SOURCES consts.
+ */
+
+export type Rule = 'whale' | 'dormant-wake' | 'coinjoin' | 'hack';
 
 export type EventStatus = 'active' | 'confirmed' | 'evicted';
 
 export type AiStatus = 'pending' | 'done' | 'failed';
 
-export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'demo'] as const satisfies readonly Rule[];
+export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'hack'] as const satisfies readonly Rule[];
 export const STATUSES = ['active', 'confirmed', 'evicted'] as const satisfies readonly EventStatus[];
 export const SOURCES = ['live', 'demo'] as const satisfies readonly ('live' | 'demo')[];
 
@@ -20,6 +26,7 @@ export interface Label {
   tag: string;
   note: string | null;
   evidenceUrl: string | null;
+  /** null = seed label */
   author: { did: string; handle: string | null } | null;
   source: 'crowd' | 'seed';
   score: number;
@@ -52,7 +59,32 @@ export interface EventSummary {
   blockHash: string | null;
   blockTime: string | null;
   meta: EventMeta | null;
+  /** labels on involved addresses, top 3 by score */
   matchedLabels: Label[];
+  /** set when the event is one hop of a multi-transaction hack */
+  hackId?: string;
+}
+
+/** Multi-transaction exploit: an ordered chain of hops linked by carried value. */
+export interface HackHop {
+  txid: string;
+  /** the feed event for this hop, when one exists */
+  eventId: string | null;
+  inputs: { address: string | null; valueSats: number }[];
+  outputs: { address: string | null; valueSats: number }[];
+  /** value carried into the next hop (0 on the terminal hop) */
+  carrySats: number;
+}
+
+export interface Hack {
+  id: string;
+  title: string;
+  summary: string;
+  detectedAt: string;
+  status: EventStatus;
+  /** total value that left the origin addresses */
+  totalSats: number;
+  hops: HackHop[];
 }
 
 export interface AiFeedback {
@@ -65,8 +97,18 @@ export interface EventDetail extends EventSummary {
   aiSummary: string | null;
   inputs: { address: string | null; valueSats: number }[];
   outputs: { address: string | null; valueSats: number }[];
+  /** all labels on involved addresses */
   labels: Label[];
   aiFeedback: AiFeedback;
+}
+
+export interface AddressHistoryEntry {
+  txid: string;
+  time: string;
+  /** signed from the address's perspective: negative = outflow */
+  deltaSats: number;
+  /** set when the transaction is tracked as an event */
+  eventId: string | null;
 }
 
 export interface AddressInfo {
@@ -75,7 +117,8 @@ export interface AddressInfo {
   txCount: number | null;
   labels: Label[];
   recentEvents: EventSummary[];
-  externalUrl: string;
+  /** history observed by the operator's own node, newest first */
+  history: AddressHistoryEntry[];
 }
 
 export interface LeaderboardEntry {
@@ -86,23 +129,65 @@ export interface LeaderboardEntry {
   netVotes: number;
 }
 
-export interface AuthChallengeResponse {
+/**
+ * Web-of-trust graph (web/-derived, U11+). Nodes are crowd analysts, seeded
+ * knowledge bases, and labeled addresses; edges are attestations (labels) and
+ * votes. Derived client-side from existing endpoints; no backend change.
+ */
+export interface TrustGraphNode {
+  id: string;
+  kind: 'analyst' | 'seed' | 'address';
+  label: string;
+  did?: string;
+  address?: string;
+  reputation?: number;
+  score?: number;
+}
+
+export interface TrustGraphEdge {
+  source: string;
+  target: string;
+  kind: 'attestation' | 'vote';
+  weight: number;
+}
+
+export interface TrustGraphData {
+  nodes: TrustGraphNode[];
+  edges: TrustGraphEdge[];
+}
+
+/** SSE message payloads on /api/stream */
+export interface StreamMessages {
+  'event:new': EventSummary;
+  'event:update': EventSummary;
+  'label:new': Label;
+  health: { lastPollAt: string };
+}
+
+/** Endpoint request/response shapes */
+export interface ChallengeResponse {
   nonce: string;
   expiresAt: string;
 }
 
-export interface AuthVerifyRequest {
+export interface VerifyRequest {
   did: string;
   keyId: string;
   nonce: string;
+  /** base64url */
   signature: string;
   handle?: string;
 }
 
-export interface AuthVerifyResponse {
+export interface VerifyResponse {
   token: string;
   identity: Identity;
 }
+
+/** Backend-lane aliases kept so server/ compiles unchanged. */
+export type AuthChallengeResponse = ChallengeResponse;
+export type AuthVerifyRequest = VerifyRequest;
+export type AuthVerifyResponse = VerifyResponse;
 
 export interface CreateLabelRequest {
   tag: string;
@@ -118,9 +203,11 @@ export interface AiFeedbackRequest {
   value: 'confirm' | 'refute';
 }
 
-export interface EventsListResponse {
+export interface EventsResponse {
   events: EventSummary[];
 }
+
+export type EventsListResponse = EventsResponse;
 
 export type BatchKind = 'coinjoin-round' | 'curated';
 

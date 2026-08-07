@@ -157,17 +157,22 @@ const MOCK_RULE_LINES: Record<Rule, { line: string; tag: AiTag }> = {
     line: 'a transaction with many equal outputs resembles a CoinJoin privacy mix',
     tag: 'coinjoin',
   },
-  demo: {
-    line: 'a demo transaction was injected for presentation purposes',
+  hack: {
+    line: 'funds associated with a known hack moved through this transaction',
     tag: 'unknown',
   },
+};
+
+const MOCK_UNMATCHED_LINE: { line: string; tag: AiTag } = {
+  line: 'a transaction moved funds without matching a known rule',
+  tag: 'unknown',
 };
 
 function createMockProvider(): AiProvider {
   return {
     name: 'mock',
     summarizeEvent(ctx: AiEventContext): Promise<AiResult> {
-      const primary = MOCK_RULE_LINES[ctx.rules[0]] ?? MOCK_RULE_LINES.demo;
+      const primary = MOCK_RULE_LINES[ctx.rules[0]] ?? MOCK_UNMATCHED_LINE;
       const parts = [
         `[demo] Mock analysis: ${primary.line}, moving ${satsToBtc(ctx.valueSats)} BTC.`,
       ];

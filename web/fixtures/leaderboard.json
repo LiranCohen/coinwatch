@@ -1,0 +1,39 @@
+{
+  "analysts": [
+    {
+      "did": "did:dht:kw1b9f3m8x7v2c5z1a4q6w9e8r7t2y5u1i3o6p0s4d7f",
+      "handle": "0xAnon",
+      "reputation": 87,
+      "labelCount": 23,
+      "netVotes": 104
+    },
+    {
+      "did": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5In0",
+      "handle": "satoshisghost",
+      "reputation": 41,
+      "labelCount": 12,
+      "netVotes": 55
+    },
+    {
+      "did": "did:dht:8zkq4w1e7r2t5y8u1i3o6p9a0s4d7f2g5h8j1k4l7z",
+      "handle": "mempoolmaxi",
+      "reputation": 26,
+      "labelCount": 9,
+      "netVotes": 31
+    },
+    {
+      "did": "did:dht:h3n6m9q2w5e8r1t4y7u0i3p6a9s2d5f8g1h4j7k0l3",
+      "handle": null,
+      "reputation": 12,
+      "labelCount": 5,
+      "netVotes": 14
+    },
+    {
+      "did": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJWMjU1MTkifQ",
+      "handle": "glassnode_intern",
+      "reputation": 4,
+      "labelCount": 2,
+      "netVotes": 5
+    }
+  ]
+}
