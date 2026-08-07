@@ -1,0 +1,198 @@
+export type Rule = 'whale' | 'dormant-wake' | 'coinjoin' | 'demo';
+
+export type EventStatus = 'active' | 'confirmed' | 'evicted';
+
+export type AiStatus = 'pending' | 'done' | 'failed';
+
+export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'demo'] as const satisfies readonly Rule[];
+export const STATUSES = ['active', 'confirmed', 'evicted'] as const satisfies readonly EventStatus[];
+export const SOURCES = ['live', 'demo'] as const satisfies readonly ('live' | 'demo')[];
+
+export interface Identity {
+  did: string;
+  handle: string | null;
+  reputation: number;
+}
+
+export interface Label {
+  id: string;
+  address: string;
+  tag: string;
+  note: string | null;
+  evidenceUrl: string | null;
+  author: { did: string; handle: string | null } | null;
+  source: 'crowd' | 'seed';
+  score: number;
+  myVote: -1 | 0 | 1;
+  createdAt: string;
+}
+
+export interface CoinjoinMeta {
+  kind: 'wasabi' | 'whirlpool' | 'generic';
+  denominationSats: number;
+  equalOutputCount: number;
+  participantCount: number;
+}
+
+export interface EventMeta {
+  coinjoin?: CoinjoinMeta;
+}
+
+export interface EventSummary {
+  id: string;
+  txid: string;
+  detectedAt: string;
+  rules: Rule[];
+  valueSats: number;
+  status: EventStatus;
+  source: 'live' | 'demo';
+  aiStatus: AiStatus;
+  aiTag: string | null;
+  blockHeight: number | null;
+  blockHash: string | null;
+  blockTime: string | null;
+  meta: EventMeta | null;
+  matchedLabels: Label[];
+}
+
+export interface AiFeedback {
+  confirms: number;
+  refutes: number;
+  mine: 'confirm' | 'refute' | null;
+}
+
+export interface EventDetail extends EventSummary {
+  aiSummary: string | null;
+  inputs: { address: string | null; valueSats: number }[];
+  outputs: { address: string | null; valueSats: number }[];
+  labels: Label[];
+  aiFeedback: AiFeedback;
+}
+
+export interface AddressInfo {
+  address: string;
+  balanceSats: number | null;
+  txCount: number | null;
+  labels: Label[];
+  recentEvents: EventSummary[];
+  externalUrl: string;
+}
+
+export interface LeaderboardEntry {
+  did: string;
+  handle: string | null;
+  reputation: number;
+  labelCount: number;
+  netVotes: number;
+}
+
+export interface AuthChallengeResponse {
+  nonce: string;
+  expiresAt: string;
+}
+
+export interface AuthVerifyRequest {
+  did: string;
+  keyId: string;
+  nonce: string;
+  signature: string;
+  handle?: string;
+}
+
+export interface AuthVerifyResponse {
+  token: string;
+  identity: Identity;
+}
+
+export interface CreateLabelRequest {
+  tag: string;
+  note?: string;
+  evidenceUrl?: string;
+}
+
+export interface VoteRequest {
+  value: 1 | -1;
+}
+
+export interface AiFeedbackRequest {
+  value: 'confirm' | 'refute';
+}
+
+export interface EventsListResponse {
+  events: EventSummary[];
+}
+
+export type BatchKind = 'coinjoin-round' | 'curated';
+
+export interface BatchSummary {
+  id: string;
+  kind: BatchKind;
+  title: string;
+  description: string | null;
+  txCount: number;
+  totalValueSats: number;
+  latestBlockTime: string | null;
+  topLabels: Label[];
+}
+
+export interface BatchTx {
+  txid: string;
+  blockHeight: number | null;
+  blockHash: string | null;
+  blockTime: string | null;
+  valueSats: number;
+  linkReason: string;
+  labels: Label[];
+  eventId: string | null;
+}
+
+export interface BatchDetail extends BatchSummary {
+  txs: BatchTx[];
+}
+
+export interface AnalystProfile {
+  identity: Identity;
+  labels: Label[];
+  votesReceived: { up: number; down: number };
+  aiFeedbackGiven: number;
+}
+
+export interface EntitySummary {
+  tag: string;
+  addressCount: number;
+  eventCount: number;
+}
+
+export interface EntityDetail {
+  tag: string;
+  addresses: { address: string; labels: Label[] }[];
+  recentEvents: EventSummary[];
+}
+
+export interface BatchesResponse {
+  batches: BatchSummary[];
+}
+
+export interface CoinjoinsResponse {
+  coinjoins: (EventSummary & { batchId: string | null })[];
+}
+
+export interface TrendingResponse {
+  labels: Label[];
+}
+
+export interface LeaderboardResponse {
+  analysts: LeaderboardEntry[];
+}
+
+export interface InjectRequest {
+  rule?: Rule;
+  valueSats?: number;
+  address?: string;
+}
+
+export interface HealthMessage {
+  lastPollAt: string;
+}
+
+export type SseMessageName = 'event:new' | 'event:update' | 'label:new' | 'health';

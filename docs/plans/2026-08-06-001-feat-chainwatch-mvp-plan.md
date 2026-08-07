@@ -96,6 +96,14 @@ flowchart TB
 - R15. The backend exposes a REST API covering events, event detail, address labels, votes, identities/auth, and leaderboard, plus a server-pushed live feed (SSE) of new events.
 - R16. The API contract is fixed before the parallel build and provided to the frontend agent as fixtures, so frontend and backend agents build simultaneously without integration drift.
 
+**Intelligence surfaces**
+
+- R21. Analyst profiles are browsable: an endpoint returns an identity's reputation, authored labels with scores, and vote/feedback activity.
+- R22. Events carry block info (height, hash, time) once confirmed, and batches of related transactions are first-class: a batch groups txids with per-tx block info, involved labels, and the reason each tx is linked. Coinjoin round-chains link automatically; curated batches (e.g., a hack trace) import from a committed fixture.
+- R23. Coinjoin detection classifies the implementation (`wasabi`, `whirlpool`, or `generic`) from output structure, stores participant/denomination metadata, and coinjoins are indexed and browsable through a dedicated endpoint.
+- R24. Seed and crowd labels roll up into entities grouped by tag, so events and addresses can be browsed by known actor.
+- R25. The API is documented for consumers in `docs/api.md`: every endpoint with request/response examples, the SSE message catalog, and the auth flow.
+
 **Demo and delivery**
 
 - R17. A dev-only injector enqueues a synthetic, clearly-marked demo event through the same detection-to-UI pipeline.
@@ -339,6 +347,69 @@ U1 (scaffold + shared contract) lands first and alone. Then two parallel lanes: 
 | U9 | Live feed dashboard + event detail pane | frontend | U7 |
 | U10 | Address page + labels + votes | frontend | U8, U9 |
 | U11 | Leaderboard, trending, demo polish, README | frontend | U9 |
+| U12 | Schema + types extension: block info, event meta, batch tables | backend | U3, U6 |
+| U13 | Coinjoin classification + index endpoint + round-chain linking | backend | U12 |
+| U14 | Batch endpoints + curated seed batch fixture | backend | U12 |
+| U15 | Analyst profile + entity rollup endpoints | backend | U12 |
+| U16 | Consumer API documentation | backend | U13, U14, U15 |
+
+### U12. Schema + types extension: block info, event meta, batch tables
+
+- **Goal:** Events gain block info and a metadata bag; batches become first-class storage; shared types cover all of it.
+- **Requirements:** R22, R23 (storage)
+- **Dependencies:** U3, U6
+- **Files:** `server/src/store/schema.sql`, `shared/src/types.ts`, `server/src/store/db.ts`, `server/src/store/pipelineQueries.ts`, `server/src/detect/pipeline.ts`, `server/test/store.test.ts`
+- **Approach:** Add nullable `block_height`, `block_hash`, `block_time` and `meta` (JSON) columns to `events`. New tables: `batches(id, kind, title, description, source, created_at)` and `batch_txs(batch_id, txid, block_height, block_hash, block_time, value_sats, link_reason, UNIQUE(batch_id, txid))`. The eviction sweep fills block info when marking an event `confirmed` (getblock for height/time). Shared types gain `CoinjoinMeta`, `EventSummary.meta?`, `blockHeight/blockHash/blockTime` on event types, `BatchSummary`, `BatchDetail`, `BatchTx`, `AnalystProfile`, `EntitySummary`, `EntityDetail`. Dev DBs are disposable — no migration path.
+- **Test scenarios:**
+  - Happy: event confirmed by the sweep gains block height/hash/time.
+  - Edge: never-confirmed (evicted) event keeps nulls.
+- **Verification:** Store tests pass with the extended schema; sweep test asserts block info lands.
+
+### U13. Coinjoin classification + index endpoint + round-chain linking
+
+- **Goal:** Coinjoin rule classifies wasabi/whirlpool/generic, stores metadata, auto-links round chains into batches, and coinjoins are browsable.
+- **Requirements:** R23, R22 (auto-linking)
+- **Dependencies:** U12
+- **Files:** `server/src/detect/rules.ts`, `server/src/store/batchQueries.ts`, `server/src/api/coinjoins.ts`, `server/test/coinjoin.test.ts`
+- **Approach:** Classification on the equal-output structure: exactly 5 equal outputs with 5 equal inputs → `whirlpool`; ≥10 equal-value outputs → `wasabi`; otherwise `generic`. Meta: `{ kind, denominationSats, equalOutputCount, participantCount }` on the event. When a coinjoin event's input addresses intersect the output addresses of an existing coinjoin event, the new event joins that event's batch (round chain); otherwise a new `coinjoin-round` batch is created. `GET /api/coinjoins` returns coinjoin events newest-first with their meta and batch id.
+- **Test scenarios:**
+  - Happy: synthetic 5-equal-5 → whirlpool; 12 equal outputs → wasabi; loose equal outputs → generic; meta populated.
+  - Integration: two chained synthetic rounds share one batch; an unchained round gets its own.
+- **Verification:** Classification and chaining tests pass; endpoint returns indexed coinjoins.
+
+### U14. Batch endpoints + curated seed batch fixture
+
+- **Goal:** `GET /api/batches` and `GET /api/batches/:id` serve auto and curated batches; a committed fixture ships a real demo trace.
+- **Requirements:** R22, R24 (labels join)
+- **Dependencies:** U12
+- **Files:** `server/src/api/batches.ts`, `server/fixtures/seed-batches.json`, `server/src/store/seed.ts`, `server/test/batches.test.ts`
+- **Approach:** BatchSummary: id, kind, title, txCount, totalValueSats, latestBlockTime, top labels. BatchDetail adds description and `txs`: txid, block info, valueSats, linkReason, labels on involved addresses, and `eventId` when the txid is also a detected event. The curated fixture is assembled at build time like the label seeds: pick a well-known seed entity (e.g., a major exchange hot wallet), pull a handful of its real transactions and block info from mempool.space, link them with reasons ("shares address 1A… with tx …"), commit as JSON (KTD-8 pattern — no runtime fetch).
+- **Test scenarios:**
+  - Happy: list and detail shapes conform to shared types; curated batch imports idempotently.
+  - Edge: unknown batch id → 404; batch with unlabeled addresses renders empty label lists.
+- **Verification:** Batch tests pass; the curated batch is visible through the API after startup.
+
+### U15. Analyst profile + entity rollup endpoints
+
+- **Goal:** `GET /api/analysts/:did`, `GET /api/entities`, `GET /api/entities/:tag`.
+- **Requirements:** R21, R24
+- **Dependencies:** U12
+- **Files:** `server/src/api/analysts.ts`, `server/src/api/entities.ts`, `server/test/analysts.test.ts`, `server/test/entities.test.ts`
+- **Approach:** AnalystProfile: identity fields, authored labels with scores, aggregate vote tallies received, ai-feedback counts. EntitySummary: tag, addressCount, eventCount (detected events touching the entity's addresses); EntityDetail adds the addresses (with labels) and recent events. Seed labels included (they are the initial entities).
+- **Test scenarios:**
+  - Happy: profile reflects authored labels and reputation after votes; entity list groups seed labels by tag with correct counts.
+  - Edge: unknown did → 404; unknown tag → 404.
+- **Verification:** Endpoint tests pass against a seeded test DB.
+
+### U16. Consumer API documentation
+
+- **Goal:** `docs/api.md` documents the full API so a frontend can integrate without reading server code.
+- **Requirements:** R25
+- **Dependencies:** U13, U14, U15
+- **Files:** `docs/api.md`
+- **Approach:** Every endpoint with method, path, auth, query params, and a compact example request/response; the shared types rendered as a reference table; SSE message catalog with payloads; the challenge-sign auth flow step-by-step (with the enbox calls named); error shape conventions; the fixtures-mode story for offline frontend work.
+- **Test scenarios:** none — documentation.
+- **Verification:** Every endpoint in `server/src/api/` appears in the doc; shapes match `shared/src/types.ts`.
 
 ### U1. Repo scaffold + shared API contract types
 
