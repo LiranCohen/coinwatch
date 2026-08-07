@@ -124,7 +124,7 @@ export function FeedPage() {
     [refetchDetail],
   );
 
-  const { status, lastHealthAt } = useEventStream({ onEventNew, onEventUpdate, onLabelNew });
+  const { lastHealthAt } = useEventStream({ onEventNew, onEventUpdate, onLabelNew });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -194,10 +194,6 @@ export function FeedPage() {
               {injecting ? 'Injecting…' : 'Inject simulated event'}
             </button>
           )}
-          <span className="text-xs text-zinc-600">
-            stream: {status}
-            {lastHealthAt ? ` · last poll ${new Date(lastHealthAt).toLocaleTimeString()}` : ''}
-          </span>
         </div>
       </div>
 
