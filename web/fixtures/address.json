@@ -1,0 +1,46 @@
+{
+  "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+  "balanceSats": 2485971234000,
+  "txCount": 141,
+  "labels": [
+    {
+      "id": "lbl_seed_binance",
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "Binance cold wallet",
+      "note": null,
+      "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+      "author": null,
+      "source": "seed",
+      "score": 142,
+      "myVote": 0,
+      "createdAt": "2026-08-06T20:00:00.000Z"
+    },
+    {
+      "id": "lbl_crowd_treasury",
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "exchange treasury",
+      "note": "Outflows of this size have historically been internal reshuffles.",
+      "evidenceUrl": null,
+      "author": { "did": "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5In0", "handle": "satoshisghost" },
+      "source": "crowd",
+      "score": 6,
+      "myVote": 0,
+      "createdAt": "2026-08-06T21:47:19.000Z"
+    }
+  ],
+  "recentEvents": [
+    {
+      "id": "evt_001",
+      "txid": "a3f91c7e2b84d6059f1e3a72c58b4d9e6f07a2c41d83b5e90f16c2a47d91b83e",
+      "detectedAt": "2026-08-06T22:41:07.000Z",
+      "rules": ["whale"],
+      "valueSats": 4215000000,
+      "status": "active",
+      "source": "live",
+      "aiStatus": "done",
+      "aiTag": "whale-move",
+      "matchedLabels": []
+    }
+  ],
+  "externalUrl": "https://mempool.space/address/34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo"
+}

@@ -1,0 +1,40 @@
+{
+  "labels": [
+    {
+      "id": "lbl_seed_binance",
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "Binance cold wallet",
+      "note": null,
+      "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+      "author": null,
+      "source": "seed",
+      "score": 142,
+      "myVote": 0,
+      "createdAt": "2026-08-06T20:00:00.000Z"
+    },
+    {
+      "id": "lbl_crowd_otc",
+      "address": "bc1q9x4k2m8v7n3p5d6f1g0h4j8l2s7a5q9w3e6r1t4y",
+      "tag": "OTC desk",
+      "note": "Desk wallet — settles weekdays, watch for follow-on moves.",
+      "evidenceUrl": "https://x.com/0xAnon/status/1234567890",
+      "author": { "did": "did:dht:kw1b9f3m8x7v2c5z1a4q6w9e8r7t2y5u1i3o6p0s4d7f", "handle": "0xAnon" },
+      "source": "crowd",
+      "score": 14,
+      "myVote": 0,
+      "createdAt": "2026-08-06T21:12:31.000Z"
+    },
+    {
+      "id": "lbl_seed_mt-gox",
+      "address": "1FeexV6bAHb8ybZjqQMjJrcCrHGW9sb6uF",
+      "tag": "Mt. Gox trustee",
+      "note": null,
+      "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+      "author": null,
+      "source": "seed",
+      "score": 9,
+      "myVote": 0,
+      "createdAt": "2026-08-06T20:00:00.000Z"
+    }
+  ]
+}

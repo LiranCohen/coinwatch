@@ -1,0 +1,103 @@
+{
+  "events": [
+    {
+      "id": "evt_001",
+      "txid": "a3f91c7e2b84d6059f1e3a72c58b4d9e6f07a2c41d83b5e90f16c2a47d91b83e",
+      "detectedAt": "2026-08-06T22:41:07.000Z",
+      "rules": ["whale"],
+      "valueSats": 4215000000,
+      "status": "active",
+      "source": "live",
+      "aiStatus": "done",
+      "aiTag": "whale-move",
+      "matchedLabels": [
+        {
+          "id": "lbl_seed_binance",
+          "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+          "tag": "Binance cold wallet",
+          "note": null,
+          "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+          "author": null,
+          "source": "seed",
+          "score": 142,
+          "myVote": 0,
+          "createdAt": "2026-08-06T20:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "evt_002",
+      "txid": "b71e4d29c8a6f35091e7b4c26d83a5f9071c6e2b48d95a37f0c1e6b24d83a597",
+      "detectedAt": "2026-08-06T22:38:52.000Z",
+      "rules": ["dormant-wake"],
+      "valueSats": 250000000,
+      "status": "confirmed",
+      "source": "live",
+      "aiStatus": "done",
+      "aiTag": "dormant-wake",
+      "matchedLabels": []
+    },
+    {
+      "id": "evt_003",
+      "txid": "c48a71e6b2d49f0735c8e1a62b97d4f3058e6c1a29b47d3e60f1c8a52b97d4e6",
+      "detectedAt": "2026-08-06T22:33:18.000Z",
+      "rules": ["coinjoin"],
+      "valueSats": 95000000,
+      "status": "confirmed",
+      "source": "live",
+      "aiStatus": "done",
+      "aiTag": "coinjoin",
+      "matchedLabels": [
+        {
+          "id": "lbl_seed_wasabi",
+          "address": "bc1qs5d2lzt0sm8hqpxfk3k3s0rkja5shnqactpvwtss",
+          "tag": "Wasabi CoinJoin",
+          "note": null,
+          "evidenceUrl": "https://github.com/graphsense/graphsense-tagpacks",
+          "author": null,
+          "source": "seed",
+          "score": 38,
+          "myVote": 0,
+          "createdAt": "2026-08-06T20:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "id": "evt_004",
+      "txid": "d59b82f7c3e50a1846d9f2b73c08e5a4169f7d2b3a58e4c17091f2b63c08e5a7",
+      "detectedAt": "2026-08-06T22:29:44.000Z",
+      "rules": ["demo", "whale"],
+      "valueSats": 100000000000,
+      "status": "active",
+      "source": "demo",
+      "aiStatus": "pending",
+      "aiTag": null,
+      "matchedLabels": [
+        {
+          "id": "lbl_crowd_otc",
+          "address": "bc1q9x4k2m8v7n3p5d6f1g0h4j8l2s7a5q9w3e6r1t4y",
+          "tag": "OTC desk",
+          "note": "Desk wallet — settles weekdays, watch for follow-on moves.",
+          "evidenceUrl": "https://x.com/0xAnon/status/1234567890",
+          "author": { "did": "did:dht:kw1b9f3m8x7v2c5z1a4q6w9e8r7t2y5u1i3o6p0s4d7f", "handle": "0xAnon" },
+          "source": "crowd",
+          "score": 14,
+          "myVote": 0,
+          "createdAt": "2026-08-06T21:12:31.000Z"
+        }
+      ]
+    },
+    {
+      "id": "evt_005",
+      "txid": "e60c93a8d4f61b2957e0a3c84d19f6b527a08e3c4b69f5d281a203c74d19f6b8",
+      "detectedAt": "2026-08-06T22:21:09.000Z",
+      "rules": ["whale"],
+      "valueSats": 1550000000,
+      "status": "evicted",
+      "source": "live",
+      "aiStatus": "failed",
+      "aiTag": null,
+      "matchedLabels": []
+    }
+  ]
+}
