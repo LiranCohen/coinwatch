@@ -95,7 +95,7 @@ export function Markets() {
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-xl">
-              <div className="font-mono text-[11px] tracking-[0.28em] text-gold/80">02 / OPEN INVESTIGATIONS</div>
+              <div className="font-mono text-[11px] tracking-[0.28em] text-gold/80">01 / OPEN INVESTIGATIONS</div>
               <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-zinc-50 sm:text-5xl">
                 The crowd <span className="font-serif text-[1.08em] font-normal italic">sees</span> it first.
               </h2>

@@ -92,7 +92,7 @@ export function QuickNode() {
             <div className="grid items-center gap-12 lg:grid-cols-2">
               <div>
                 <div className="font-mono text-[11px] tracking-[0.28em] text-gold/80">
-                  05 / INFRASTRUCTURE · POWERED BY QUICKNODE
+                  04 / INFRASTRUCTURE · POWERED BY QUICKNODE
                 </div>
                 <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-zinc-50 sm:text-5xl">
                   Your node. Your edge.{' '}
