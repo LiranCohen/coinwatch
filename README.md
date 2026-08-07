@@ -26,6 +26,7 @@ A lightweight feed where:
 | Feature | Description |
 |---|---|
 | **Live event feed** | Node RPC polling with baseline snapshot + txid dedup; events broadcast over SSE; eviction sweep marks `confirmed`/`evicted` with block info. |
+| **RSS** | `GET /api/feed.xml` (alias `/feed.xml`) for any reader; Coin Standard titles, deep links into the app. |
 | **Detection rules** | Whale (≥ threshold), dormant-wake (value-gated, address-history backed), coinjoin (equal-output heuristic). |
 | **Coinjoin forensics** | Wasabi/Whirlpool/generic classification, participant + denomination metadata, automatic round-chain batching, dedicated index endpoint. |
 | **Batches** | Related-tx groups with per-tx block info and link reasons — auto-built coinjoin chains plus curated traces (e.g., the 109,735 BTC Binance cold-storage consolidation). |

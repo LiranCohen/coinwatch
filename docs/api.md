@@ -147,6 +147,7 @@ interface BatchDetail extends BatchSummary { txs: BatchTx[]; }
 | GET | `/api/events/:id` | no | → `EventDetail` (404 unknown) |
 | POST | `/api/events/:id/ai-feedback` | yes | `{ value: 'confirm' \| 'refute' }` → updated `aiFeedback`; same value again removes |
 | GET | `/api/coinjoins` | no | `?limit` → `{ coinjoins: (EventSummary & { batchId: string \| null })[] }` — coinjoin events with classification in `meta.coinjoin` |
+| GET | `/api/feed.xml` | no | RSS 2.0 of recent events. Query: `rule`, `limit`. Alias: `/feed.xml`. Item links point at `PUBLIC_SITE_URL/app?event=<id>` |
 
 ### Labels & addresses
 
@@ -184,6 +185,20 @@ Seeded batches include "Binance.com hot wallet — 2018 cold-storage consolidati
 | `event:update` | `EventSummary` | AI result attached, or status flipped (`confirmed`/`evicted`) — refetch `GET /api/events/:id` if this event is open in a detail pane |
 | `label:new` | `Label` | crowd label created |
 | `health` | `{ lastPollAt: string }` | after each successful node poll — if these stop, show "node connection stale" |
+
+## RSS feed
+
+`GET /api/feed.xml` (also `/feed.xml`) — RSS 2.0 of recent detections for any reader (Feedly, NetNewsWire, etc.).
+
+```bash
+curl https://camp-prophet-duties-fairly.trycloudflare.com/api/feed.xml
+curl 'http://localhost:3100/api/feed.xml?rule=whale&limit=20'
+```
+
+- Titles use Coin Standard amounts (`₿ 42.15`, `¢ 25m`) and include the AI tag when present.
+- Each item links to `PUBLIC_SITE_URL/app?event=<id>` (set `PUBLIC_SITE_URL` in `.env`; defaults to `http://localhost:5173`).
+- Optional filters: `rule` (`whale` \| `dormant-wake` \| `coinjoin` \| `hack`), `limit` (default 50, max 200).
+- The web app advertises the feed via `<link rel="alternate" type="application/rss+xml">` and an RSS link in the app chrome / landing footer.
 
 ## Demo injector (presenter only)
 
