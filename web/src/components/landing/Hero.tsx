@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { HeroCanvas } from './HeroCanvas';
 import { LogoMark } from './LogoMark';
+import { TxPopups } from './TxPopups';
 
 const QUICKNODE_URL = 'https://www.quicknode.com/';
 
@@ -13,12 +14,7 @@ export function Hero() {
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-16 px-6 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <div className="inline-flex items-center gap-2.5 rounded-full border border-line bg-white/[0.03] px-3.5 py-1.5 font-mono text-[11px] tracking-[0.22em] text-mist">
-            <span className="cw-pulse inline-block h-1.5 w-1.5 rounded-full bg-gold" />
-            CAL. CW-01 · CROWD-VERIFIED CHAIN FORENSICS
-          </div>
-
-          <h1 className="mt-7 font-display text-5xl leading-[1.04] font-semibold tracking-tight text-zinc-50 sm:text-6xl lg:text-[4.6rem]">
+          <h1 className="font-display text-5xl leading-[1.04] font-semibold tracking-tight text-zinc-50 sm:text-6xl lg:text-[4.6rem]">
             Time is money.
             <br />
             <span className="text-goldbright">
@@ -49,22 +45,7 @@ export function Hero() {
             <LogoMark animate className="h-full w-full drop-shadow-[0_12px_28px_rgba(0,0,0,0.65)]" />
           </div>
 
-          <div className="animate-floaty absolute top-[6%] right-[2%] rounded-xl border border-line bg-panel/85 px-4 py-3 backdrop-blur-md">
-            <div className="font-mono text-[10px] tracking-[0.18em] text-mist">WHALE #3,114 → MIXER?</div>
-            <div className="mt-1 flex items-baseline gap-2">
-              <span className="tnum font-display text-xl font-semibold text-zinc-50">87.4%</span>
-              <span className="tnum font-mono text-[11px] text-up">▲ 2.1</span>
-            </div>
-            <div className="mt-1 font-mono text-[9px] tracking-[0.14em] text-mist/70">CROWD CONSENSUS</div>
-          </div>
-
-          <div
-            className="animate-floaty absolute bottom-[8%] left-[0%] rounded-xl border border-line bg-panel/85 px-4 py-3 backdrop-blur-md"
-            style={{ animationDelay: '-3.4s' }}
-          >
-            <div className="font-mono text-[11px] text-zinc-200">coinwatch/mempool-sentiment-v2</div>
-            <div className="mt-1 font-mono text-[10px] text-mist">↓ 84.2k · ♥ 1,204 · transformers</div>
-          </div>
+          <TxPopups />
         </div>
       </div>
     </section>
