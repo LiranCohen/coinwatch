@@ -1,36 +1,16 @@
-import { Link } from 'react-router-dom';
-
 import type { EventDetail as EventDetailType } from '@chainwatch/shared';
 
 import { postVote } from '../api/client';
-import { satsToBtc, timeAgo, truncateMiddle } from '../lib/format';
+import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
 import { DemoBadge, RuleBadge, StatusBadge } from './badges';
 import { LabelList } from './LabelList';
+import { TxGraph } from './TxGraph';
 
 interface EventDetailProps {
   event: EventDetailType;
   onUpdate: (event: EventDetailType) => void;
-}
-
-function IoRow({ address, valueSats }: { address: string | null; valueSats: number }) {
-  return (
-    <div className="flex items-baseline justify-between gap-3 py-1">
-      {address ? (
-        <Link
-          to={`/address/${address}`}
-          className="truncate font-mono text-xs text-sky-400 hover:underline"
-          title={address}
-        >
-          {truncateMiddle(address, 16, 10)}
-        </Link>
-      ) : (
-        <span className="text-xs italic text-zinc-600">n/a (OP_RETURN)</span>
-      )}
-      <span className="tnum shrink-0 font-mono text-xs text-zinc-300">{satsToBtc(valueSats)} BTC</span>
-    </div>
-  );
 }
 
 export function EventDetail({ event, onUpdate }: EventDetailProps) {
@@ -82,18 +62,10 @@ export function EventDetail({ event, onUpdate }: EventDetailProps) {
         <LabelList labels={event.labels} onVote={vote} />
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
+      <section>
+        <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">VALUE FLOW</h3>
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <h3 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">INPUTS</h3>
-          {event.inputs.map((io, i) => (
-            <IoRow key={i} {...io} />
-          ))}
-        </div>
-        <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <h3 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400">OUTPUTS</h3>
-          {event.outputs.map((io, i) => (
-            <IoRow key={i} {...io} />
-          ))}
+          <TxGraph txid={event.txid} inputs={event.inputs} outputs={event.outputs} labels={event.labels} />
         </div>
       </section>
     </div>
