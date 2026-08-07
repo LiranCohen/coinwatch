@@ -5,6 +5,8 @@ import { LandingPage } from './pages/LandingPage';
 
 const AppShell = lazy(() => import('./components/AppShell').then((m) => ({ default: m.AppShell })));
 const AddressPage = lazy(() => import('./pages/AddressPage').then((m) => ({ default: m.AddressPage })));
+const TxPage = lazy(() => import('./pages/TxPage').then((m) => ({ default: m.TxPage })));
+const BlockPage = lazy(() => import('./pages/BlockPage').then((m) => ({ default: m.BlockPage })));
 const FeedPage = lazy(() => import('./pages/FeedPage').then((m) => ({ default: m.FeedPage })));
 const WebOfTrustPage = lazy(() =>
   import('./pages/WebOfTrustPage').then((m) => ({ default: m.WebOfTrustPage })),
@@ -29,6 +31,8 @@ export default function App() {
       >
         <Route index element={<FeedPage />} />
         <Route path="address/:address" element={<AddressPage />} />
+        <Route path="tx/:txid" element={<TxPage />} />
+        <Route path="block/:id" element={<BlockPage />} />
         <Route path="web-of-trust" element={<WebOfTrustPage />} />
         <Route path="*" element={<Navigate to="/app" replace />} />
       </Route>

@@ -43,12 +43,14 @@ export function parseEventMeta(row: EventRow): EventMeta | null {
 }
 
 export interface LabelInput {
+  /** the thing being labelled: an address, or a txid when targetKind is 'tx' */
   address: string;
   tag: string;
   note?: string | null;
   evidenceUrl?: string | null;
   authorDid?: string | null;
   source: 'crowd' | 'seed';
+  targetKind?: 'address' | 'tx';
 }
 
 export interface LabelRow {
@@ -73,7 +75,25 @@ export function openDatabase(path?: string): Database {
   db.exec('PRAGMA journal_mode = WAL;');
   db.exec('PRAGMA foreign_keys = ON;');
   db.exec(readFileSync(SCHEMA_PATH, 'utf8'));
+  migrate(db);
   return db;
+}
+
+/**
+ * Additive column migrations.
+ *
+ * The schema file is applied with CREATE TABLE IF NOT EXISTS, which does
+ * nothing to a table that already exists, so new columns have to be added
+ * explicitly for databases created by an earlier version.
+ */
+function migrate(db: Database): void {
+  const columns = db.query('PRAGMA table_info(labels)').all() as { name: string }[];
+  if (!columns.some((column) => column.name === 'target_kind')) {
+    // existing rows all describe addresses, which is what the default records
+    db.exec("ALTER TABLE labels ADD COLUMN target_kind TEXT NOT NULL DEFAULT 'address'");
+  }
+  // indexed here rather than in the schema file, which runs before the column exists
+  db.exec('CREATE INDEX IF NOT EXISTS labels_target_kind ON labels (target_kind, address)');
 }
 
 export function placeholders(count: number): string {
@@ -117,8 +137,8 @@ export function insertLabel(db: Database, label: LabelInput): LabelRow | null {
   const id = crypto.randomUUID();
   db.query(
     `INSERT OR IGNORE INTO labels
-       (id, address, tag, note, evidence_url, author_did, source)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+       (id, address, tag, note, evidence_url, author_did, source, target_kind)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     id,
     label.address,
@@ -127,8 +147,16 @@ export function insertLabel(db: Database, label: LabelInput): LabelRow | null {
     label.evidenceUrl ?? null,
     label.authorDid ?? null,
     label.source,
+    label.targetKind ?? 'address',
   );
   return findLabelByUnique(db, label.address, label.tag, label.source);
+}
+
+/** Labels attached to a transaction rather than an address. */
+export function getLabelsForTx(db: Database, txid: string): LabelRow[] {
+  return db
+    .query("SELECT * FROM labels WHERE target_kind = 'tx' AND address = ? ORDER BY created_at DESC")
+    .all(txid) as LabelRow[];
 }
 
 export function findLabelByUnique(

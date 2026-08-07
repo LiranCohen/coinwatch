@@ -9,15 +9,17 @@ import { VoteButton } from './VoteButton';
 interface LabelListProps {
   labels: Label[];
   onVote: (labelId: string, value: 1 | -1) => Promise<void>;
+  /** what is being labelled, for the empty state */
+  subject?: 'address' | 'transaction';
 }
 
-export function LabelList({ labels, onVote }: LabelListProps) {
+export function LabelList({ labels, onVote, subject = 'address' }: LabelListProps) {
   const [evidenceFor, setEvidenceFor] = useState<Label | null>(null);
 
   if (labels.length === 0) {
     return (
       <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-sm text-zinc-500">
-        No labels yet. Be the first to tag this address.
+        No tags yet. Be the first to tag this {subject}.
       </p>
     );
   }

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { classifySearchInput, type AddressValidation, type BitcoinAddressKind } from '@chainwatch/shared';
 
+import { resolveSearch } from '../api/client';
+
 const KIND_LABELS: Record<BitcoinAddressKind, string> = {
   p2pkh: 'P2PKH',
   p2sh: 'P2SH',
@@ -61,6 +63,7 @@ export function AddressSearch({ className }: { className?: string }): React.JSX.
   const [value, setValue] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [focused, setFocused] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const inputId = useId();
   const messageId = useId();
 
@@ -91,27 +94,52 @@ export function AddressSearch({ className }: { className?: string }): React.JSX.
     return { tone: 'error', text: target.reason };
   }, [value]);
 
-  const feedback: Feedback | null = error === null ? hint : { tone: 'error', text: error };
+  const feedback: Feedback | null = resolving
+    ? { tone: 'ok', text: 'looking…' }
+    : error === null
+      ? hint
+      : { tone: 'error', text: error };
   const errored = feedback?.tone === 'error';
 
   const submit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const target = classifySearchInput(value);
-    if (target.kind === 'invalid') {
-      setError(target.reason);
-      inputRef.current?.focus();
+    const query = value.trim();
+    if (query === '') return;
+
+    // An address is unambiguous locally, so route it without a round trip. A
+    // 64-hex string is not: it is the shape of both a txid and a block hash,
+    // and only the chain can say which. Bare digits are a block height.
+    const target = classifySearchInput(query);
+    if (target.kind === 'address') {
+      setError(null);
+      inputRef.current?.blur();
+      navigate(`/app/address/${target.value}`);
       return;
     }
+
     setError(null);
-    // the on-screen keyboard would otherwise cover the page being navigated to
-    inputRef.current?.blur();
-    navigate(target.kind === 'address' ? `/app/address/${target.value}` : `/app?txid=${target.value}`);
+    setResolving(true);
+    resolveSearch(query)
+      .then((found) => {
+        if (found.kind === 'unknown' || found.value === null) {
+          setError(found.reason ?? 'nothing found for that');
+          inputRef.current?.focus();
+          return;
+        }
+        // the on-screen keyboard would otherwise cover the page being navigated to
+        inputRef.current?.blur();
+        if (found.kind === 'address') navigate(`/app/address/${found.value}`);
+        else if (found.kind === 'tx') navigate(`/app/tx/${found.value}`);
+        else navigate(`/app/block/${found.height ?? found.value}`);
+      })
+      .catch(() => setError('search is unavailable right now'))
+      .finally(() => setResolving(false));
   };
 
   return (
     <form role="search" onSubmit={submit} className={`relative w-full min-w-0 ${className ?? ''}`}>
       <label htmlFor={inputId} className="sr-only">
-        Search address or transaction
+        Search address, transaction or block
       </label>
       {/* 16px text and a ~44px box below md: anything smaller makes iOS Safari zoom the whole
           page on focus, and there the field is a touch target rather than a toolbar slot */}
@@ -130,7 +158,7 @@ export function AddressSearch({ className }: { className?: string }): React.JSX.
         }}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder="Search address or transaction"
+        placeholder="Search address, transaction or block"
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"

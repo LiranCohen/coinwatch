@@ -260,6 +260,32 @@ export interface ApiRoutesDeps {
   sourceName?: () => string;
 }
 
+interface ParsedLabel {
+  tag: string;
+  note: string | null;
+  evidenceUrl: string | null;
+}
+
+/** Same rules whichever kind of thing is being labelled. */
+function parseLabelBody(body: CreateLabelRequest): ParsedLabel | { error: string } {
+  const tag = typeof body.tag === 'string' ? body.tag.trim() : '';
+  if (tag.length < 2 || tag.length > 32) return { error: 'tag must be 2-32 characters' };
+  let note: string | null = null;
+  if (body.note !== undefined) {
+    if (typeof body.note !== 'string') return { error: 'note must be a string' };
+    if (body.note.length > 280) return { error: 'note must be at most 280 characters' };
+    note = body.note;
+  }
+  let evidenceUrl: string | null = null;
+  if (body.evidenceUrl !== undefined) {
+    if (typeof body.evidenceUrl !== 'string' || !isAbsoluteHttpUrl(body.evidenceUrl)) {
+      return { error: 'evidenceUrl must be an absolute http(s) URL' };
+    }
+    evidenceUrl = body.evidenceUrl;
+  }
+  return { tag, note, evidenceUrl };
+}
+
 export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   const { db, hub, config } = deps;
   const app = new Hono<ApiEnv>();
@@ -435,6 +461,35 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
       evidenceUrl,
       authorDid: identity.did,
       source: 'crowd',
+    });
+    if (!created) return c.json({ error: 'label creation failed' }, 500);
+    const label = toLabel(getLabelWithScore(db, created.id, identity.did)!);
+    hub.broadcastLabel(label);
+    return c.json(label, 201);
+  });
+
+  app.post('/api/tx/:txid/labels', auth, async (c) => {
+    const txid = c.req.param('txid');
+    if (!isTxid(txid)) return c.json({ error: 'txid must be 64 hex characters' }, 400);
+    const target = txid.toLowerCase();
+    const body = await parseJsonBody<CreateLabelRequest>(c);
+    if (body === null) return c.json({ error: 'invalid JSON body' }, 400);
+    const parsed = parseLabelBody(body);
+    if ('error' in parsed) return c.json({ error: parsed.error }, 400);
+
+    const identity = c.get('identity');
+    const existing = findLabelByUnique(db, target, parsed.tag, 'crowd');
+    if (existing) {
+      return c.json(toLabel(getLabelWithScore(db, existing.id, identity.did)!));
+    }
+    const created = insertLabel(db, {
+      address: target,
+      tag: parsed.tag,
+      note: parsed.note,
+      evidenceUrl: parsed.evidenceUrl,
+      authorDid: identity.did,
+      source: 'crowd',
+      targetKind: 'tx',
     });
     if (!created) return c.json({ error: 'label creation failed' }, 500);
     const label = toLabel(getLabelWithScore(db, created.id, identity.did)!);

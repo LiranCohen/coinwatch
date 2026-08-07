@@ -71,6 +71,8 @@ export interface ScoredLabelRow extends LabelRow {
   my_vote: number | null;
 }
 
+const ADDRESS_ONLY = "labels.target_kind = 'address'";
+
 const LABEL_SELECT = `
   SELECT labels.*,
     (SELECT COALESCE(SUM(v.value), 0) FROM votes v WHERE v.label_id = labels.id) AS score,
@@ -96,7 +98,9 @@ export function getLabelsForAddressScored(
   viewerDid: string | null,
 ): ScoredLabelRow[] {
   return db
-    .query(`${LABEL_SELECT} WHERE labels.address = ? ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`)
+    .query(
+      `${LABEL_SELECT} WHERE ${ADDRESS_ONLY} AND labels.address = ? ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
+    )
     .all(viewerDid, address) as ScoredLabelRow[];
 }
 
@@ -108,7 +112,7 @@ export function getLabelsForAddressesScored(
   if (addresses.length === 0) return [];
   return db
     .query(
-      `${LABEL_SELECT} WHERE labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
+      `${LABEL_SELECT} WHERE ${ADDRESS_ONLY} AND labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
     )
     .all(viewerDid, ...addresses) as ScoredLabelRow[];
 }
@@ -122,9 +126,22 @@ export function getTopLabelsForAddresses(
   if (addresses.length === 0) return [];
   return db
     .query(
-      `${LABEL_SELECT} WHERE labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC LIMIT ?`,
+      `${LABEL_SELECT} WHERE ${ADDRESS_ONLY} AND labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC LIMIT ?`,
     )
     .all(viewerDid, ...addresses, limit) as ScoredLabelRow[];
+}
+
+/** Labels attached to a transaction, scored the same way address labels are. */
+export function getLabelsForTxScored(
+  db: Database,
+  txid: string,
+  viewerDid: string | null,
+): ScoredLabelRow[] {
+  return db
+    .query(
+      `${LABEL_SELECT} WHERE labels.target_kind = 'tx' AND labels.address = ? ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
+    )
+    .all(viewerDid, txid) as ScoredLabelRow[];
 }
 
 export function listTrendingLabels(

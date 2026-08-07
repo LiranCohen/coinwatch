@@ -63,6 +63,8 @@ CREATE TABLE IF NOT EXISTS labels (
   evidence_url TEXT,
   author_did TEXT REFERENCES identities (did),
   source TEXT NOT NULL DEFAULT 'crowd',
+  -- what the `address` column identifies: a bitcoin address, or a txid
+  target_kind TEXT NOT NULL DEFAULT 'address',
   created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
 );
 

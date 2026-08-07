@@ -1,6 +1,10 @@
 import type {
   AddressChainTxsResponse,
   AddressCluster,
+  BlockDetail,
+  BlockTxsResponse,
+  SearchResolution,
+  TxDetail,
   CoinjoinAnalysis,
   AddressFlow,
   AddressInfo,
@@ -244,6 +248,37 @@ export async function getServerMeta(): Promise<ServerMeta> {
 // ---------------------------------------------------------------------------
 // Chain
 // ---------------------------------------------------------------------------
+
+/** Ask the server what a search string refers to; 64-hex is ambiguous until checked. */
+export async function resolveSearch(query: string): Promise<SearchResolution> {
+  return request<SearchResolution>(`/api/search?q=${encodeURIComponent(query)}`);
+}
+
+/** Any transaction on the chain, indexed or not. */
+export async function getTx(txid: string): Promise<TxDetail> {
+  return request<TxDetail>(`/api/tx/${encodeURIComponent(txid)}`);
+}
+
+export async function getBlock(id: string): Promise<BlockDetail> {
+  return request<BlockDetail>(`/api/block/${encodeURIComponent(id)}`);
+}
+
+export async function getBlockTxs(id: string, start: number): Promise<BlockTxsResponse> {
+  return request<BlockTxsResponse>(`/api/block/${encodeURIComponent(id)}/txs?start=${start}`);
+}
+
+/** Tag a transaction itself, rather than one of its addresses. */
+export async function postTxLabel(
+  txid: string,
+  body: { tag: string; note?: string; evidenceUrl?: string },
+  token: string,
+): Promise<Label> {
+  return request<Label>(
+    `/api/tx/${encodeURIComponent(txid)}/labels`,
+    { method: 'POST', body: JSON.stringify(body) },
+    token,
+  );
+}
 
 /** Recent blocks straight from the chain, for the ticker. */
 export async function getBlocks(limit = 6): Promise<BlocksResponse> {

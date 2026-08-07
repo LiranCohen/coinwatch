@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 
 import type { BlockSummary } from '@chainwatch/shared';
 
+import { Link } from 'react-router-dom';
+
 import { getBlocks } from '../api/client';
 
 interface BlocksStripProps {
@@ -71,7 +73,9 @@ export function BlocksStrip({ selectedHeight, onSelectHeight }: BlocksStripProps
           <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
         </span>
         <span className="text-[10px] text-zinc-600">
-          {selectedHeight === null ? 'click a block to filter the feed to it' : `filtering feed to block ${selectedHeight.toLocaleString()}`}
+          {selectedHeight === null
+            ? 'open a block to browse it, or filter the feed to it'
+            : `filtering feed to block ${selectedHeight.toLocaleString()}`}
         </span>
         {selectedHeight !== null && (
           <button
@@ -89,12 +93,10 @@ export function BlocksStrip({ selectedHeight, onSelectHeight }: BlocksStripProps
               <div key={i} className="cw-pulse h-[76px] min-w-[132px] shrink-0 rounded-lg border border-zinc-800 bg-zinc-900/40" />
             ))
           : blocks.map((block, i) => (
-              <button
+              <div
                 key={block.hash}
-                type="button"
                 title={block.hash}
-                onClick={() => onSelectHeight(selectedHeight === block.height ? null : block.height)}
-                className={`min-w-[132px] shrink-0 rounded-lg border px-3 py-2 text-left transition-colors ${
+                className={`relative min-w-[132px] shrink-0 rounded-lg border transition-colors ${
                   selectedHeight === block.height
                     ? 'border-sky-400 bg-sky-500/10'
                     : i === 0
@@ -102,20 +104,35 @@ export function BlocksStrip({ selectedHeight, onSelectHeight }: BlocksStripProps
                       : 'border-zinc-800 bg-zinc-900/60 hover:border-zinc-600'
                 }`}
               >
-                <p className="tnum font-mono text-sm font-semibold text-zinc-100">
-                  #{block.height.toLocaleString()}
-                </p>
-                <p className="text-[10px] text-zinc-500">
-                  {block.txCount.toLocaleString()} txs · {(block.sizeBytes / 1e6).toFixed(2)} MB
-                </p>
-                <p className="text-[10px] text-zinc-500">
-                  {block.medianFeeRate === null ? '—' : `~${block.medianFeeRate.toFixed(1)} sat/vB`}
-                </p>
-                <p className="mt-0.5 flex items-baseline justify-between gap-2 text-[10px]">
-                  <span className="truncate text-zinc-400">{block.miner ?? 'unknown pool'}</span>
-                  <span className="shrink-0 text-zinc-600">{fmtAgo(block.time, now)}</span>
-                </p>
-              </button>
+                <Link to={`/app/block/${block.height}`} className="block px-3 py-2">
+                  <p className="tnum font-mono text-sm font-semibold text-zinc-100">
+                    #{block.height.toLocaleString()}
+                  </p>
+                  <p className="text-[10px] text-zinc-500">
+                    {block.txCount.toLocaleString()} txs · {(block.sizeBytes / 1e6).toFixed(2)} MB
+                  </p>
+                  <p className="text-[10px] text-zinc-500">
+                    {block.medianFeeRate === null ? '—' : `~${block.medianFeeRate.toFixed(1)} sat/vB`}
+                  </p>
+                  <p className="mt-0.5 flex items-baseline justify-between gap-2 text-[10px]">
+                    <span className="truncate text-zinc-400">{block.miner ?? 'unknown pool'}</span>
+                    <span className="shrink-0 text-zinc-600">{fmtAgo(block.time, now)}</span>
+                  </p>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => onSelectHeight(selectedHeight === block.height ? null : block.height)}
+                  aria-pressed={selectedHeight === block.height}
+                  aria-label={`Filter the feed to block ${block.height}`}
+                  className={`absolute right-1 top-1 rounded px-1 text-[10px] ${
+                    selectedHeight === block.height
+                      ? 'text-sky-300'
+                      : 'text-zinc-600 hover:bg-zinc-700/60 hover:text-zinc-300'
+                  }`}
+                >
+                  filter
+                </button>
+              </div>
             ))}
       </div>
     </div>

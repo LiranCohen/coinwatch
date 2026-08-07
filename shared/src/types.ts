@@ -331,6 +331,76 @@ export interface CoinjoinAnalysis {
   time: string | null;
 }
 
+/** What a search string turned out to refer to. */
+export interface SearchResolution {
+  kind: 'address' | 'tx' | 'block' | 'unknown';
+  /** canonical form: normalized address, lowercase txid, or block hash */
+  value: string | null;
+  /** set when the result is a block */
+  height: number | null;
+  reason: string | null;
+}
+
+/** One input or output of a transaction, as an explorer shows it. */
+export interface TxIo {
+  address: string | null;
+  valueSats: number;
+  /** outputs only: the transaction that spent this, if any */
+  spentBy?: string | null;
+  /** inputs only: the transaction this came from */
+  fromTxid?: string | null;
+  labels: Label[];
+}
+
+/** Full transaction view, for any transaction on the chain. */
+export interface TxDetail {
+  txid: string;
+  blockHeight: number | null;
+  blockHash: string | null;
+  /** ISO 8601 */
+  time: string | null;
+  confirmed: boolean;
+  confirmations: number | null;
+  sizeBytes: number;
+  weight: number;
+  feeSats: number;
+  /** sat/vB */
+  feeRate: number | null;
+  totalOutSats: number;
+  isCoinbase: boolean;
+  inputs: TxIo[];
+  outputs: TxIo[];
+  entropy: TxEntropy | null;
+  /** labels the crowd attached to this transaction itself */
+  labels: Label[];
+  /** set when this transaction tripped a detection rule and is in the index */
+  eventId: string | null;
+  rules: Rule[];
+}
+
+/** Block header plus the paging cursor for its transactions. */
+export interface BlockDetail {
+  hash: string;
+  height: number;
+  /** ISO 8601 */
+  time: string | null;
+  txCount: number;
+  sizeBytes: number;
+  weight: number;
+  miner: string | null;
+  medianFeeRate: number | null;
+  /** how far this block is from the tip */
+  confirmations: number | null;
+}
+
+export interface BlockTxsResponse {
+  hash: string;
+  height: number;
+  startIndex: number;
+  txCount: number;
+  transactions: TxDetail[];
+}
+
 export interface LeaderboardEntry {
   did: string;
   handle: string | null;

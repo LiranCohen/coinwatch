@@ -23,6 +23,7 @@ import { createBatchRoutes } from './api/batches';
 import { createBlockRoutes } from './api/blocks';
 import { createAddressTxRoutes } from './api/addressTxs';
 import { createForensicsRoutes } from './api/forensics';
+import { createExplorerRoutes } from './api/explorer';
 import { EsploraClient } from './ingest/esplora';
 import { selectChainSource } from './ingest/source';
 
@@ -122,6 +123,7 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
     );
     app.route('/', createAddressTxRoutes({ db, esplora: deps.esplora }));
     app.route('/', createForensicsRoutes({ db, esplora: deps.esplora }));
+    app.route('/', createExplorerRoutes({ db, esplora: deps.esplora }));
   }
   app.route('/', hub.app);
   app.route(
