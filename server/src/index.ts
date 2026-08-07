@@ -17,6 +17,8 @@ import { createSseHub, type SseHub } from './api/sse';
 import { createInjectApp } from './api/inject';
 import { createAnalystRoutes } from './api/analysts';
 import { createEntityRoutes } from './api/entities';
+import { createCoinjoinRoutes } from './api/coinjoins';
+import { createBatchRoutes } from './api/batches';
 
 export interface AiPassDeps {
   emitter: EventEmitter;
@@ -96,6 +98,8 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   app.route('/', createApiRoutes({ db, hub, addressInfo: deps.addressInfo }));
   app.route('/', createAnalystRoutes(db));
   app.route('/', createEntityRoutes(db));
+  app.route('/', createCoinjoinRoutes(db));
+  app.route('/', createBatchRoutes(db));
   app.route('/', hub.app);
   app.route(
     '/',

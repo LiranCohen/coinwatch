@@ -1,0 +1,1202 @@
+{
+  "analysts": [
+    {
+      "did": "did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6IjdfdC1kUWppNnRJZEtyZVpWUG4wZWVkQVUyLWlvNGZVcDZ3dWlZT1BDY3MiLCJraWQiOiJwRTllQ2VGeXlkU0gzSC1ZQ3MxZ2x2OE5kWi14NXc3c0lBOHhGRm5FMzBrIiwiYWxnIjoiRWREU0EifQ",
+      "handle": "satoshi-sleuth"
+    },
+    {
+      "did": "did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6InlKYi1KNFZnaFUzYXpSU1czdzJqU2JEdDZGdFNtMUQzbkZacHpQSDNjRmsiLCJraWQiOiJFTFI1TkFQY2FlMm9zYXVFVWZaLUlEc3IzSFpMWS1lYVpnUTc1aW9aQko0IiwiYWxnIjoiRWREU0EifQ",
+      "handle": "chain-forensics"
+    },
+    {
+      "did": "did:jwk:eyJjcnYiOiJFZDI1NTE5Iiwia3R5IjoiT0tQIiwieCI6ImJobEhhMkM1OFQwSWdyamFQQnJ3TkRfcmRrTkdPeG1KWktQZmoxVUhheTAiLCJraWQiOiJfdW16ejVKWXk4VS15eE00RDA0eHhLS0dYblRVNlV3Qm05ZjEycW9zam04IiwiYWxnIjoiRWREU0EifQ",
+      "handle": "mempool-max"
+    }
+  ],
+  "events": [
+    {
+      "txid": "07bfb68ad83ac6564bbdf837ec5ffcda3effa6240a33c4e1cf5e7df29bdc41d5",
+      "rules": [
+        "whale"
+      ],
+      "valueSats": 299999997000,
+      "detectedAt": "2026-08-06T14:05:11.000Z",
+      "blockHeight": 954679,
+      "blockHash": "000000000000000000001f0ddc38c37b84089101290ea89e593e3e0defcffe23",
+      "blockTime": "2026-06-21T09:04:36.000Z",
+      "inputs": [
+        {
+          "address": "13rCGm4Z3PDeYwo5a7GTT4jFYnRFBZbKr1",
+          "valueSats": 300000000000
+        }
+      ],
+      "outputs": [
+        {
+          "address": "bc1quhruqrghgcca950rvhtrg7cpd7u8k6svpzgzmrjy8xyukacl5lkq0r8l2d",
+          "valueSats": 299999997000
+        }
+      ],
+      "aiSummary": "A 3,000 BTC transfer swept the full balance of a labeled OKX proof-of-reserves wallet into a fresh taproot address.",
+      "aiTag": "exchange-flow",
+      "meta": null
+    },
+    {
+      "txid": "620d7bd1f934cc90131f44b7008222b3f58ced735b531457976b90c71ebc52bb",
+      "rules": [
+        "whale"
+      ],
+      "valueSats": 299999997000,
+      "detectedAt": "2026-08-06T09:12:48.000Z",
+      "blockHeight": 941685,
+      "blockHash": "00000000000000000000abbee8e2f25254f41e3561051849961ac5c633bc12db",
+      "blockTime": "2026-03-22T09:31:22.000Z",
+      "inputs": [
+        {
+          "address": "162z6mSSHzfTqb2Sn3NUk5r1Y2oGoCMCoM",
+          "valueSats": 300000000000
+        }
+      ],
+      "outputs": [
+        {
+          "address": "bc1quhruqrghgcca950rvhtrg7cpd7u8k6svpzgzmrjy8xyukacl5lkq0r8l2d",
+          "valueSats": 299999997000
+        }
+      ],
+      "aiSummary": "Another 3,000 BTC left a labeled OKX reserve wallet for the same destination as a prior sweep, consistent with exchange cold-wallet rotation.",
+      "aiTag": "exchange-flow",
+      "meta": null
+    },
+    {
+      "txid": "b0a67b6a06f146b6cbcd39c75742bf15799c50d010eef96b68d136fd48573cd6",
+      "rules": [
+        "whale"
+      ],
+      "valueSats": 10973560239500,
+      "detectedAt": "2026-08-05T22:40:03.000Z",
+      "blockHeight": 550156,
+      "blockHash": "000000000000000000206f23a85c7f0de127adfc7137a87580c6d180046a4e43",
+      "blockTime": "2018-11-15T06:47:07.000Z",
+      "inputs": [
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 1651055854778
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 1611649672098
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 689871202965
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 665306973904
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 99731596900
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 70759013576
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 103578009974
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 150856572497
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 63191438500
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 101677296882
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 86245233773
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 170110014274
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 109527486300
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 200000000000
+        }
+      ],
+      "outputs": [
+        {
+          "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+          "valueSats": 10923433000000
+        },
+        {
+          "address": "16ftSEQ4ctQFDtVZiUBusQUjRrGhM3JYwe",
+          "valueSats": 50127239500
+        }
+      ],
+      "aiSummary": "A 109,735 BTC consolidation moved funds from the labeled Binance.com hot wallet into the Binance reserve cold wallet.",
+      "aiTag": "whale-move",
+      "meta": null
+    },
+    {
+      "txid": "a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d",
+      "rules": [
+        "whale",
+        "dormant-wake"
+      ],
+      "valueSats": 1000000000000,
+      "detectedAt": "2026-08-05T18:02:37.000Z",
+      "blockHeight": 57043,
+      "blockHash": "00000000152340ca42227603908689183edc47355204e7aca59383b0aaac1fd8",
+      "blockTime": "2010-05-22T18:16:31.000Z",
+      "inputs": [
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 375388000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 90000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 85000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 80000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 45000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 45000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 25000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 8000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 30500000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 1000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 20000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 11100000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 15000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 40000000000
+        },
+        {
+          "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+          "valueSats": 40000000000
+        }
+      ],
+      "outputs": [
+        {
+          "address": "17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ",
+          "valueSats": 1000000000000
+        }
+      ],
+      "aiSummary": "10,000 BTC from the 2010 era moved in a single output, the famous \"Bitcoin pizza\" coins, waking long-dormant supply.",
+      "aiTag": "dormant-wake",
+      "meta": null
+    },
+    {
+      "txid": "3b99e3f38677ab632eee66cec35c258049395def756cb5ab2b44dd9fe0c9b3cb",
+      "rules": [
+        "coinjoin"
+      ],
+      "valueSats": 26163612899,
+      "detectedAt": "2026-08-05T15:31:20.000Z",
+      "blockHeight": 593571,
+      "blockHash": "000000000000000000147771fe11d86f4c88ea1acbe5ddefc8a213098bd93627",
+      "blockTime": "2019-09-06T19:30:42.000Z",
+      "inputs": [
+        {
+          "address": "bc1qt469579vcyvdvu70fwas74q6qxmafg4k933wer",
+          "valueSats": 1495529655
+        },
+        {
+          "address": "bc1qsj0raegpn07xrnr6fh8dqvgflzjzqcwddgfx2z",
+          "valueSats": 1495102409
+        },
+        {
+          "address": "bc1qya57k7jysy8echu70l6e78amsv06yas8527paj",
+          "valueSats": 1488628815
+        },
+        {
+          "address": "bc1q9amqqgc5sjwtz5rdzlcf6nvvqe52pqyn628wcs",
+          "valueSats": 1488307092
+        },
+        {
+          "address": "bc1qcvp6fe8usmjzmusevj24jys0klz0uf2shyxdcg",
+          "valueSats": 1480424473
+        },
+        {
+          "address": "bc1qr4s3uuf687uz33f6z2hnn9t4ca47qu0nsrtlrh",
+          "valueSats": 1473779890
+        }
+      ],
+      "outputs": [
+        {
+          "address": "bc1qs4x8l25fafdw54782yqhyvw4hkrpdv33p4nxw8",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1qs07xufw9yvj79xklkrh3qckf0ecanhy8rerq25",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1qv9lwxzu0n9k54zdlkwl0s0kd8xge844fls7798",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1q7x4d6uscekyvcsdftwz2g8r4w059ylvcdcv7d9",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1qfc2zc9da4yqt0gzzrrywcq4z4wzhdcn2nf9fyk",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1qjc8c9lxj6rz2cdf2rkk50mzwyua8uxa5hxr8nt",
+          "valueSats": 642696064
+        },
+        {
+          "address": "bc1q84qn3f77tuec3l0xyd5xgnv46q0p8ssv4vv99t",
+          "valueSats": 9978549
+        },
+        {
+          "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+          "valueSats": 12804046
+        }
+      ],
+      "aiSummary": "A transaction with 62 equal outputs of about 0.1004 BTC resembles a Wasabi CoinJoin round.",
+      "aiTag": "coinjoin",
+      "meta": {
+        "coinjoin": {
+          "kind": "wasabi",
+          "denominationSats": 10042126,
+          "equalOutputCount": 62,
+          "participantCount": 68
+        }
+      }
+    },
+    {
+      "txid": "3e390d0b0da052d5ab789e031fc0fe9b7d23a45ebc6b62056a0bd577af8404ec",
+      "rules": [
+        "coinjoin"
+      ],
+      "valueSats": 22317137509,
+      "detectedAt": "2026-08-05T15:34:55.000Z",
+      "blockHeight": 593581,
+      "blockHash": "00000000000000000018902549a713f3b0c052db277bb33d09ff0284b066adfb",
+      "blockTime": "2019-09-06T20:38:33.000Z",
+      "inputs": [
+        {
+          "address": "bc1q9kltkjnem5ad7esszxhzj28e54affgsuag4hrm",
+          "valueSats": 1408518320
+        },
+        {
+          "address": "bc1qdstasu949ffw7c0fnu49k5h9lc3pazj0ntq43m",
+          "valueSats": 1386937232
+        },
+        {
+          "address": "bc1qqg007nrwh0n092n8rap24gy2sud7lgmcdqdtlk",
+          "valueSats": 1385262368
+        },
+        {
+          "address": "bc1q3sq7edztug252f8frc6wlxqm9kt4at9rdexplk",
+          "valueSats": 1361503346
+        },
+        {
+          "address": "bc1qsnqvlxqlgav2vxg45y26jjsl768mpexkjdltkx",
+          "valueSats": 1356838300
+        },
+        {
+          "address": "bc1q282ul8xr8v0xxfc49f26xnwkhnn36ey60cm5vp",
+          "valueSats": 1356322824
+        },
+        {
+          "address": "bc1q84qn3f77tuec3l0xyd5xgnv46q0p8ssv4vv99t",
+          "valueSats": 9978549
+        }
+      ],
+      "outputs": [
+        {
+          "address": "bc1qr0rg9pgetqk0y5868zne27jdscghwkdxkqyw4p",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1qpjt2w8vywju0tdd5n8jc2ytvrxfs2eu78fcurp",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1q5kv8qhysxtqryhmtu6jzs9vtg26s8v3w3rtc2r",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1q2a7vras9v07dv5k0yxv0h73km6p0lkd3w2fa4l",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1q6prt4kyv94jt3nxuqugjf2tqeed5t7e9h09ym8",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1q77h3varqyc84cg70q3c847hhayzgh2vd3ak4vf",
+          "valueSats": 642517312
+        },
+        {
+          "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+          "valueSats": 8988767
+        }
+      ],
+      "aiSummary": "A transaction with 64 equal outputs of about 0.1004 BTC resembles a Wasabi CoinJoin round and remixes outputs of an earlier round.",
+      "aiTag": "coinjoin",
+      "meta": {
+        "coinjoin": {
+          "kind": "wasabi",
+          "denominationSats": 10043280,
+          "equalOutputCount": 64,
+          "participantCount": 81
+        }
+      }
+    },
+    {
+      "txid": "daa0d7b1ea1a247fffc155609acbadec2d95ba601c212efe3672bec6ce5392ff",
+      "rules": [
+        "coinjoin"
+      ],
+      "valueSats": 22501796206,
+      "detectedAt": "2026-08-05T15:36:41.000Z",
+      "blockHeight": 593581,
+      "blockHash": "00000000000000000018902549a713f3b0c052db277bb33d09ff0284b066adfb",
+      "blockTime": "2019-09-06T20:38:33.000Z",
+      "inputs": [
+        {
+          "address": "bc1qv7gd2wxtd75sem24uxzcxp4z9d6mtc2fvccpu4",
+          "valueSats": 1479393925
+        },
+        {
+          "address": "bc1qe6n70nsgwfvkm6wp7gsafkevn0gm4lfr3u3etx",
+          "valueSats": 1462907163
+        },
+        {
+          "address": "bc1qu0h69zwq794x7dmjj0q23e6jvl3d4tmj3a8ekt",
+          "valueSats": 1452796048
+        },
+        {
+          "address": "bc1qttygwjj46l92l2jn7k4zvjcaq8fhvpntm7duhx",
+          "valueSats": 1411228929
+        },
+        {
+          "address": "bc1qq838a8kerd5dyjv3326e9cv2s6u2nymt8qudys",
+          "valueSats": 1400977159
+        },
+        {
+          "address": "bc1qgf0cslazu7uhp8lxe5uwjdgrzk6kxfwstss58s",
+          "valueSats": 1383681382
+        }
+      ],
+      "outputs": [
+        {
+          "address": "bc1q24l6v6my573wstfqrwj4h6ws49vz327rewtnm4",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1q9a5azxzhv4lvp0ee44htq4urw3sylpsxgr4vzt",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1qmew8t9hlpvcw5rc8jhn6r7ktwz0lrvqy6pfn5f",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1qvtzrhtnk6xw80zanvulz5uvnlhenvz50lh0ksz",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1q0nqhapjfd5hfczwknaxlqtmszjdllsnsqe4sj3",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1qzghu0wxynfu09a69gzmxn4dqwqzkzpfyjwa0l0",
+          "valueSats": 642519872
+        },
+        {
+          "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+          "valueSats": 10233258
+        }
+      ],
+      "aiSummary": "A transaction with 85 equal outputs of about 0.1004 BTC resembles a Wasabi CoinJoin round and remixes outputs of earlier rounds.",
+      "aiTag": "coinjoin",
+      "meta": {
+        "coinjoin": {
+          "kind": "wasabi",
+          "denominationSats": 10043043,
+          "equalOutputCount": 85,
+          "participantCount": 105
+        }
+      }
+    }
+  ],
+  "labels": [
+    {
+      "address": "17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ",
+      "tag": "pizza-seller",
+      "note": "Received the 10,000 BTC pizza payment in May 2010.",
+      "evidenceUrl": "https://bitcointalk.org/index.php?topic=137.0",
+      "author": "satoshi-sleuth"
+    },
+    {
+      "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+      "tag": "pizza-buyer",
+      "note": "Laszlo Hanyecz paid 10,000 BTC for two pizzas from this address.",
+      "evidenceUrl": "https://bitcointalk.org/index.php?topic=137.0",
+      "author": "chain-forensics"
+    },
+    {
+      "address": "bc1quhruqrghgcca950rvhtrg7cpd7u8k6svpzgzmrjy8xyukacl5lkq0r8l2d",
+      "tag": "okx-cold-wallet",
+      "note": "Receives full-balance sweeps from seed-labeled OKX reserve wallets.",
+      "evidenceUrl": "https://twitter.com/okx/status/1590812545346330624",
+      "author": "chain-forensics"
+    },
+    {
+      "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+      "tag": "wasabi-coordinator",
+      "note": "Collects coordinator fees from Wasabi 1.0 CoinJoin rounds.",
+      "evidenceUrl": "https://docs.wasabiwallet.io/",
+      "author": "satoshi-sleuth"
+    },
+    {
+      "address": "bc1q84qn3f77tuec3l0xyd5xgnv46q0p8ssv4vv99t",
+      "tag": "wasabi-remixer",
+      "note": "Equal-output of one Wasabi round reappears as an input to the next round.",
+      "evidenceUrl": "https://docs.wasabiwallet.io/",
+      "author": "mempool-max"
+    },
+    {
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "binance-cold-wallet",
+      "note": "Crowd confirmation of the Binance reserve cold wallet.",
+      "evidenceUrl": "https://www.binance.com/en/blog/community/our-commitment-to-transparency-2895840147147652626",
+      "author": "mempool-max"
+    }
+  ],
+  "votes": [
+    {
+      "address": "17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ",
+      "tag": "pizza-seller",
+      "voter": "chain-forensics",
+      "value": 1
+    },
+    {
+      "address": "17SkEw2md5avVNyYgj6RiXuQKNwkXaxFyQ",
+      "tag": "pizza-seller",
+      "voter": "mempool-max",
+      "value": 1
+    },
+    {
+      "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+      "tag": "pizza-buyer",
+      "voter": "satoshi-sleuth",
+      "value": 1
+    },
+    {
+      "address": "1XPTgDRhN8RFnzniWCddobD9iKZatrvH4",
+      "tag": "pizza-buyer",
+      "voter": "mempool-max",
+      "value": 1
+    },
+    {
+      "address": "bc1quhruqrghgcca950rvhtrg7cpd7u8k6svpzgzmrjy8xyukacl5lkq0r8l2d",
+      "tag": "okx-cold-wallet",
+      "voter": "satoshi-sleuth",
+      "value": 1
+    },
+    {
+      "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+      "tag": "wasabi-coordinator",
+      "voter": "chain-forensics",
+      "value": 1
+    },
+    {
+      "address": "bc1qs604c7jv6amk4cxqlnvuxv26hv3e48cds4m0ew",
+      "tag": "wasabi-coordinator",
+      "voter": "mempool-max",
+      "value": 1
+    },
+    {
+      "address": "bc1q84qn3f77tuec3l0xyd5xgnv46q0p8ssv4vv99t",
+      "tag": "wasabi-remixer",
+      "voter": "satoshi-sleuth",
+      "value": 1
+    },
+    {
+      "address": "bc1q84qn3f77tuec3l0xyd5xgnv46q0p8ssv4vv99t",
+      "tag": "wasabi-remixer",
+      "voter": "chain-forensics",
+      "value": -1
+    },
+    {
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "binance-cold-wallet",
+      "voter": "satoshi-sleuth",
+      "value": 1
+    },
+    {
+      "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo",
+      "tag": "binance-cold-wallet",
+      "voter": "chain-forensics",
+      "value": 1
+    }
+  ],
+  "aiFeedback": [
+    {
+      "txid": "07bfb68ad83ac6564bbdf837ec5ffcda3effa6240a33c4e1cf5e7df29bdc41d5",
+      "voter": "satoshi-sleuth",
+      "value": "confirm"
+    },
+    {
+      "txid": "07bfb68ad83ac6564bbdf837ec5ffcda3effa6240a33c4e1cf5e7df29bdc41d5",
+      "voter": "chain-forensics",
+      "value": "confirm"
+    },
+    {
+      "txid": "07bfb68ad83ac6564bbdf837ec5ffcda3effa6240a33c4e1cf5e7df29bdc41d5",
+      "voter": "mempool-max",
+      "value": "refute"
+    },
+    {
+      "txid": "a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d",
+      "voter": "satoshi-sleuth",
+      "value": "confirm"
+    },
+    {
+      "txid": "a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d",
+      "voter": "mempool-max",
+      "value": "confirm"
+    }
+  ],
+  "coinjoinBatch": {
+    "id": "b4f0a2d8-1e3c-4a5b-9d7e-6c2f8a0b1d34",
+    "kind": "coinjoin-round",
+    "title": "Coinjoin round (wasabi)",
+    "description": null,
+    "source": "auto",
+    "txs": [
+      {
+        "txid": "3b99e3f38677ab632eee66cec35c258049395def756cb5ab2b44dd9fe0c9b3cb",
+        "linkReason": "round"
+      },
+      {
+        "txid": "3e390d0b0da052d5ab789e031fc0fe9b7d23a45ebc6b62056a0bd577af8404ec",
+        "linkReason": "round chain: spends output of 3b99e3f38677ab632eee66cec35c258049395def756cb5ab2b44dd9fe0c9b3cb"
+      },
+      {
+        "txid": "daa0d7b1ea1a247fffc155609acbadec2d95ba601c212efe3672bec6ce5392ff",
+        "linkReason": "round chain: spends output of 3e390d0b0da052d5ab789e031fc0fe9b7d23a45ebc6b62056a0bd577af8404ec"
+      }
+    ]
+  }
+}
