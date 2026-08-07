@@ -273,6 +273,53 @@ export interface AddressCluster {
   available: boolean;
 }
 
+/** A later transaction that spent several of a coinjoin's mixed outputs together. */
+export interface CoinjoinLinkage {
+  spendTxid: string;
+  /** vout indexes this transaction consolidated */
+  outputs: number[];
+  valueSats: number;
+  /**
+   * How many of them shared the modal denomination. Anonymity lives inside an
+   * equal-value group, so only these erode the anonymity set — but every
+   * consolidation here still proves the outputs share an owner.
+   */
+  denominatedOutputs: number;
+}
+
+/**
+ * What can and cannot be said about a coinjoin.
+ *
+ * Clustering across a coinjoin's inputs is invalid by construction — they
+ * belong to different people on purpose — so this reports the mixing quality
+ * instead, plus the one thing that genuinely undoes it: participants
+ * consolidating their mixed outputs afterwards.
+ */
+export interface CoinjoinAnalysis {
+  txid: string;
+  isCoinjoin: boolean;
+  denominationSats: number;
+  /** outputs sharing the mixed denomination */
+  equalOutputs: number;
+  inputCount: number;
+  outputCount: number;
+  /** distinct input addresses, an upper bound on parties present */
+  participants: number;
+  entropy: TxEntropy;
+  /** indistinguishable outputs at the moment of mixing */
+  anonymitySet: number;
+  /** what survives after post-mix consolidations are accounted for */
+  effectiveAnonymitySet: number;
+  /** share of the original anonymity set lost, 0..1 */
+  degradation: number;
+  spentMixedOutputs: number;
+  linkages: CoinjoinLinkage[];
+  /** false when spend status could not be read; linkages are then unknown, not absent */
+  linkageAvailable: boolean;
+  blockHeight: number | null;
+  time: string | null;
+}
+
 export interface LeaderboardEntry {
   did: string;
   handle: string | null;

@@ -23,6 +23,7 @@ import type {
   FlowNode,
 } from '@chainwatch/shared';
 import type { EsploraClient, EsploraTx } from '../ingest/esplora';
+import { looksLikeCoinjoin } from './coinjoin';
 
 export interface FlowOptions {
   /** how far back through funding transactions to walk */
@@ -296,10 +297,19 @@ export async function clusterAddress(
   let sweepInputs = 0;
   let reuseSpends = 0;
   let peelLike = 0;
+  let coinjoinsExcluded = 0;
 
   for (const tx of txs) {
     const spendsHere = tx.inputs.some((input) => input.address === focus);
     if (!spendsHere) continue;
+
+    // A coinjoin's inputs belong to different people by design. Treating them
+    // as co-spends would invent a wallet spanning strangers, which is the
+    // single largest source of error in naive clustering.
+    if (looksLikeCoinjoin(tx)) {
+      coinjoinsExcluded++;
+      continue;
+    }
 
     const inputAddresses = tx.inputs
       .map((input) => input.address)
@@ -332,6 +342,11 @@ export async function clusterAddress(
   }
   if (peelLike >= 5) {
     patterns.push(`Peel chain: ${peelLike} one-in/two-out spends, the shape of repeated peeling to fresh change.`);
+  }
+  if (coinjoinsExcluded > 0) {
+    patterns.push(
+      `${coinjoinsExcluded} coinjoin${coinjoinsExcluded === 1 ? '' : 's'} excluded from clustering: their inputs belong to different parties by design, so co-spending in one proves nothing about ownership.`,
+    );
   }
   if (bindingTxids.length === 0) {
     patterns.push('No co-spend found: nothing in the sampled history proves shared control with another address.');

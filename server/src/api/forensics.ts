@@ -8,6 +8,8 @@ import {
 import type { EsploraClient } from '../ingest/esplora';
 import { getLabelsForAddressScored } from '../store/apiQueries';
 import { clusterAddress, traceAddressFlow } from '../analytics/forensics';
+import { analyzeCoinjoin } from '../analytics/coinjoin';
+import { isTxid } from '@chainwatch/shared';
 import { errMessage } from '../util';
 
 /**
@@ -85,6 +87,22 @@ export function createForensicsRoutes(deps: ForensicsDeps): Hono {
         available: false,
       };
       return c.json(body);
+    }
+  });
+
+  app.get('/api/coinjoins/:txid/analysis', async (c) => {
+    const txid = c.req.param('txid');
+    if (!isTxid(txid)) return c.json({ error: 'txid must be 64 hex characters' }, 400);
+    try {
+      const analysis = await withTimeout(
+        analyzeCoinjoin(deps.esplora, txid.toLowerCase()),
+        CLUSTER_TIMEOUT_MS,
+      );
+      if (analysis === null) return c.json({ error: 'unknown transaction' }, 404);
+      return c.json(analysis);
+    } catch (err) {
+      warn(`coinjoin analysis: ${txid} unavailable: ${errMessage(err)}`);
+      return c.json({ error: 'chain data unavailable' }, 503);
     }
   });
 

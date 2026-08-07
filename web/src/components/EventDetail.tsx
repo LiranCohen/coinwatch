@@ -7,6 +7,7 @@ import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
 import { RuleBadge, StatusBadge } from './badges';
+import { CoinjoinAnalysis } from './CoinjoinAnalysis';
 import { EntropyPanel } from './EntropyPanel';
 import { HackTracer } from './HackTracer';
 import { LabelList } from './LabelList';
@@ -150,6 +151,8 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
           </div>
         </section>
       )}
+
+      {event.rules.includes('coinjoin') && <CoinjoinAnalysis txid={event.txid} />}
 
       {event.meta?.entropy && (
         <EntropyPanel

@@ -1,6 +1,7 @@
 import type {
   AddressChainTxsResponse,
   AddressCluster,
+  CoinjoinAnalysis,
   AddressFlow,
   AddressInfo,
   BlocksResponse,
@@ -359,6 +360,11 @@ export async function getAddressTransactions(address: string): Promise<AddressCh
   return request<AddressChainTxsResponse>(
     `/api/addresses/${encodeURIComponent(address)}/transactions`,
   );
+}
+
+/** Mixing quality of a coinjoin, and any post-mix consolidation that undid it. */
+export async function getCoinjoinAnalysis(txid: string): Promise<CoinjoinAnalysis> {
+  return request<CoinjoinAnalysis>(`/api/coinjoins/${encodeURIComponent(txid)}/analysis`);
 }
 
 /** Bounded forensic walk of the chain around an address; slow by nature. */

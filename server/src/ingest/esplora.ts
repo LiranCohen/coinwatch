@@ -57,6 +57,16 @@ export interface EsploraBlock {
   medianFeeRate: number | null;
 }
 
+/** Where a transaction output went, if anywhere. */
+export interface EsploraOutspend {
+  spent: boolean;
+  /** the transaction that spent it */
+  txid: string | null;
+  /** its input index in that transaction */
+  vin: number | null;
+  blockHeight: number | null;
+}
+
 export interface EsploraAddress {
   address: string;
   /** Confirmed balance (funded minus spent), in sats. */
@@ -159,6 +169,13 @@ interface RawAddressStats {
   tx_count?: number;
   funded_txo_sum?: number;
   spent_txo_sum?: number;
+}
+
+interface RawOutspend {
+  spent?: boolean;
+  txid?: string;
+  vin?: number;
+  status?: { block_height?: number };
 }
 
 interface RawAddress {
@@ -387,6 +404,29 @@ export class EsploraClient {
         (data as RawTx).status?.confirmed === true ? IMMUTABLE_CACHE_TTL_MS : this.cacheTtlMs,
     })) as RawTx | null;
     return raw === null ? null : normalizeTx(raw);
+  }
+
+  /**
+   * Spend status of every output of a transaction, in vout order. One request
+   * answers "where did each output go", which is what post-mix linkage needs.
+   */
+  async outspends(txid: string): Promise<EsploraOutspend[]> {
+    const raw = (await this.get(`/tx/${txid}/outspends`, {
+      parse: 'json',
+      // spend status only ever goes from unspent to spent, so an already-spent
+      // answer is immutable while an unspent one may change
+      ttlMs: (data) =>
+        Array.isArray(data) && data.every((o) => (o as RawOutspend).spent)
+          ? IMMUTABLE_CACHE_TTL_MS
+          : this.cacheTtlMs,
+    })) as RawOutspend[] | null;
+    if (raw === null) throw new EsploraError(`esplora: transaction ${txid} not found`, 404);
+    return raw.map((entry) => ({
+      spent: entry.spent === true,
+      txid: typeof entry.txid === 'string' ? entry.txid : null,
+      vin: typeof entry.vin === 'number' ? entry.vin : null,
+      blockHeight: entry.status?.block_height ?? null,
+    }));
   }
 
   /** Address summary stats, or null if the host reports it unknown (404). */
