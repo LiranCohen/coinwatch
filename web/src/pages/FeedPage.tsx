@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 
 import type { EventDetail as EventDetailType, EventSummary, Label, Rule } from '@chainwatch/shared';
 
-import { getEvent, getEvents, postInject, probeInject } from '../api/client';
+import { getEvent, getEvents } from '../api/client';
 import { useEventStream } from '../api/sse';
 import { BlocksStrip } from '../components/BlocksStrip';
 import { EventDetail } from '../components/EventDetail';
@@ -36,8 +36,6 @@ export function FeedPage() {
   const [selectedId, setSelectedId] = useState<string | null>(requestedEvent);
   const [detail, setDetail] = useState<EventDetailType | null>(null);
   const [ruleFilter, setRuleFilter] = useState<Rule | 'all'>('all');
-  const [injectAvailable, setInjectAvailable] = useState(false);
-  const [injecting, setInjecting] = useState(false);
   const [nodeStale, setNodeStale] = useState(false);
   const selectedRef = useRef<string | null>(null);
   selectedRef.current = selectedId;
@@ -75,10 +73,6 @@ export function FeedPage() {
       cancelled = true;
     };
   }, [selectedId, token]);
-
-  useEffect(() => {
-    probeInject().then(setInjectAvailable).catch(() => setInjectAvailable(false));
-  }, []);
 
   const refetchDetail = useCallback(
     (id: string) => {
@@ -146,16 +140,6 @@ export function FeedPage() {
     [setSearchParams],
   );
 
-  const inject = async () => {
-    setInjecting(true);
-    try {
-      const created = await postInject({});
-      select(created.id);
-    } finally {
-      setInjecting(false);
-    }
-  };
-
   return (
     <div className="space-y-4">
       <BlocksStrip />
@@ -185,18 +169,6 @@ export function FeedPage() {
             </button>
           ))}
         </div>
-        <div className="ml-auto flex items-center gap-2">
-          {false && injectAvailable && (
-            <button
-              type="button"
-              disabled={injecting}
-              onClick={() => void inject()}
-              className="rounded border border-amber-500/50 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300 hover:bg-amber-500/20 disabled:opacity-50"
-            >
-              {injecting ? 'Injecting…' : 'Inject simulated event'}
-            </button>
-          )}
-        </div>
       </div>
 
       <TrendingLabels />
@@ -209,14 +181,9 @@ export function FeedPage() {
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center">
               <p className="text-sm text-zinc-300">Listening to your node. No matching events yet.</p>
               <p className="mt-2 text-xs text-zinc-500">
-                Active detection: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
+                Detection rules: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
                 outputs · hack (multi-tx drain patterns).
               </p>
-              {false && injectAvailable && (
-                <p className="mt-2 text-xs text-amber-300/80">
-                  Rehearsing? Use the inject button to fire a clearly-marked simulated event through the pipeline.
-                </p>
-              )}
             </div>
           ) : (
             events.map((event) => (

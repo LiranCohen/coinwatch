@@ -7,7 +7,7 @@ import { enrichIo, guessLinks } from '../lib/demoFlow';
 import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
-import { RuleBadge, SimulatedBadge, StatusBadge } from './badges';
+import { RuleBadge, StatusBadge } from './badges';
 import { HackTracer } from './HackTracer';
 import { LabelList } from './LabelList';
 import { TxGraph } from './TxGraph';
@@ -20,7 +20,6 @@ interface EventDetailProps {
 
 export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) {
   const { token } = useSession();
-  const isDemo = false;
   const [hack, setHack] = useState<Hack | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -74,7 +73,6 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             <RuleBadge key={rule} rule={rule} />
           ))}
           <StatusBadge status={event.status} />
-          {isDemo && <SimulatedBadge />}
           <span className="ml-auto text-xs text-zinc-500">detected {timeAgo(event.detectedAt)}</span>
         </div>
         <p className="tnum mt-3 font-mono text-4xl font-semibold text-zinc-50">
@@ -109,7 +107,7 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             <div className="mb-1 flex flex-wrap items-baseline gap-2">
               <span className="text-sm font-semibold text-red-200">{hack.title}</span>
               <span className="tnum text-xs text-red-300/80">
-                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops · {hack.status}
+                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops
               </span>
             </div>
             <p className="mb-3 text-xs leading-relaxed text-zinc-400">{hack.summary}</p>

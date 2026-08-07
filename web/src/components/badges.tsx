@@ -43,7 +43,7 @@ export function StatusBadge({ status }: { status: EventStatus }) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-sky-300">
         <span className="cw-pulse inline-block h-2 w-2 rounded-full bg-sky-400" />
-        active
+        in mempool
       </span>
     );
   }

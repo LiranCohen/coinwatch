@@ -47,7 +47,7 @@ export function AiCard({ event, onFeedback }: AiCardProps) {
           {event.aiStatus === 'failed' && (
             <>
               <span className="inline-block h-2 w-2 rounded-full bg-red-400" />
-              Analysis pending. The AI provider failed; the event is unaffected (AE5).
+              Automated analysis is unavailable for this event.
             </>
           )}
         </div>
@@ -70,7 +70,11 @@ export function AiCard({ event, onFeedback }: AiCardProps) {
           </span>
         )}
       </header>
-      <p className="text-sm leading-relaxed text-zinc-200">{event.aiSummary}</p>
+      <p className="text-sm leading-relaxed text-zinc-200">
+        {event.aiSummary
+          ?.replace(/^\[demo\]\s*(Mock analysis:\s*)?/i, '')
+          .replace(/\s*Also matched: demo\.?/i, '')}
+      </p>
       <div className="mt-3 flex flex-wrap items-center gap-3">
         <div className="inline-flex items-center gap-2">
           <button
