@@ -37,6 +37,14 @@ function fmtShare(share: number): string {
   return `${(share * 100).toFixed(1)}%`;
 }
 
+/** halo behind floating labels so they never collide with bands or boxes */
+const LABEL_HALO = {
+  paintOrder: 'stroke',
+  stroke: '#09090b',
+  strokeWidth: 5,
+  strokeLinejoin: 'round',
+} as const;
+
 export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: HackTracerProps) {
   const navigate = useNavigate();
   const [trace, setTrace] = useState<Trace>({ kind: 'none' });
@@ -172,9 +180,10 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         {pathActive && (
           <text
             x={(x1 + x2) / 2}
-            y={cy - w / 2 - 5}
+            y={cy - w / 2 - 7}
             textAnchor="middle"
             className="tnum fill-red-200 font-mono text-[10px]"
+            style={LABEL_HALO}
           >
             {satsToBtc(sats)} BTC · {fmtShare(sats / total)} of stolen
           </text>
@@ -210,26 +219,26 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         >
           <rect
             x={IN_X}
-            y={y - 22}
+            y={y - 24}
             width={BOX_W}
-            height={44}
+            height={48}
             rx={7}
             className={labeled ? 'fill-red-500/10 stroke-red-400' : 'fill-zinc-900 stroke-zinc-700'}
           />
           {io.address ? (
             <text
               x={IN_X + 10}
-              y={y - 4}
+              y={y - 6}
               className="cursor-pointer fill-sky-400 font-mono text-[11px] hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/address/${io.address}`);
+                navigate(`/app/address/${io.address}`);
               }}
             >
               {truncateMiddle(io.address, 9, 6)}
             </text>
           ) : (
-            <text x={IN_X + 10} y={y - 4} className="fill-zinc-600 font-mono text-[11px] italic">
+            <text x={IN_X + 10} y={y - 6} className="fill-zinc-600 font-mono text-[11px] italic">
               n/a
             </text>
           )}
@@ -238,7 +247,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
           </text>
           {labeled && (
-            <text x={IN_X + 10} y={y + 20} className="fill-red-300 text-[9px]">
+            <text x={IN_X + 10} y={y + 21} className="fill-red-300 text-[9px]">
               {entryLabels[0].tag}
             </text>
           )}
@@ -268,9 +277,10 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         {pathActive && (
           <text
             x={(hopX(n - 1) + HOP_W + terminalX) / 2}
-            y={(cy + y) / 2 - bandWidth(io.valueSats) / 2 - 4}
+            y={(cy + y) / 2 - bandWidth(io.valueSats) / 2 - 6}
             textAnchor="middle"
             className="tnum fill-emerald-200 font-mono text-[10px]"
+            style={LABEL_HALO}
           >
             {satsToBtc(io.valueSats)} BTC · {fmtShare(io.valueSats / total)}
           </text>
@@ -286,26 +296,26 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
         >
           <rect
             x={terminalX}
-            y={y - 22}
+            y={y - 24}
             width={BOX_W}
-            height={44}
+            height={48}
             rx={7}
             className={labeled ? 'fill-red-500/10 stroke-red-400' : 'fill-zinc-900 stroke-zinc-700'}
           />
           {io.address ? (
             <text
               x={terminalX + 10}
-              y={y - 4}
+              y={y - 6}
               className="cursor-pointer fill-sky-400 font-mono text-[11px] hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/address/${io.address}`);
+                navigate(`/app/address/${io.address}`);
               }}
             >
               {truncateMiddle(io.address, 9, 6)}
             </text>
           ) : (
-            <text x={terminalX + 10} y={y - 4} className="fill-zinc-600 font-mono text-[11px] italic">
+            <text x={terminalX + 10} y={y - 6} className="fill-zinc-600 font-mono text-[11px] italic">
               n/a
             </text>
           )}
@@ -314,7 +324,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
             <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
           </text>
           {labeled && (
-            <text x={terminalX + 10} y={y + 20} className="fill-red-300 text-[9px]">
+            <text x={terminalX + 10} y={y + 21} className="fill-red-300 text-[9px]">
               {entryLabels[0].tag}
             </text>
           )}
@@ -366,7 +376,7 @@ export function HackTracer({ hack, currentEventId, labels = [], onOpenEvent }: H
               className="cursor-pointer fill-sky-400 font-mono text-[10px] hover:underline"
               onClick={(e) => {
                 e.stopPropagation();
-                navigate(`/address/${io.address}`);
+                navigate(`/app/address/${io.address}`);
               }}
             >
               {truncateMiddle(io.address, 9, 6)}

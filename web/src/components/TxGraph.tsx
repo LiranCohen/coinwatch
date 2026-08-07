@@ -28,8 +28,8 @@ interface BoxGeom {
   h: number;
 }
 
-const ROW_H = 46;
-const ROW_GAP = 10;
+const ROW_H = 54;
+const ROW_GAP = 12;
 const PAD_Y = 12;
 const HEADER_H = 22;
 const WIDTH = 1000;
@@ -57,6 +57,14 @@ function flowPath(x1: number, y1: number, x2: number, y2: number): string {
 function fmtShare(share: number): string {
   return `${(share * 100).toFixed(1)}%`;
 }
+
+/** halo behind floating labels so they never collide with bands or boxes */
+const LABEL_HALO = {
+  paintOrder: 'stroke',
+  stroke: '#09090b',
+  strokeWidth: 5,
+  strokeLinejoin: 'round',
+} as const;
 
 export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
   const navigate = useNavigate();
@@ -133,7 +141,6 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
     const active =
       (trace.kind === 'in' && side === 'in' && trace.index === index) ||
       (trace.kind === 'out' && side === 'out' && trace.index === index);
-    const share = io.valueSats / totalOut;
     const clickable = io.address !== null;
 
     return (
@@ -173,7 +180,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
             className="cursor-pointer fill-sky-400 font-mono text-[11px] hover:underline"
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/address/${io.address}`);
+              navigate(`/app/address/${io.address}`);
             }}
           >
             {truncateMiddle(io.address, 9, 6)}
@@ -183,25 +190,12 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
             n/a
           </text>
         )}
-        <text
-          x={side === 'in' ? x + 10 : x + COL_W - 10}
-          y={geom.y + 34}
-          textAnchor={side === 'in' ? 'start' : 'end'}
-          className="tnum fill-zinc-200 font-mono text-[12px]"
-        >
+        <text x={x + 10} y={geom.y + 36} className="tnum fill-zinc-200 font-mono text-[12px]">
           {satsToBtc(io.valueSats)}
           <tspan className="fill-zinc-500 text-[10px]"> BTC</tspan>
         </text>
-        <text
-          x={x + COL_W - 10}
-          y={geom.y + 18}
-          textAnchor="end"
-          className="tnum fill-zinc-500 font-mono text-[10px]"
-        >
-          {fmtShare(share)}
-        </text>
         {labeled && (
-          <text x={x + 10} y={geom.y + geom.h - 6} className="fill-sky-300 text-[9px]">
+          <text x={x + 10} y={geom.y + geom.h - 5} className="fill-sky-300 text-[9px]">
             {entryLabels[0].tag}
             {entryLabels.length > 1 ? ` +${entryLabels.length - 1}` : ''}
           </text>
@@ -277,9 +271,10 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
         {label && (
           <text
             x={midX}
-            y={midY - width / 2 - 4}
+            y={Math.max(28, midY - width / 2 - 6)}
             textAnchor="middle"
             className="tnum fill-sky-200 font-mono text-[10px]"
+            style={LABEL_HALO}
           >
             {label}
           </text>
