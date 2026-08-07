@@ -21,6 +21,17 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
   const { token } = useSession();
   const isDemo = event.source === 'demo';
   const [hack, setHack] = useState<Hack | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyTxid = async () => {
+    try {
+      await navigator.clipboard.writeText(event.txid);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // clipboard unavailable (permissions or non-secure context)
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -64,15 +75,16 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
           {satsToBtc(event.valueSats)}
           <span className="ml-2 text-base font-normal text-zinc-500">BTC</span>
         </p>
-        <p className="mt-2 break-all font-mono text-xs text-zinc-500">{event.txid}</p>
-        <a
-          href={`https://mempool.space/tx/${event.txid}`}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-1 inline-block text-xs text-sky-400 hover:underline"
-        >
-          View on mempool.space
-        </a>
+        <div className="mt-2 flex items-center gap-2">
+          <p className="break-all font-mono text-xs text-zinc-500">{event.txid}</p>
+          <button
+            type="button"
+            onClick={() => void copyTxid()}
+            className="shrink-0 rounded border border-zinc-700 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-zinc-400 hover:border-zinc-500 hover:text-zinc-200"
+          >
+            {copied ? 'COPIED' : 'COPY'}
+          </button>
+        </div>
       </header>
 
       <AiCard event={event} onFeedback={(aiFeedback) => onUpdate({ ...event, aiFeedback })} />

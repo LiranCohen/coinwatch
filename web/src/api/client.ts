@@ -278,7 +278,7 @@ export async function getAddress(address: string, token?: string | null): Promis
       txCount: null,
       labels: clone(labels),
       recentEvents: [],
-      externalUrl: `https://mempool.space/address/${address}`,
+      history: [],
     };
   }
   return request<AddressInfo>(`/api/addresses/${encodeURIComponent(address)}`, undefined, token);

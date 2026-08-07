@@ -5,6 +5,7 @@ import {
   RULES,
   SOURCES,
   STATUSES,
+  type AddressHistoryEntry,
   type AddressInfo,
   type AiFeedbackRequest,
   type CreateLabelRequest,
@@ -178,6 +179,21 @@ export function serializeEventDetail(
   };
 }
 
+function serializeAddressHistory(rows: EventRow[], address: string): AddressHistoryEntry[] {
+  return rows.map((row) => {
+    const inputs = JSON.parse(row.inputs) as EventIo[];
+    const outputs = JSON.parse(row.outputs) as EventIo[];
+    const sumFor = (io: EventIo[]) =>
+      io.reduce((total, entry) => (entry.address === address ? total + entry.valueSats : total), 0);
+    return {
+      txid: row.txid,
+      time: row.block_time ?? row.detected_at,
+      deltaSats: sumFor(outputs) - sumFor(inputs),
+      eventId: row.id,
+    };
+  });
+}
+
 function isAbsoluteHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -283,7 +299,7 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
       recentEvents: recentEvents.map((row) =>
         serializeEventSummary(db, row, viewerDid, labelsPool),
       ),
-      externalUrl: `https://mempool.space/address/${address}`,
+      history: serializeAddressHistory(recentEvents, address),
     };
     return c.json(body);
   });

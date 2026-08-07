@@ -102,14 +102,23 @@ export interface EventDetail extends EventSummary {
   aiFeedback: AiFeedback;
 }
 
+export interface AddressHistoryEntry {
+  txid: string;
+  time: string;
+  /** signed from the address's perspective: negative = outflow */
+  deltaSats: number;
+  /** set when the transaction is tracked as an event */
+  eventId: string | null;
+}
+
 export interface AddressInfo {
   address: string;
   balanceSats: number | null;
   txCount: number | null;
   labels: Label[];
   recentEvents: EventSummary[];
-  /** mempool.space link-out */
-  externalUrl: string;
+  /** history observed by the operator's own node, newest first */
+  history: AddressHistoryEntry[];
 }
 
 export interface LeaderboardEntry {

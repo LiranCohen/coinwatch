@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import type { EventDetail as EventDetailType, EventSummary, Label, Rule } from '@chainwatch/shared';
 
@@ -28,8 +29,10 @@ function SkeletonFeed() {
 
 export function FeedPage() {
   const { token } = useSession();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedEvent = searchParams.get('event');
   const [events, setEvents] = useState<EventSummary[] | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(requestedEvent);
   const [detail, setDetail] = useState<EventDetailType | null>(null);
   const [ruleFilter, setRuleFilter] = useState<Rule | 'all'>('all');
   const [injectAvailable, setInjectAvailable] = useState(false);
@@ -130,11 +133,23 @@ export function FeedPage() {
     return () => clearInterval(timer);
   }, [lastHealthAt]);
 
+  useEffect(() => {
+    if (requestedEvent && requestedEvent !== selectedRef.current) setSelectedId(requestedEvent);
+  }, [requestedEvent]);
+
+  const select = useCallback(
+    (id: string) => {
+      setSelectedId(id);
+      setSearchParams({ event: id }, { replace: true });
+    },
+    [setSearchParams],
+  );
+
   const inject = async () => {
     setInjecting(true);
     try {
       const created = await postInject({});
-      setSelectedId(created.id);
+      select(created.id);
     } finally {
       setInjecting(false);
     }
@@ -207,14 +222,14 @@ export function FeedPage() {
             </div>
           ) : (
             events.map((event) => (
-              <FeedItem key={event.id} event={event} selected={event.id === selectedId} onSelect={setSelectedId} />
+              <FeedItem key={event.id} event={event} selected={event.id === selectedId} onSelect={select} />
             ))
           )}
         </div>
 
         <div className="min-w-0">
           {detail ? (
-            <EventDetail event={detail} onUpdate={setDetail} onOpenEvent={(id) => setSelectedId(id)} />
+            <EventDetail event={detail} onUpdate={setDetail} onOpenEvent={select} />
           ) : (
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center text-sm text-zinc-500">
               {selectedId ? 'Loading event…' : 'Select an event to inspect it.'}

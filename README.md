@@ -8,18 +8,19 @@ Real-time, community-validated Bitcoin transaction analysis. Your own node strea
 
 ## What it does
 
-- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), and coinjoin-pattern transactions (≥ 5 equal outputs).
+- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), coinjoin-pattern transactions (≥ 5 equal outputs), and multi-transaction hacks (drain patterns traced hop by hop).
+- **Hack tracing.** Multi-hop exploits render as a chain visualization: origin, each hop, peeled side-outputs, and terminal outputs, with a one-click "trace the funds" path.
 - **AI first pass.** Every event gets a 1–2 sentence summary + risk/behavior tag from an OpenAI-compatible provider (OKX.AI-compatible pitch). Unconfigured or failed → the event still appears, marked "analysis pending."
 - **Crowd labels.** Authenticated analysts attach tag/note/evidence labels to any address; labels on involved addresses appear inline in event context. One up/down vote per identity, toggle semantics.
+- **Sovereign history.** Address pages show history observed by your own node, signed per-transaction deltas and links into tracked events. No external explorer dependency, nothing links out to one.
 - **One-click identity.** In-page enbox DID creation (`did:dht`, offline fallback `did:jwk`), no password or wallet. Login is a signed server challenge. Reputation leaderboard + trending labels.
-- **Demo injector.** A dev-only, loopback-only endpoint fires a synthetic, unmistakably badged DEMO event through the identical pipeline, so the demo never stalls on a quiet mempool.
+- **Demo injector.** A dev-only, loopback-only endpoint fires a synthetic, unmistakably badged SIMULATED event through the identical pipeline, so the demo never stalls on a quiet mempool.
 
 ## Architecture
 
 ```
-Bitcoin node RPC ──► server/ ingest + detection ──► SQLite
-                            │                          │
-mempool.space/blockstream ──┘ (address lookups)        ▼
+Bitcoin node RPC ──► server/ ingest + detection ──► SQLite (events + observed history)
+                            │
                             └──► AI provider ──► SSE ──► web/ dashboard
 ```
 
@@ -49,7 +50,7 @@ cd server && bun run dev
 cd web && npm run dev   # proxies /api to localhost:3001
 ```
 
-Demo rehearsal: set `INJECTOR_ENABLED=true` in `.env`; an "Inject demo event" button appears in the UI when the probe returns 200.
+Demo rehearsal: set `INJECTOR_ENABLED=true` in `.env`; an "Inject simulated event" button appears in the UI when the probe returns 200.
 
 ## The pitch
 

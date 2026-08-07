@@ -313,7 +313,7 @@ describe('POST /api/events/:id/ai-feedback', () => {
 });
 
 describe('GET /api/addresses/:address', () => {
-  test('returns contract-shaped AddressInfo with stats, labels, recent events and externalUrl', async () => {
+  test('returns contract-shaped AddressInfo with stats, labels, recent events and history', async () => {
     const { db, app } = makeHarness();
     const event = addEvent(db);
     insertLabel(db, { address: ADDR_IN, tag: 'old-miner', source: 'seed' });
@@ -328,7 +328,14 @@ describe('GET /api/addresses/:address', () => {
     expectLabelShape(info.labels[0]);
     expect(info.recentEvents.map((e) => e.id)).toEqual([event.id]);
     expectEventSummaryShape(info.recentEvents[0]);
-    expect(info.externalUrl).toBe(`https://mempool.space/address/${ADDR_IN}`);
+    expect(info.history).toEqual([
+      {
+        txid: event.txid,
+        time: event.detected_at,
+        deltaSats: -1_600_000_000,
+        eventId: event.id,
+      },
+    ]);
   });
 
   test('null balance/txCount when lookups fail', async () => {
