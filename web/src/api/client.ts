@@ -9,6 +9,7 @@ import type {
   Identity,
   Label,
   LeaderboardResponse,
+  ServerMeta,
   TrustGraphData,
   TrustGraphEdge,
   TrustGraphNode,
@@ -60,14 +61,28 @@ interface MockSession {
   identity: Identity;
 }
 
+/**
+ * The address fixture predates `eventCount`, and its `recentEvents` is one entry
+ * against a history naming two detections — the capped-page shape a real server
+ * serves. The total is counted off the fixture's own rows so the mock cannot teach
+ * a number the fixture does not contain.
+ */
+function fixtureAddress(): AddressInfo {
+  const info = structuredClone(addressFixture) as unknown as AddressInfo;
+  const detections = new Set<string>(info.recentEvents.map((event) => event.id));
+  for (const entry of info.history) {
+    if (entry.eventId !== null) detections.add(entry.eventId);
+  }
+  const withTotal = { ...info, eventCount: detections.size };
+  return withTotal;
+}
+
 const mock = {
   events: structuredClone(eventsFixture.events) as EventSummary[],
   details: new Map<string, EventDetail>([
     ['evt_001', structuredClone(eventDetailFixture) as EventDetail],
   ]),
-  addresses: new Map<string, AddressInfo>([
-    [addressFixture.address, structuredClone(addressFixture) as unknown as AddressInfo],
-  ]),
+  addresses: new Map<string, AddressInfo>([[addressFixture.address, fixtureAddress()]]),
   labels: new Map<string, Label>(),
   sessions: new Map<string, MockSession>(),
   aiFeedback: new Map<string, EventDetail['aiFeedback']>(),
@@ -134,7 +149,10 @@ function detailFromSummary(summary: EventSummary): EventDetail {
         : null,
     inputs: [{ address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', valueSats: summary.valueSats + 50_000 }],
     outputs: [
-      { address: 'bc1q9x4k2m8v7n3p5d6f1g0h4j8l2s7a5q9w3e6r1t4y', valueSats: summary.valueSats },
+      {
+        address: 'bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3',
+        valueSats: summary.valueSats,
+      },
       { address: null, valueSats: 50_000 },
     ],
     labels: summary.matchedLabels,
@@ -189,6 +207,37 @@ export async function patchHandle(handle: string, token: string): Promise<Identi
 }
 
 // ---------------------------------------------------------------------------
+// Server meta
+// ---------------------------------------------------------------------------
+
+/**
+ * Fixture-lane detection settings. These describe the fixtures themselves, not
+ * any deployment, which is why the source names itself: a real server reads all
+ * five numbers from its own config and no caller may assume these. The values
+ * mirror the server defaults (server/src/config.ts) so the fixtures cannot
+ * quietly teach a number no deployment uses.
+ */
+const FIXTURE_META: ServerMeta = {
+  detection: {
+    whaleThresholdBtc: 10,
+    dormantBlocks: 4320,
+    dormantMinValueBtc: 1,
+    coinjoinMinEqualOutputs: 5,
+    coinjoinMinDenominationBtc: 0.001,
+  },
+  chainSource: 'fixtures',
+};
+
+/** Detection thresholds and chain source of the server actually being talked to. */
+export async function getServerMeta(): Promise<ServerMeta> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return clone(FIXTURE_META);
+  }
+  return request<ServerMeta>('/api/meta');
+}
+
+// ---------------------------------------------------------------------------
 // Chain
 // ---------------------------------------------------------------------------
 
@@ -238,6 +287,24 @@ export async function getEvent(id: string, token?: string | null): Promise<Event
   return request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token);
 }
 
+/** null when the transaction exists on-chain but matched no detection rule, so it was never indexed */
+export async function getEventByTxid(txid: string, token?: string | null): Promise<EventDetail | null> {
+  if (USE_FIXTURES) {
+    ensureMock();
+    await mockLatency();
+    const needle = txid.toLowerCase();
+    const summary = mock.events.find((e) => e.txid.toLowerCase() === needle);
+    if (!summary) return null;
+    return clone(detailFromSummary(summary));
+  }
+  try {
+    return await request<EventDetail>(`/api/events/by-txid/${encodeURIComponent(txid)}`, undefined, token);
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
+}
+
 export async function postAiFeedback(
   eventId: string,
   value: 'confirm' | 'refute',
@@ -283,14 +350,17 @@ export async function getAddress(address: string, token?: string | null): Promis
     const known = mock.addresses.get(address);
     if (known) return clone(known);
     const labels = [...mock.labels.values()].filter((l) => l.address === address);
-    return {
+    // an address the fixtures never indexed has a countable zero, not an unknown
+    const unindexed = {
       address,
       balanceSats: null,
       txCount: null,
+      eventCount: 0,
       labels: clone(labels),
       recentEvents: [],
       history: [],
     };
+    return unindexed;
   }
   return request<AddressInfo>(`/api/addresses/${encodeURIComponent(address)}`, undefined, token);
 }

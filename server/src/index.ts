@@ -102,7 +102,10 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   const app = new Hono();
   app.use('*', cors({ origin: '*', allowHeaders: ['Content-Type', 'Authorization'], allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'] }));
   app.route('/', authApp);
-  app.route('/', createApiRoutes({ db, hub, addressInfo: deps.addressInfo }));
+  app.route(
+    '/',
+    createApiRoutes({ db, hub, config, addressInfo: deps.addressInfo, sourceName: deps.sourceName }),
+  );
   app.route('/', createAnalystRoutes(db));
   app.route('/', createEntityRoutes(db));
   app.route('/', createCoinjoinRoutes(db));

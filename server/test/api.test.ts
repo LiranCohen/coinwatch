@@ -10,6 +10,7 @@ import type {
   Identity,
   Label,
   LeaderboardResponse,
+  ServerMeta,
   TrendingResponse,
 } from '@chainwatch/shared';
 import { openDatabase, insertEvent, insertLabel, type EventInput, type EventRow } from '../src/store/db';
@@ -22,8 +23,12 @@ import { loadConfig, type Config } from '../src/config';
 import type { Hono } from 'hono';
 import type { SseHub } from '../src/api/sse';
 
-const ADDR_IN = 'bc1qwatchedinput00000000000000000000000';
-const ADDR_OUT = 'bc1qwatchedoutput0000000000000000000000';
+// GET /api/addresses/:address rejects anything that fails checksum validation,
+// so the fixtures have to be addresses that really encode a witness program
+const ADDR_IN = 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4';
+const ADDR_OUT = 'bc1qrp33g0q5c5txsp9arysrx4k6zdkfs4nce4xj0gdcccefvpysxf3qccfmv3';
+/** valid, but never referenced by any event or label in these tests */
+const ADDR_UNTRACKED = 'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg3297';
 
 const MOCK_AI: AiProvider = {
   name: 'mock',
@@ -48,6 +53,13 @@ const FAILING_ADDRESS_INFO: AddressInfoClient = {
   getAddressActivity: () => Promise.resolve(null),
 };
 
+/** stands in for a wedged explorer: the stats call never settles at all */
+const HANGING_ADDRESS_INFO: AddressInfoClient = {
+  getAddressTxs: () => Promise.resolve(null),
+  getAddressStats: () => new Promise(() => {}),
+  getAddressActivity: () => Promise.resolve(null),
+};
+
 interface Harness {
   db: Database;
   app: Hono;
@@ -62,6 +74,8 @@ function makeHarness(
     remoteAddress?: string;
     addressInfo?: AddressInfoClient;
     ai?: AiProvider;
+    config?: Partial<Config>;
+    sourceName?: () => string;
   } = {},
 ): Harness {
   const db = openDatabase(':memory:');
@@ -69,6 +83,7 @@ function makeHarness(
   const config: Config = {
     ...loadConfig({}),
     injectorEnabled: options.injectorEnabled ?? false,
+    ...options.config,
   };
   const { app, hub } = composeApp({
     db,
@@ -76,6 +91,7 @@ function makeHarness(
     emitter,
     ai: options.ai ?? MOCK_AI,
     addressInfo: options.addressInfo ?? STATS_ADDRESS_INFO,
+    sourceName: options.sourceName,
     getRemoteAddress:
       options.remoteAddress === undefined ? undefined : () => options.remoteAddress,
     log: () => {},
@@ -326,6 +342,7 @@ describe('GET /api/addresses/:address', () => {
     expect(info.txCount).toBe(8);
     expect(info.labels.map((l) => l.tag)).toEqual(['old-miner']);
     expectLabelShape(info.labels[0]);
+    expect(info.eventCount).toBe(1);
     expect(info.recentEvents.map((e) => e.id)).toEqual([event.id]);
     expectEventSummaryShape(info.recentEvents[0]);
     expect(info.history).toEqual([
@@ -340,13 +357,152 @@ describe('GET /api/addresses/:address', () => {
 
   test('null balance/txCount when lookups fail', async () => {
     const { app } = makeHarness({ addressInfo: FAILING_ADDRESS_INFO });
-    const res = await app.request('/api/addresses/bc1qwhatever');
+    const res = await app.request(`/api/addresses/${ADDR_UNTRACKED}`);
     expect(res.status).toBe(200);
     const info = (await res.json()) as AddressInfo;
     expect(info.balanceSats).toBeNull();
     expect(info.txCount).toBeNull();
     expect(info.labels).toEqual([]);
     expect(info.recentEvents).toEqual([]);
+    expect(info.eventCount).toBe(0);
+  });
+
+  test('eventCount counts every detection, not just the returned page', async () => {
+    const { db, app } = makeHarness();
+    for (let i = 0; i < 12; i++) {
+      addEvent(db, { detectedAt: `2026-08-06T00:00:${String(i).padStart(2, '0')}.000Z` });
+    }
+
+    const res = await app.request(`/api/addresses/${ADDR_IN}`);
+    const info = (await res.json()) as AddressInfo;
+    // the page is capped well below the total, which is the whole point
+    expect(info.recentEvents.length).toBeLessThan(12);
+    expect(info.eventCount).toBe(12);
+
+    // an address on the other side of the same events counts them too
+    const out = (await (await app.request(`/api/addresses/${ADDR_OUT}`)).json()) as AddressInfo;
+    expect(out.eventCount).toBe(12);
+  });
+
+  test('a wedged explorer yields null stats without withholding labels and events', async () => {
+    const { db, app } = makeHarness({ addressInfo: HANGING_ADDRESS_INFO });
+    const event = addEvent(db);
+    insertLabel(db, { address: ADDR_IN, tag: 'old-miner', source: 'seed' });
+
+    const res = await app.request(`/api/addresses/${ADDR_IN}`);
+    expect(res.status).toBe(200);
+    const info = (await res.json()) as AddressInfo;
+    expect(info.balanceSats).toBeNull();
+    expect(info.txCount).toBeNull();
+    expect(info.labels.map((l) => l.tag)).toEqual(['old-miner']);
+    expect(info.recentEvents.map((e) => e.id)).toEqual([event.id]);
+    expect(info.eventCount).toBe(1);
+    expect(info.history.length).toBe(1);
+  }, 10_000);
+
+  test('a throwing stats lookup is reported as unknown, not a 500', async () => {
+    const { db, app } = makeHarness({
+      addressInfo: {
+        ...FAILING_ADDRESS_INFO,
+        getAddressStats: () => Promise.reject(new Error('explorer exploded')),
+      },
+    });
+    addEvent(db);
+
+    const res = await app.request(`/api/addresses/${ADDR_IN}`);
+    expect(res.status).toBe(200);
+    const info = (await res.json()) as AddressInfo;
+    expect(info.balanceSats).toBeNull();
+    expect(info.txCount).toBeNull();
+    expect(info.eventCount).toBe(1);
+  });
+
+  test('malformed addresses are rejected with 400 and a reason', async () => {
+    const { app } = makeHarness();
+    const bad = [
+      'not-an-address',
+      // one character off a real address: shape is fine, checksum is not
+      'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5',
+      // same, for base58 and for bech32m, so all three decoders are exercised
+      '1A1zP1eP5QGefi2DMPTfTL5SLmv7Divfna',
+      'bc1p5d7rjq7g6rdk2yhzks9smlaqtedr4dekq08ge8ztwac72sfr9rusxg32v7',
+    ];
+    for (const address of bad) {
+      const res = await app.request(`/api/addresses/${address}`);
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(typeof body.error).toBe('string');
+      expect(body.error.length).toBeGreaterThan(0);
+    }
+  });
+
+  test('an upper-case bech32 address resolves to the same record as its lower-case form', async () => {
+    const { db, app } = makeHarness();
+    const event = addEvent(db);
+    insertLabel(db, { address: ADDR_IN, tag: 'old-miner', source: 'seed' });
+
+    const upper = await app.request(`/api/addresses/${ADDR_IN.toUpperCase()}`);
+    expect(upper.status).toBe(200);
+    const info = (await upper.json()) as AddressInfo;
+    // the canonical form is echoed back, not whatever casing the caller sent
+    expect(info.address).toBe(ADDR_IN);
+    expect(info.labels.map((l) => l.tag)).toEqual(['old-miner']);
+    expect(info.recentEvents.map((e) => e.id)).toEqual([event.id]);
+
+    const lower = (await (await app.request(`/api/addresses/${ADDR_IN}`)).json()) as AddressInfo;
+    expect(info).toEqual(lower);
+  });
+});
+
+describe('GET /api/events/by-txid/:txid', () => {
+  test('returns the same EventDetail as GET /api/events/:id', async () => {
+    const { db, app } = makeHarness();
+    const event = addEvent(db);
+    insertLabel(db, { address: ADDR_IN, tag: 'known-exchange', source: 'seed' });
+
+    const res = await app.request(`/api/events/by-txid/${event.txid}`);
+    expect(res.status).toBe(200);
+    const detail = (await res.json()) as EventDetail;
+    expectEventSummaryShape(detail);
+    expect(detail.id).toBe(event.id);
+    expect(detail.txid).toBe(event.txid);
+    expect(detail.labels.map((l) => l.tag)).toEqual(['known-exchange']);
+
+    const byId = (await (await app.request(`/api/events/${event.id}`)).json()) as EventDetail;
+    expect(detail).toEqual(byId);
+
+    const upper = (await (
+      await app.request(`/api/events/by-txid/${event.txid.toUpperCase()}`)
+    ).json()) as EventDetail;
+    expect(upper).toEqual(byId);
+  });
+
+  test('malformed txids are rejected with 400', async () => {
+    const { app } = makeHarness();
+    const bad = ['abc', 'z'.repeat(64), '0'.repeat(63), '0'.repeat(65), ADDR_IN];
+    for (const txid of bad) {
+      const res = await app.request(`/api/events/by-txid/${txid}`);
+      expect(res.status).toBe(400);
+      expect(typeof ((await res.json()) as { error: string }).error).toBe('string');
+    }
+  });
+
+  test('a well-formed but untracked txid returns 404', async () => {
+    const { db, app } = makeHarness();
+    addEvent(db);
+    const res = await app.request(`/api/events/by-txid/${'a'.repeat(64)}`);
+    expect(res.status).toBe(404);
+    expect((await res.json()) as { error: string }).toEqual({ error: 'unknown transaction' });
+  });
+
+  test('the literal by-txid segment is not swallowed by /api/events/:id', async () => {
+    const { db, app } = makeHarness();
+    const event = addEvent(db);
+    // an event whose id happened to be 'by-txid' would be the only other way
+    // this path could 200, and the id column is a uuid, so a 400 here proves
+    // the txid handler ran
+    expect((await app.request('/api/events/by-txid/nope')).status).toBe(400);
+    expect((await app.request(`/api/events/${event.id}`)).status).toBe(200);
   });
 });
 
@@ -407,6 +563,95 @@ describe('POST /api/addresses/:address/labels', () => {
       alice,
     );
     expect(ok.status).toBe(201);
+  });
+
+  test('malformed addresses are rejected with 400 and a reason, same as the read path', async () => {
+    const { db, app } = makeHarness();
+    const alice = makeSession(db, 'did:jwk:alice');
+    const bad = [
+      'hello-world',
+      'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5',
+      '1A1zP1eP5QGefi2DMPTfTL5SLmv7Divfna',
+    ];
+    for (const address of bad) {
+      const res = await postJson(app, `/api/addresses/${address}/labels`, { tag: 'bogus' }, alice);
+      expect(res.status).toBe(400);
+      const body = (await res.json()) as { error: string };
+      expect(typeof body.error).toBe('string');
+      expect(body.error.length).toBeGreaterThan(0);
+    }
+    // nothing invalid reached the label table, so nothing can surface as trending
+    const trending = (await (await app.request('/api/labels/trending')).json()) as TrendingResponse;
+    expect(trending.labels).toEqual([]);
+    expect((db.query('SELECT COUNT(*) AS n FROM labels').get() as { n: number }).n).toBe(0);
+  });
+
+  test('an upper-case bech32 address is stored canonically and found by a later GET', async () => {
+    const { db, app } = makeHarness();
+    const alice = makeSession(db, 'did:jwk:alice', 'alice');
+
+    const res = await postJson(
+      app,
+      `/api/addresses/${ADDR_IN.toUpperCase()}/labels`,
+      { tag: 'shouty-exchange' },
+      alice,
+    );
+    expect(res.status).toBe(201);
+    const label = (await res.json()) as Label;
+    expect(label.address).toBe(ADDR_IN);
+
+    const info = (await (await app.request(`/api/addresses/${ADDR_IN}`)).json()) as AddressInfo;
+    expect(info.labels.map((l) => l.tag)).toEqual(['shouty-exchange']);
+
+    // the same tag posted in the other casing is the same label, not a second one
+    const again = await postJson(
+      app,
+      `/api/addresses/${ADDR_IN}/labels`,
+      { tag: 'shouty-exchange' },
+      alice,
+    );
+    expect(again.status).toBe(200);
+    expect(((await again.json()) as Label).id).toBe(label.id);
+  });
+});
+
+describe('GET /api/meta', () => {
+  test('reports the loaded detection thresholds, not compiled-in defaults', async () => {
+    const overrides: Partial<Config> = {
+      whaleThresholdBtc: 42.5,
+      dormantBlocks: 1234,
+      dormantMinValueBtc: 0.25,
+      coinjoinMinEqualOutputs: 9,
+      coinjoinMinDenominationBtc: 0.05,
+      chainSource: 'bitcoind',
+    };
+    const { app, config } = makeHarness({ config: overrides });
+
+    const res = await app.request('/api/meta');
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as ServerMeta;
+    expect(body.detection).toEqual({
+      whaleThresholdBtc: config.whaleThresholdBtc,
+      dormantBlocks: config.dormantBlocks,
+      dormantMinValueBtc: config.dormantMinValueBtc,
+      coinjoinMinEqualOutputs: config.coinjoinMinEqualOutputs,
+      coinjoinMinDenominationBtc: config.coinjoinMinDenominationBtc,
+    });
+    expect(body.chainSource).toBe(config.chainSource);
+
+    const defaults = makeHarness();
+    const fallback = (await (await defaults.app.request('/api/meta')).json()) as ServerMeta;
+    expect(fallback.detection).not.toEqual(body.detection);
+    expect(fallback.detection.whaleThresholdBtc).toBe(defaults.config.whaleThresholdBtc);
+  });
+
+  test("chainSource names the source the pipeline resolved, not the 'auto' setting", async () => {
+    const { app } = makeHarness({
+      config: { chainSource: 'auto' },
+      sourceName: () => 'esplora',
+    });
+    const body = (await (await app.request('/api/meta')).json()) as ServerMeta;
+    expect(body.chainSource).toBe('esplora');
   });
 });
 

@@ -52,7 +52,11 @@ export function createEsploraAddressInfo(
       return guard(`stats(${address})`, async () => {
         const info = await client.address(address);
         if (info === null) return null;
-        // re-express as the raw Esplora shape the API layer already reads
+        // re-express as the raw Esplora shape the API layer already reads.
+        // EsploraAddress carries confirmed sums only, so mempool_stats is left
+        // out entirely: passing the unconfirmed count through with sums of zero
+        // would put a count that includes pending movement next to a balance
+        // that excludes it. Both figures are confirmed-only, and agree.
         return {
           address: info.address,
           chain_stats: {
@@ -60,7 +64,6 @@ export function createEsploraAddressInfo(
             funded_txo_sum: info.totalReceivedSats,
             spent_txo_sum: info.totalSentSats,
           },
-          mempool_stats: { tx_count: info.unconfirmedTxCount, funded_txo_sum: 0, spent_txo_sum: 0 },
         } satisfies AddressStats;
       }).then((value) => value ?? null);
     },

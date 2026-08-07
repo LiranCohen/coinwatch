@@ -38,15 +38,31 @@ export function listEvents(db: Database, filters: EventListFilters): EventRow[] 
   return db.query(sql).all(...params) as EventRow[];
 }
 
+/**
+ * An address matches an event when it appears on either side of it. Shared so a
+ * count and a page can never disagree about which events belong to an address.
+ * Takes the address twice.
+ */
+const ADDRESS_IN_EVENT = `(
+  EXISTS (SELECT 1 FROM json_each(events.inputs) i WHERE json_extract(i.value, '$.address') = ?)
+  OR EXISTS (SELECT 1 FROM json_each(events.outputs) o WHERE json_extract(o.value, '$.address') = ?)
+)`;
+
 export function listEventsForAddress(db: Database, address: string, limit = 10): EventRow[] {
   return db
     .query(
       `SELECT * FROM events
-       WHERE EXISTS (SELECT 1 FROM json_each(events.inputs) i WHERE json_extract(i.value, '$.address') = ?)
-          OR EXISTS (SELECT 1 FROM json_each(events.outputs) o WHERE json_extract(o.value, '$.address') = ?)
+       WHERE ${ADDRESS_IN_EVENT}
        ORDER BY detected_at DESC, id DESC LIMIT ?`,
     )
     .all(address, address, limit) as EventRow[];
+}
+
+export function countEventsForAddress(db: Database, address: string): number {
+  const row = db
+    .query(`SELECT COUNT(*) AS total FROM events WHERE ${ADDRESS_IN_EVENT}`)
+    .get(address, address) as { total: number };
+  return row.total;
 }
 
 export interface ScoredLabelRow extends LabelRow {

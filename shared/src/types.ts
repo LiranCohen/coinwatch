@@ -165,7 +165,10 @@ export interface AddressInfo {
   address: string;
   balanceSats: number | null;
   txCount: number | null;
+  /** total detections for this address, independent of how many are returned below */
+  eventCount: number;
   labels: Label[];
+  /** most recent detections, capped by the server */
   recentEvents: EventSummary[];
   /** history observed by the operator's own node, newest first */
   history: AddressHistoryEntry[];
@@ -322,6 +325,25 @@ export interface LeaderboardResponse {
   analysts: LeaderboardEntry[];
 }
 
+/**
+ * Detection thresholds the server is actually running with. Operators change
+ * these through the environment, so a client that hardcodes them will quietly
+ * describe rules that are not the ones firing.
+ */
+export interface DetectionConfig {
+  whaleThresholdBtc: number;
+  dormantBlocks: number;
+  dormantMinValueBtc: number;
+  coinjoinMinEqualOutputs: number;
+  coinjoinMinDenominationBtc: number;
+}
+
+export interface ServerMeta {
+  detection: DetectionConfig;
+  /** name of the active chain ingestion source */
+  chainSource: string;
+}
+
 export interface InjectRequest {
   rule?: Rule;
   valueSats?: number;
@@ -333,3 +355,5 @@ export interface HealthMessage {
 }
 
 export type SseMessageName = 'event:new' | 'event:update' | 'label:new' | 'health';
+
+export * from './address';

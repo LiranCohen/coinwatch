@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom';
 
 import { SessionProvider } from '../session';
 import { AccountButton } from './AccountButton';
+import { AddressSearch } from './AddressSearch';
 import { LogoMark } from './landing/LogoMark';
 
 function NavItem({ to, label, end = false }: { to: string; label: string; end?: boolean }) {
@@ -26,7 +27,7 @@ export function AppShell() {
     <SessionProvider>
       <div className="min-h-screen">
       <header className="tex-brushed seam sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <NavLink to="/app" className="flex items-center gap-2.5">
             <LogoMark size={22} />
             <span className="text-lg font-bold tracking-tight text-zinc-50">CoinWatch</span>
@@ -35,6 +36,11 @@ export function AppShell() {
             <NavItem to="/app" label="Feed" end />
             <NavItem to="/app/web-of-trust" label="Web of Trust" />
           </nav>
+          {/* Below md the search owns a full-width row of its own. Inline it only ever gets the
+              leftover width, and once the account button carries two buttons plus an error span
+              there is barely any leftover left to get — so above md a floor of 14rem keeps it
+              readable and the wrap, not the input, absorbs anything the row cannot fit. */}
+          <AddressSearch className="order-last w-full md:order-none md:w-auto md:max-w-xs md:min-w-56 md:flex-1 lg:max-w-sm" />
           <div className="ml-auto">
             <AccountButton />
           </div>

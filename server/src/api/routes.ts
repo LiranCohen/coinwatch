@@ -5,6 +5,8 @@ import {
   RULES,
   SOURCES,
   STATUSES,
+  isTxid,
+  validateBitcoinAddress,
   type AddressHistoryEntry,
   type AddressInfo,
   type AiFeedbackRequest,
@@ -17,13 +19,23 @@ import {
   type LeaderboardEntry,
   type LeaderboardResponse,
   type Rule,
+  type ServerMeta,
   type TrendingResponse,
   type VoteRequest,
 } from '@chainwatch/shared';
-import { findLabelByUnique, getEventById, getLabelById, insertLabel, parseEventMeta, type EventRow } from '../store/db';
+import {
+  findLabelByUnique,
+  getEventById,
+  getEventByTxid,
+  getLabelById,
+  insertLabel,
+  parseEventMeta,
+  type EventRow,
+} from '../store/db';
 import { isoFromNow } from '../store/authQueries';
 import {
   applyLabelVote,
+  countEventsForAddress,
   getAiFeedback,
   getLabelsForAddressScored,
   getLabelsForAddressesScored,
@@ -39,10 +51,18 @@ import {
 import { createAuthMiddleware } from './auth';
 import { parseJsonBody, resolveBearerIdentity } from './http';
 import type { SseHub } from './sse';
-import type { AddressInfoClient } from '../external/addressinfo';
+import type { AddressInfoClient, AddressStats } from '../external/addressinfo';
+import type { Config } from '../config';
+import { errMessage } from '../util';
 
 const MAX_LIMIT = 200;
 const TRENDING_WINDOW_MS = 24 * 60 * 60 * 1000;
+/**
+ * Ceiling on the public explorer's contribution to an address lookup. The rest
+ * of the response is local SQLite, so a wedged explorer must not decide when
+ * the page renders; a healthy one answers in well under a second.
+ */
+const ADDRESS_STATS_TIMEOUT_MS = 3000;
 
 type ApiEnv = {
   Variables: {
@@ -194,6 +214,34 @@ function serializeAddressHistory(rows: EventRow[], address: string): AddressHist
   });
 }
 
+/**
+ * Chain stats from the explorer, or null once the bound trips or the lookup
+ * fails. Both are the same answer to the caller: not read.
+ */
+async function readAddressStats(
+  client: AddressInfoClient,
+  address: string,
+): Promise<AddressStats | null> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const bound = new Promise<null>((resolve) => {
+    timer = setTimeout(() => {
+      console.warn(
+        `addresses: chain stats for ${address} exceeded ${ADDRESS_STATS_TIMEOUT_MS}ms; reporting balance and tx count as unknown`,
+      );
+      resolve(null);
+    }, ADDRESS_STATS_TIMEOUT_MS);
+  });
+  const lookup = client.getAddressStats(address).catch((err: unknown) => {
+    console.warn(`addresses: chain stats for ${address} failed: ${errMessage(err)}`);
+    return null;
+  });
+  try {
+    return await Promise.race([lookup, bound]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 function isAbsoluteHttpUrl(value: string): boolean {
   try {
     const url = new URL(value);
@@ -206,14 +254,33 @@ function isAbsoluteHttpUrl(value: string): boolean {
 export interface ApiRoutesDeps {
   db: Database;
   hub: SseHub;
+  config: Config;
   addressInfo: AddressInfoClient | null;
+  /** resolved name of the live chain source; omitted where no pipeline runs */
+  sourceName?: () => string;
 }
 
 export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
-  const { db, hub } = deps;
+  const { db, hub, config } = deps;
   const app = new Hono<ApiEnv>();
   const opt = optionalAuth(db);
   const auth = createAuthMiddleware(db);
+
+  app.get('/api/meta', (c) => {
+    const body: ServerMeta = {
+      detection: {
+        whaleThresholdBtc: config.whaleThresholdBtc,
+        dormantBlocks: config.dormantBlocks,
+        dormantMinValueBtc: config.dormantMinValueBtc,
+        coinjoinMinEqualOutputs: config.coinjoinMinEqualOutputs,
+        coinjoinMinDenominationBtc: config.coinjoinMinDenominationBtc,
+      },
+      // 'auto' names a selection policy rather than a source, and only the
+      // pipeline knows which one it settled on, so its answer wins
+      chainSource: deps.sourceName?.() ?? config.chainSource,
+    };
+    return c.json(body);
+  });
 
   app.get('/api/events', opt, (c) => {
     const query = c.req.query();
@@ -252,6 +319,16 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
     return c.json(body);
   });
 
+  // registered ahead of '/api/events/:id' so the literal segment always wins,
+  // whichever router Hono settles on for this route table
+  app.get('/api/events/by-txid/:txid', opt, (c) => {
+    const txid = c.req.param('txid');
+    if (!isTxid(txid)) return c.json({ error: 'txid must be 64 hex characters' }, 400);
+    const row = getEventByTxid(db, txid.toLowerCase());
+    if (!row) return c.json({ error: 'unknown transaction' }, 404);
+    return c.json(serializeEventDetail(db, row, c.get('viewer')?.did ?? null));
+  });
+
   app.get('/api/events/:id', opt, (c) => {
     const row = getEventById(db, c.req.param('id'));
     if (!row) return c.json({ error: 'unknown event' }, 404);
@@ -274,28 +351,37 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   });
 
   app.get('/api/addresses/:address', opt, async (c) => {
-    const address = c.req.param('address');
-    const viewerDid = c.get('viewer')?.did ?? null;
-    let balanceSats: number | null = null;
-    let txCount: number | null = null;
-    if (deps.addressInfo) {
-      const stats = await deps.addressInfo.getAddressStats(address);
-      if (stats) {
-        balanceSats =
-          (stats.chain_stats?.funded_txo_sum ?? 0) +
-          (stats.mempool_stats?.funded_txo_sum ?? 0) -
-          (stats.chain_stats?.spent_txo_sum ?? 0) -
-          (stats.mempool_stats?.spent_txo_sum ?? 0);
-        txCount = (stats.chain_stats?.tx_count ?? 0) + (stats.mempool_stats?.tx_count ?? 0);
-      }
+    const validation = validateBitcoinAddress(c.req.param('address'));
+    if (!validation.valid || validation.normalized === null) {
+      return c.json({ error: validation.reason ?? 'not a bitcoin address' }, 400);
     }
+    // every lookup below keys off the canonical form, so the same address
+    // pasted in upper case resolves to the same labels, events and history
+    const address = validation.normalized;
+    const viewerDid = c.get('viewer')?.did ?? null;
+    // issued before the local queries so the explorer's latency overlaps them
+    const pendingStats = deps.addressInfo ? readAddressStats(deps.addressInfo, address) : null;
     const recentEvents = listEventsForAddress(db, address);
     const labelsPool = fetchLabelsPool(db, recentEvents, viewerDid);
+    const labels = getLabelsForAddressScored(db, address, viewerDid).map(toLabel);
+    const stats = pendingStats === null ? null : await pendingStats;
+    let balanceSats: number | null = null;
+    let txCount: number | null = null;
+    if (stats) {
+      balanceSats =
+        (stats.chain_stats?.funded_txo_sum ?? 0) +
+        (stats.mempool_stats?.funded_txo_sum ?? 0) -
+        (stats.chain_stats?.spent_txo_sum ?? 0) -
+        (stats.mempool_stats?.spent_txo_sum ?? 0);
+      txCount = (stats.chain_stats?.tx_count ?? 0) + (stats.mempool_stats?.tx_count ?? 0);
+    }
     const body: AddressInfo = {
       address,
       balanceSats,
       txCount,
-      labels: getLabelsForAddressScored(db, address, viewerDid).map(toLabel),
+      // the page below is capped, so the total has to be counted separately
+      eventCount: countEventsForAddress(db, address),
+      labels,
       recentEvents: recentEvents.map((row) =>
         serializeEventSummary(db, row, viewerDid, labelsPool),
       ),
@@ -305,7 +391,13 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   });
 
   app.post('/api/addresses/:address/labels', auth, async (c) => {
-    const address = c.req.param('address');
+    const validation = validateBitcoinAddress(c.req.param('address'));
+    if (!validation.valid || validation.normalized === null) {
+      return c.json({ error: validation.reason ?? 'not a bitcoin address' }, 400);
+    }
+    // must match the read path's key exactly: a label stored under any other
+    // casing is written successfully and then never found again
+    const address = validation.normalized;
     const body = await parseJsonBody<CreateLabelRequest>(c);
     if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);

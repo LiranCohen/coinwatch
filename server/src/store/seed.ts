@@ -1,5 +1,5 @@
 import type { Database } from 'bun:sqlite';
-import type { BatchKind, EventMeta, Rule } from '@chainwatch/shared';
+import { validateBitcoinAddress, type BatchKind, type EventMeta, type Rule } from '@chainwatch/shared';
 import {
   findLabelByUnique,
   getEventByTxid,
@@ -25,27 +25,22 @@ export interface SeedResult {
   skipped: number;
 }
 
-const BASE58_RE = /^[13][1-9A-HJ-NP-Za-km-z]{25,34}$/;
-const BECH32_RE = /^bc1[02-9ac-hj-np-z]{11,87}$/i;
-
-export function isBitcoinAddress(address: unknown): address is string {
-  if (typeof address !== 'string') return false;
-  if (BASE58_RE.test(address)) return true;
-  if (BECH32_RE.test(address) && (address === address.toLowerCase() || address === address.toUpperCase())) {
-    return true;
-  }
-  return false;
-}
-
-function isValidEntry(entry: unknown): entry is SeedEntry {
-  if (typeof entry !== 'object' || entry === null) return false;
+/**
+ * Checks a raw fixture entry and rewrites its address into canonical form,
+ * returning null for anything the importer must skip. Both halves matter: a
+ * shape-only test waves through checksum-broken addresses that no wallet could
+ * ever spend from, and every read path normalizes before looking up, so a label
+ * stored under the casing a fixture happened to use is unfindable forever.
+ */
+function normalizeEntry(entry: unknown): SeedEntry | null {
+  if (typeof entry !== 'object' || entry === null) return null;
   const e = entry as Record<string, unknown>;
-  return (
-    isBitcoinAddress(e.address) &&
-    typeof e.tag === 'string' &&
-    e.tag.length > 0 &&
-    (e.evidenceUrl === null || typeof e.evidenceUrl === 'string')
-  );
+  if (typeof e.address !== 'string') return null;
+  if (typeof e.tag !== 'string' || e.tag.length === 0) return null;
+  if (e.evidenceUrl !== null && typeof e.evidenceUrl !== 'string') return null;
+  const validation = validateBitcoinAddress(e.address);
+  if (!validation.valid || validation.normalized === null) return null;
+  return { address: validation.normalized, tag: e.tag, evidenceUrl: e.evidenceUrl };
 }
 
 export function importSeedEntries(
@@ -57,15 +52,16 @@ export function importSeedEntries(
   let skipped = 0;
   const importAll = db.transaction((items: unknown[]): void => {
     for (const entry of items) {
-      if (!isValidEntry(entry)) {
+      const normalized = normalizeEntry(entry);
+      if (normalized === null) {
         skipped += 1;
         warn(`seed: skipping malformed entry ${JSON.stringify(entry)}`);
         continue;
       }
       insertLabel(db, {
-        address: entry.address,
-        tag: entry.tag,
-        evidenceUrl: entry.evidenceUrl,
+        address: normalized.address,
+        tag: normalized.tag,
+        evidenceUrl: normalized.evidenceUrl,
         authorDid: null,
         source: 'seed',
       });
