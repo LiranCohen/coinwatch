@@ -1,3 +1,5 @@
+import type { CoinjoinMeta } from '@chainwatch/shared';
+
 export interface NormalizedTx {
   txid: string;
   inputs: { address: string | null; valueSats: number }[];
@@ -15,15 +17,45 @@ export function whale(tx: NormalizedTx, thresholdSats: number): boolean {
   return tx.totalOutputSats >= thresholdSats;
 }
 
-export function coinjoin(tx: NormalizedTx, minEqualOutputs: number): boolean {
+function largestEqualGroup(values: number[]): { valueSats: number; count: number } {
   const counts = new Map<number, number>();
-  for (const output of tx.outputs) {
-    counts.set(output.valueSats, (counts.get(output.valueSats) ?? 0) + 1);
+  for (const value of values) {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
   }
-  for (const count of counts.values()) {
-    if (count >= minEqualOutputs) return true;
+  let valueSats = 0;
+  let count = 0;
+  for (const [value, n] of counts) {
+    if (n > count || (n === count && value > valueSats)) {
+      count = n;
+      valueSats = value;
+    }
   }
-  return false;
+  return { valueSats, count };
+}
+
+export function classifyCoinjoin(tx: NormalizedTx, minEqualOutputs: number): CoinjoinMeta | null {
+  const denomination = largestEqualGroup(tx.outputs.map((output) => output.valueSats));
+  if (denomination.count < minEqualOutputs) return null;
+  const equalInputCount = largestEqualGroup(tx.inputs.map((input) => input.valueSats)).count;
+  let kind: CoinjoinMeta['kind'] = 'generic';
+  if (denomination.count === 5 && equalInputCount === 5) {
+    kind = 'whirlpool';
+  } else if (denomination.count >= 10) {
+    kind = 'wasabi';
+  }
+  const participantCount = new Set(
+    tx.inputs.map((input) => input.address).filter((address) => address !== null),
+  ).size;
+  return {
+    kind,
+    denominationSats: denomination.valueSats,
+    equalOutputCount: denomination.count,
+    participantCount,
+  };
+}
+
+export function coinjoin(tx: NormalizedTx, minEqualOutputs: number): boolean {
+  return classifyCoinjoin(tx, minEqualOutputs) !== null;
 }
 
 export const DORMANT_MAX_CANDIDATE_ADDRESSES = 3;

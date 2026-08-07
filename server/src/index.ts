@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events';
 import { Hono, type Context } from 'hono';
+import { cors } from 'hono/cors';
 import type { Database } from 'bun:sqlite';
 import { loadConfig, type Config } from './config';
 import { openDatabase, type EventRow } from './store/db';
@@ -14,6 +15,8 @@ import { createAuthApp } from './api/auth';
 import { createApiRoutes, involvedAddresses, serializeEventSummary } from './api/routes';
 import { createSseHub, type SseHub } from './api/sse';
 import { createInjectApp } from './api/inject';
+import { createAnalystRoutes } from './api/analysts';
+import { createEntityRoutes } from './api/entities';
 
 export interface AiPassDeps {
   emitter: EventEmitter;
@@ -88,8 +91,11 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   });
   registerAiPass({ emitter, db, ai: deps.ai, log: deps.log });
   const app = new Hono();
+  app.use('*', cors({ origin: '*', allowHeaders: ['Content-Type', 'Authorization'], allowMethods: ['GET', 'POST', 'PATCH', 'OPTIONS'] }));
   app.route('/', authApp);
   app.route('/', createApiRoutes({ db, hub, addressInfo: deps.addressInfo }));
+  app.route('/', createAnalystRoutes(db));
+  app.route('/', createEntityRoutes(db));
   app.route('/', hub.app);
   app.route(
     '/',

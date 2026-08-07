@@ -34,18 +34,19 @@ web/
     api/sse.ts                   # EventSource hook with backoff reconnect
     identity/enbox.ts            # DID create/import/export, signer
     identity/session.ts          # token storage, login/logout
-    pages/FeedPage.tsx  AddressPage.tsx  LeaderboardPage.tsx
+    pages/FeedPage.tsx  AddressPage.tsx  LeaderboardPage.tsx  GraphPage.tsx
     components/
       AccountButton.tsx  FeedItem.tsx  EventDetail.tsx  AiCard.tsx
       LabelBadge.tsx  LabelList.tsx  LabelForm.tsx  VoteButton.tsx
       ReputationBadge.tsx  TrendingLabels.tsx  DemoBadge.tsx
+      TxGraph.tsx  GraphNode.tsx
 ```
 
 ## Build order
 
 1. **U7** scaffold + client + fixtures mode — the whole UI is buildable against fixtures before the backend exists.
 2. **U8** identity (validate DID creation in a real browser first — see pitfall below) and **U9** feed + detail pane can run in parallel.
-3. **U10** address page + labels + votes. **U11** leaderboard + polish + README last.
+3. **U10** address page + labels + votes, then the graph/trace view (it reuses the event-detail and address endpoints). **U11** leaderboard + polish + README last.
 
 ## Implementation notes
 
@@ -63,11 +64,17 @@ web/
 - **Demo marker:** any event with `source: 'demo'` or `'demo'` in `rules` gets an unmistakable badge (AE6). The inject button shows only when `GET /api/dev/inject` returns 200.
 - **Votes:** `VoteButton` mirrors `myVote`; clicking the active vote removes it, clicking the other flips it (R12/AE4). Unauthenticated clicks route to the account-creation prompt (AE3 UI half).
 - **Address page:** balance/txCount from `AddressInfo`, rendering "—" with a "lookup unavailable" hint when null; tag and note render as escaped plain text and evidenceUrl only as a scheme-checked http(s) link; deep history links out to `externalUrl` (mempool.space) — do not build explorer pages.
-- **Routes:** `/` (feed with detail pane — event detail is pane-only, not a route), `/address/:address`, `/leaderboard`.
+- **Routes:** `/` (feed with detail pane — event detail is pane-only, not a route), `/address/:address`, `/leaderboard`, `/graph/:txid`.
 - **Leaderboard:** table of handle-or-truncated-did, reputation, label count, net votes; friendly zero-state.
+- **Graph view (`/graph/:txid`):** a traceable transaction graph, entered from a "Trace" button in `EventDetail` and from each row of the address page's `recentEvents`.
+  - Data: hop 0 is the event's own `EventDetail.inputs`/`outputs` (no extra endpoint). Clicking an address node expands one more hop lazily: `GET /api/addresses/:address` → `recentEvents` → `GET /api/events/:id` per event. Cap at 2 hops and ~100 nodes; render a "depth limit reached" hint on truncated nodes.
+  - Rendering: hand-rolled SVG with a deterministic layered layout (inputs left → tx center → outputs right) — no graph library, consistent with the no-extra-dependencies stance. Pan/zoom via a `viewBox` transform. Node area ∝ value; edges carry the sats amount in tabular-numeral monospace; tx nodes take the rule accent color; addresses with labels get a distinct ring plus `LabelBadge`; the currently focused txid is highlighted.
+  - Interaction: clicking a tx node re-centers the graph on that txid (updates the route); clicking an address offers expand-in-place or navigate to `/address/:address`. Unknown/null-address outputs (OP_RETURN, coinbase) render as a muted "script" node.
+  - Scope boundary: the graph traces across *detected events* only — anything deeper still links out to mempool.space. This is not a general explorer.
+  - Fixtures mode: composed entirely from `event-detail.json` + `address.json`; every expansion reuses the same fixtures so the view is fully exercisable offline.
 
 ## Done when
 
 - `npm run build` + `tsc --noEmit` pass in `web/`.
-- Fixtures mode renders every page with zero network.
+- Fixtures mode renders every page with zero network — including a two-hop graph trace.
 - Against the live backend: one-click account → login → label → vote → leaderboard tick, all without refresh; SSE events appear within a poll interval of injection.
