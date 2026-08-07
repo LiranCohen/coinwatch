@@ -50,7 +50,7 @@ export function Hub() {
       <div className="mx-auto max-w-6xl px-6 py-24 sm:py-28">
         <Reveal>
           <div className="max-w-xl">
-            <div className="font-mono text-[11px] tracking-[0.28em] text-gold/80">03 / RESEARCH HUB</div>
+            <div className="font-mono text-[11px] tracking-[0.28em] text-gold/80">02 / RESEARCH HUB</div>
             <h2 className="mt-4 font-display text-4xl font-semibold tracking-tight text-zinc-50 sm:text-5xl">
               Research-grade analysis, <span className="font-serif text-[1.08em] font-normal italic">open</span> by default.
             </h2>

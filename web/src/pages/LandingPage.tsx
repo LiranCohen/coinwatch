@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
-import { Anatomy } from '../components/landing/Anatomy';
 import { Hero } from '../components/landing/Hero';
 import { Hub } from '../components/landing/Hub';
 import { LogoMark } from '../components/landing/LogoMark';
@@ -187,7 +186,6 @@ export function LandingPage() {
       <main>
         <Hero />
         <Ticker />
-        <Anatomy />
         <Markets />
         <Hub />
         <Protocol />
