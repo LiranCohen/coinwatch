@@ -82,7 +82,7 @@ export function VoteButton({ score, myVote, onVote, compact }: VoteButtonProps) 
             onClick={() => void createAccount()}
             className="font-medium text-sky-300 hover:underline"
           >
-            Create one — one click
+            Create one, takes one click
           </button>
         </div>
       )}

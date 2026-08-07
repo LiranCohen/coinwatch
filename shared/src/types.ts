@@ -99,7 +99,7 @@ export interface LeaderboardEntry {
 /**
  * Web-of-trust graph (web/-derived, U11+). Nodes are crowd analysts, seeded
  * knowledge bases, and labeled addresses; edges are attestations (labels) and
- * votes. Derived client-side from existing endpoints — no backend change.
+ * votes. Derived client-side from existing endpoints; no backend change.
  */
 export interface TrustGraphNode {
   id: string;

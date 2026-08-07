@@ -41,13 +41,13 @@ export function AiCard({ event, onFeedback }: AiCardProps) {
           {event.aiStatus === 'pending' && (
             <>
               <span className="cw-pulse inline-block h-2 w-2 rounded-full bg-zinc-500" />
-              Analysis pending — the AI provider is working on this event.
+              Analysis pending. The AI provider is working on this event.
             </>
           )}
           {event.aiStatus === 'failed' && (
             <>
               <span className="inline-block h-2 w-2 rounded-full bg-red-400" />
-              Analysis pending — the AI provider failed; the event is unaffected (AE5).
+              Analysis pending. The AI provider failed; the event is unaffected (AE5).
             </>
           )}
         </div>
@@ -108,7 +108,7 @@ export function AiCard({ event, onFeedback }: AiCardProps) {
             onClick={() => void createAccount()}
             className="font-medium text-sky-300 hover:underline"
           >
-            Create one — one click
+            Create one, takes one click
           </button>
         </p>
       )}

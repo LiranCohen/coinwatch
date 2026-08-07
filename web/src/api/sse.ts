@@ -156,7 +156,7 @@ export function useEventStream(handlers: StreamHandlers): StreamState {
           try {
             dispatch(type, JSON.parse(message.data));
           } catch {
-            // malformed frame — ignore, stream stays open
+            // malformed frame: ignore, stream stays open
           }
         });
       }

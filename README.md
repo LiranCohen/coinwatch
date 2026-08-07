@@ -8,11 +8,11 @@ Real-time, community-validated Bitcoin transaction analysis. Your own node strea
 
 ## What it does
 
-- **Live event feed** — polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces: whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), and coinjoin-pattern transactions (≥ 5 equal outputs).
-- **AI first pass** — every event gets a 1–2 sentence summary + risk/behavior tag from an OpenAI-compatible provider (OKX.AI-compatible pitch). Unconfigured or failed → event still appears, marked "analysis pending."
-- **Crowd labels** — authenticated analysts attach tag/note/evidence labels to any address; labels on involved addresses appear inline in event context. One up/down vote per identity, toggle semantics.
-- **One-click identity** — in-page enbox DID creation (`did:dht`, offline fallback `did:jwk`), no password or wallet. Login is a signed server challenge. Reputation leaderboard + trending labels.
-- **Demo injector** — dev-only, loopback-only endpoint fires a synthetic, unmistakably badged DEMO event through the identical pipeline so the demo never stalls on a quiet mempool.
+- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), and coinjoin-pattern transactions (≥ 5 equal outputs).
+- **AI first pass.** Every event gets a 1–2 sentence summary + risk/behavior tag from an OpenAI-compatible provider (OKX.AI-compatible pitch). Unconfigured or failed → the event still appears, marked "analysis pending."
+- **Crowd labels.** Authenticated analysts attach tag/note/evidence labels to any address; labels on involved addresses appear inline in event context. One up/down vote per identity, toggle semantics.
+- **One-click identity.** In-page enbox DID creation (`did:dht`, offline fallback `did:jwk`), no password or wallet. Login is a signed server challenge. Reputation leaderboard + trending labels.
+- **Demo injector.** A dev-only, loopback-only endpoint fires a synthetic, unmistakably badged DEMO event through the identical pipeline, so the demo never stalls on a quiet mempool.
 
 ## Architecture
 
@@ -23,9 +23,9 @@ mempool.space/blockstream ──┘ (address lookups)        ▼
                             └──► AI provider ──► SSE ──► web/ dashboard
 ```
 
-- `server/` — Bun + Hono + better-sqlite3. One process: ingest pipeline, REST API, SSE hub, dev injector. _(Built by the backend lane — see `docs/plans/2026-08-06-002-feat-chainwatch-backend-plan.md`.)_
-- `web/` — Vite + React + TypeScript + Tailwind. Dark-mode dashboard: feed + detail pane, address pages, leaderboard.
-- `shared/` — the API contract types both lanes compile against. The contract is fixed in `docs/plans/2026-08-06-001-feat-chainwatch-mvp-plan.md`.
+- `server/`: Bun + Hono + better-sqlite3. One process runs the ingest pipeline, REST API, SSE hub, and dev injector. _(Built by the backend lane; see `docs/plans/2026-08-06-002-feat-chainwatch-backend-plan.md`.)_
+- `web/`: Vite + React + TypeScript + Tailwind. Dark-mode dashboard: feed + detail pane, address pages, leaderboard.
+- `shared/`: the API contract types both lanes compile against. The contract is fixed in `docs/plans/2026-08-06-001-feat-chainwatch-mvp-plan.md`.
 
 ## Quickstart
 
@@ -57,4 +57,4 @@ On-chain intelligence is either prohibitively expensive (Chainalysis, Nansen) or
 
 ## Scope honesty
 
-Bitcoin-only for the MVP (the original EVM framing is superseded). Labels and votes are naive counters — anti-sybil and moderation are explicitly deferred. AI output is always marked machine-generated; the crowd can confirm or refute it, and both signals stay visible.
+Bitcoin-only for the MVP (the original EVM framing is superseded). Labels and votes are naive counters; anti-sybil and moderation are explicitly deferred. AI output is always marked machine-generated; the crowd can confirm or refute it, and both signals stay visible.

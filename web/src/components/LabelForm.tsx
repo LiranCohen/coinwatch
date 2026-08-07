@@ -29,7 +29,7 @@ export function LabelForm({ address, onSubmit, onCreated }: LabelFormProps) {
           onClick={() => void createAccount()}
           className="font-medium text-sky-300 hover:underline"
         >
-          Create an account — one click, no password
+          Create an account. One click, no password
         </button>
       </div>
     );
@@ -78,7 +78,7 @@ export function LabelForm({ address, onSubmit, onCreated }: LabelFormProps) {
       <input
         value={tag}
         onChange={(e) => setTag(e.target.value)}
-        placeholder='Tag — e.g. "exchange hot wallet"'
+        placeholder='Tag, e.g. "exchange hot wallet"'
         maxLength={32}
         className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-600 focus:border-sky-500 focus:outline-none"
       />

@@ -151,7 +151,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
         }}
       >
         <title>
-          {io.address ?? 'no address'} — click to pin/unpin the trace, hover to preview
+          {io.address ?? 'no address'}. Click to pin/unpin the trace, hover to preview
         </title>
         <rect
           x={x}
@@ -326,7 +326,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
       )}
       {trace.kind === 'in' && !sharesValid && (
         <p className="mb-2 rounded border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] text-zinc-400">
-          Input addresses unknown (node without txindex) — flow tracing shows amounts only, proportional split
+          Input addresses unknown (node without txindex). Flow tracing shows amounts only; proportional split
           unavailable.
         </p>
       )}

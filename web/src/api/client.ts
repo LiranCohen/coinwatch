@@ -390,7 +390,7 @@ export async function probeInject(): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
-// Web of trust graph — derived from leaderboard + label data, no new endpoint.
+// Web of trust graph, derived from leaderboard + label data. No new endpoint.
 // Fixture backstory: 0xAnon authored the OTC-desk label and it was upvoted by
 // the other fixture analysts; satoshisghost authored "exchange treasury".
 // The live backend can adopt the same derivation or serve it directly.

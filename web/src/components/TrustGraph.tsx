@@ -166,7 +166,7 @@ export function TrustGraph({ data }: { data: TrustGraphData }) {
       >
         {/* Background hit-layer: clicking empty canvas clears the pinned
             selection. After a node drag, the click targets the svg ancestor,
-            not this rect — so releasing a drag never clears the selection. */}
+            not this rect, so releasing a drag never clears the selection. */}
         <rect
           x={0}
           y={0}

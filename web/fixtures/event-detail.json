@@ -48,7 +48,7 @@
       "id": "lbl_crowd_otc",
       "address": "bc1q9x4k2m8v7n3p5d6f1g0h4j8l2s7a5q9w3e6r1t4y",
       "tag": "OTC desk",
-      "note": "Desk wallet — settles weekdays, watch for follow-on moves.",
+      "note": "Desk wallet. Settles weekdays, watch for follow-on moves.",
       "evidenceUrl": "https://x.com/0xAnon/status/1234567890",
       "author": { "did": "did:dht:kw1b9f3m8x7v2c5z1a4q6w9e8r7t2y5u1i3o6p0s4d7f", "handle": "0xAnon" },
       "source": "crowd",

@@ -144,7 +144,7 @@ export function FeedPage() {
     <div className="space-y-4">
       {nodeStale && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
-          Node connection stale — no successful poll in the last {NODE_STALE_MS / 1000}s. Events may be delayed.
+          Node connection stale: no successful poll in the last {NODE_STALE_MS / 1000}s. Events may be delayed.
         </div>
       )}
 
@@ -194,7 +194,7 @@ export function FeedPage() {
             <SkeletonFeed />
           ) : events.length === 0 ? (
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center">
-              <p className="text-sm text-zinc-300">Listening to your node — no matching events yet.</p>
+              <p className="text-sm text-zinc-300">Listening to your node. No matching events yet.</p>
               <p className="mt-2 text-xs text-zinc-500">
                 Active detection: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
                 outputs.

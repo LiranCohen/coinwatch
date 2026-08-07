@@ -60,7 +60,7 @@ export function AddressPage() {
           </div>
         </div>
         {(info.balanceSats === null || info.txCount === null) && (
-          <p className="mt-2 text-xs text-zinc-500">— lookup unavailable (mempool.space / blockstream unreachable)</p>
+          <p className="mt-2 text-xs text-zinc-500">Lookup unavailable (mempool.space / blockstream unreachable)</p>
         )}
         <a href={info.externalUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-sky-400 hover:underline">
           Full history on mempool.space

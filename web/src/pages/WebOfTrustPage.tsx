@@ -26,7 +26,7 @@ export function WebOfTrustPage() {
         <h2 className="text-lg font-semibold text-zinc-50">Web of trust</h2>
         <p className="mt-1 max-w-2xl text-sm text-zinc-500">
           Every label is an attestation and every vote is a trust signal, each anchored to a
-          portable DID. Reputation is the visible residue of that graph — analysts who attest
+          portable DID. Reputation is the visible residue of that graph: analysts who attest
           accurately pull their neighborhood toward the truth.
         </p>
       </header>

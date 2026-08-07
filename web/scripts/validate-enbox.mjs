@@ -41,7 +41,7 @@ try {
   console.log('did:dht create: OK (gateway reachable)');
   await roundTrip(did, 'did:dht');
 } catch (err) {
-  console.log(`did:dht create: FAILED as anticipated offline (${err.message}) — exercising did:jwk fallback`);
+  console.log(`did:dht create: FAILED as anticipated offline (${err.message}); exercising did:jwk fallback`);
   did = await DidJwk.create();
   console.log('did:jwk create: OK');
   await roundTrip(did, 'did:jwk');
