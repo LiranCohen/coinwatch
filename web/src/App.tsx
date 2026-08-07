@@ -3,7 +3,7 @@ import { NavLink, Navigate, Route, Routes } from 'react-router-dom';
 import { AccountButton } from './components/AccountButton';
 import { AddressPage } from './pages/AddressPage';
 import { FeedPage } from './pages/FeedPage';
-import { LeaderboardPage } from './pages/LeaderboardPage';
+import { WebOfTrustPage } from './pages/WebOfTrustPage';
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (
@@ -31,7 +31,7 @@ export default function App() {
           </NavLink>
           <nav className="flex items-center gap-1">
             <NavItem to="/" label="Feed" />
-            <NavItem to="/leaderboard" label="Leaderboard" />
+            <NavItem to="/web-of-trust" label="Web of Trust" />
           </nav>
           <div className="ml-auto">
             <AccountButton />
@@ -42,7 +42,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<FeedPage />} />
           <Route path="/address/:address" element={<AddressPage />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
+          <Route path="/web-of-trust" element={<WebOfTrustPage />} />
+          <Route path="/leaderboard" element={<Navigate to="/web-of-trust" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>

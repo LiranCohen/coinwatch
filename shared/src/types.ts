@@ -96,6 +96,33 @@ export interface LeaderboardEntry {
   netVotes: number;
 }
 
+/**
+ * Web-of-trust graph (web/-derived, U11+). Nodes are crowd analysts, seeded
+ * knowledge bases, and labeled addresses; edges are attestations (labels) and
+ * votes. Derived client-side from existing endpoints — no backend change.
+ */
+export interface TrustGraphNode {
+  id: string;
+  kind: 'analyst' | 'seed' | 'address';
+  label: string;
+  did?: string;
+  address?: string;
+  reputation?: number;
+  score?: number;
+}
+
+export interface TrustGraphEdge {
+  source: string;
+  target: string;
+  kind: 'attestation' | 'vote';
+  weight: number;
+}
+
+export interface TrustGraphData {
+  nodes: TrustGraphNode[];
+  edges: TrustGraphEdge[];
+}
+
 /** SSE message payloads on /api/stream */
 export interface StreamMessages {
   'event:new': EventSummary;

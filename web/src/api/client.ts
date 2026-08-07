@@ -7,6 +7,9 @@ import type {
   Identity,
   Label,
   LeaderboardResponse,
+  TrustGraphData,
+  TrustGraphEdge,
+  TrustGraphNode,
   TrendingResponse,
   VerifyRequest,
   VerifyResponse,
@@ -384,6 +387,95 @@ export async function probeInject(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Web of trust graph — derived from leaderboard + label data, no new endpoint.
+// Fixture backstory: 0xAnon authored the OTC-desk label and it was upvoted by
+// the other fixture analysts; satoshisghost authored "exchange treasury".
+// The live backend can adopt the same derivation or serve it directly.
+// ---------------------------------------------------------------------------
+
+const FIXTURE_VOTE_EDGES: { voterDid: string; labelId: string; value: 1 | -1 }[] = [
+  { voterDid: 'did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5In0', labelId: 'lbl_crowd_otc', value: 1 },
+  { voterDid: 'did:dht:8zkq4w1e7r2t5y8u1i3o6p9a0s4d7f2g5h8j1k4l7z', labelId: 'lbl_crowd_otc', value: 1 },
+  { voterDid: 'did:dht:h3n6m9q2w5e8r1t4y7u0i3p6a9s2d5f8g1h4j7k0l3', labelId: 'lbl_crowd_otc', value: 1 },
+  { voterDid: 'did:dht:kw1b9f3m8x7v2c5z1a4q6w9e8r7t2y5u1i3o6p0s4d7f', labelId: 'lbl_crowd_treasury', value: 1 },
+  { voterDid: 'did:dht:8zkq4w1e7r2t5y8u1i3o6p9a0s4d7f2g5h8j1k4l7z', labelId: 'lbl_crowd_treasury', value: 1 },
+  { voterDid: 'did:dht:8zkq4w1e7r2t5y8u1i3o6p9a0s4d7f2g5h8j1k4l7z', labelId: 'lbl_seed_binance', value: 1 },
+  { voterDid: 'did:dht:h3n6m9q2w5e8r1t4y7u0i3p6a9s2d5f8g1h4j7k0l3', labelId: 'lbl_seed_binance', value: 1 },
+  { voterDid: 'did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJWMjU1MTkifQ', labelId: 'lbl_crowd_otc', value: -1 },
+];
+
+export async function getTrustGraph(): Promise<TrustGraphData> {
+  const [{ analysts }, { labels }] = await Promise.all([getLeaderboard(), getTrending()]);
+
+  const nodes = new Map<string, TrustGraphNode>();
+  const edges: TrustGraphEdge[] = [];
+
+  for (const analyst of analysts) {
+    nodes.set(`did:${analyst.did}`, {
+      id: `did:${analyst.did}`,
+      kind: 'analyst',
+      label: analyst.handle ?? `${analyst.did.slice(0, 18)}…`,
+      did: analyst.did,
+      reputation: analyst.reputation,
+    });
+  }
+
+  for (const label of labels) {
+    const addressNodeId = `addr:${label.address}`;
+    if (!nodes.has(addressNodeId)) {
+      nodes.set(addressNodeId, {
+        id: addressNodeId,
+        kind: 'address',
+        label: label.tag,
+        address: label.address,
+        score: label.score,
+      });
+    }
+    if (label.author) {
+      const authorNodeId = `did:${label.author.did}`;
+      if (!nodes.has(authorNodeId)) {
+        nodes.set(authorNodeId, {
+          id: authorNodeId,
+          kind: 'analyst',
+          label: label.author.handle ?? `${label.author.did.slice(0, 18)}…`,
+          did: label.author.did,
+          reputation: 0,
+        });
+      }
+      edges.push({ source: authorNodeId, target: addressNodeId, kind: 'attestation', weight: 1 });
+    } else {
+      const seedNodeId = 'seed:tagpacks';
+      if (!nodes.has(seedNodeId)) {
+        nodes.set(seedNodeId, {
+          id: seedNodeId,
+          kind: 'seed',
+          label: 'GraphSense TagPacks',
+        });
+      }
+      edges.push({ source: seedNodeId, target: addressNodeId, kind: 'attestation', weight: 1 });
+    }
+  }
+
+  if (USE_FIXTURES) {
+    for (const vote of FIXTURE_VOTE_EDGES) {
+      const label = mockReady ? mock.labels.get(vote.labelId) : undefined;
+      const targetAddress = label?.address;
+      if (!targetAddress) continue;
+      const voterNodeId = `did:${vote.voterDid}`;
+      if (!nodes.has(voterNodeId)) continue;
+      edges.push({
+        source: voterNodeId,
+        target: `addr:${targetAddress}`,
+        kind: 'vote',
+        weight: vote.value,
+      });
+    }
+  }
+
+  return { nodes: [...nodes.values()], edges };
 }
 
 export async function postInject(body: { rule?: string; valueSats?: number; address?: string }): Promise<EventDetail> {
