@@ -5,6 +5,7 @@ import type { EventDetail as EventDetailType, EventSummary, Label, Rule } from '
 
 import { getEvent, getEvents, postInject, probeInject } from '../api/client';
 import { useEventStream } from '../api/sse';
+import { BlocksStrip } from '../components/BlocksStrip';
 import { EventDetail } from '../components/EventDetail';
 import { FeedItem } from '../components/FeedItem';
 import { TrendingLabels } from '../components/TrendingLabels';
@@ -157,6 +158,7 @@ export function FeedPage() {
 
   return (
     <div className="space-y-4">
+      <BlocksStrip />
       {nodeStale && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
           Node connection stale: no successful poll in the last {NODE_STALE_MS / 1000}s. Events may be delayed.
@@ -184,7 +186,7 @@ export function FeedPage() {
           ))}
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {injectAvailable && (
+          {false && injectAvailable && (
             <button
               type="button"
               disabled={injecting}
@@ -210,7 +212,7 @@ export function FeedPage() {
                 Active detection: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
                 outputs · hack (multi-tx drain patterns).
               </p>
-              {injectAvailable && (
+              {false && injectAvailable && (
                 <p className="mt-2 text-xs text-amber-300/80">
                   Rehearsing? Use the inject button to fire a clearly-marked simulated event through the pipeline.
                 </p>

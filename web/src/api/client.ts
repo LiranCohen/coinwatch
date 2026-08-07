@@ -25,6 +25,7 @@ import trendingFixture from '../../fixtures/trending.json';
 import { emitMockEvent } from './sse';
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true';
+export const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
 export class ApiError extends Error {
   constructor(
@@ -40,7 +41,7 @@ async function request<T>(path: string, init?: RequestInit, token?: string | nul
   const headers = new Headers(init?.headers);
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const res = await fetch(path, { ...init, headers });
+  const res = await fetch(API_BASE + path, { ...init, headers });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new ApiError(res.status, body || res.statusText);
@@ -384,7 +385,7 @@ export async function getTrending(): Promise<TrendingResponse> {
 export async function probeInject(): Promise<boolean> {
   if (USE_FIXTURES) return true;
   try {
-    const res = await fetch('/api/dev/inject', { method: 'GET' });
+    const res = await fetch(API_BASE + '/api/dev/inject', { method: 'GET' });
     return res.ok;
   } catch {
     return false;

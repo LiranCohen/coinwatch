@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import type { EventDetail as EventDetailType, Hack } from '@chainwatch/shared';
 
 import { getHack, postVote } from '../api/client';
+import { enrichIo, guessLinks } from '../lib/demoFlow';
 import { satsToBtc, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
@@ -19,9 +20,14 @@ interface EventDetailProps {
 
 export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) {
   const { token } = useSession();
-  const isDemo = event.source === 'demo';
+  const isDemo = false;
   const [hack, setHack] = useState<Hack | null>(null);
   const [copied, setCopied] = useState(false);
+
+  const flow = useMemo(() => {
+    const io = enrichIo(event);
+    return { ...io, links: guessLinks(io.inputs, io.outputs) };
+  }, [event]);
 
   const copyTxid = async () => {
     try {
@@ -92,7 +98,7 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
           {hack ? 'VALUE FLOW: THIS TRANSACTION' : 'VALUE FLOW'}
         </h3>
         <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <TxGraph txid={event.txid} inputs={event.inputs} outputs={event.outputs} labels={event.labels} />
+          <TxGraph txid={event.txid} inputs={flow.inputs} outputs={flow.outputs} links={flow.links} labels={event.labels} />
         </div>
       </section>
 

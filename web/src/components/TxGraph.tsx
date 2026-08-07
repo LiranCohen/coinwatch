@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Label } from '@chainwatch/shared';
 
 import { satsToBtc, truncateMiddle } from '../lib/format';
+import type { LinkGuess } from '../lib/demoFlow';
 
 interface IoEntry {
   address: string | null;
@@ -15,6 +16,7 @@ interface TxGraphProps {
   inputs: IoEntry[];
   outputs: IoEntry[];
   labels: Label[];
+  links?: LinkGuess[];
 }
 
 type Trace =
@@ -66,9 +68,10 @@ const LABEL_HALO = {
   strokeLinejoin: 'round',
 } as const;
 
-export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
+export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphProps) {
   const navigate = useNavigate();
   const [trace, setTrace] = useState<Trace>({ kind: 'none' });
+  const [showGuesses, setShowGuesses] = useState(true);
 
   const totalOut = Math.max(
     1,
@@ -249,7 +252,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
     const midY = (y1 + y2) / 2;
 
     return (
-      <g key={`flow-${side}-${index}`} style={{ transition: 'opacity 150ms' }}>
+      <g key={`flow-${side}-${index}`} style={{ transition: 'opacity 150ms', pointerEvents: 'none' }}>
         <path
           d={flowPath(x1, y1, x2, y2)}
           fill="none"
@@ -283,6 +286,48 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
     );
   };
 
+  const renderGuess = (link: LinkGuess, i: number) => {
+    const inBox = inGeom.boxes[link.inputIndex];
+    const outBox = outGeom.boxes[link.outputIndex];
+    if (!inBox || !outBox) return null;
+    const x1 = COL_IN_X + COL_W;
+    const y1 = inBox.y + inBox.h / 2;
+    const x2 = COL_OUT_X;
+    const y2 = outBox.y + outBox.h / 2;
+    const lift = 26 + (i % 4) * 10;
+    const involved =
+      (trace.kind === 'in' && trace.index === link.inputIndex) ||
+      (trace.kind === 'out' && trace.index === link.outputIndex);
+    const faded = trace.kind !== 'none' && trace.kind !== 'all' && !involved;
+    const midY = (y1 + y2) / 2 - lift * 0.72;
+    return (
+      <g
+        key={`guess-${i}`}
+        opacity={faded ? 0.08 : involved ? 1 : 0.55}
+        style={{ transition: 'opacity 150ms', pointerEvents: 'none' }}
+      >
+        <path
+          d={`M ${x1} ${y1} C ${x1 + 240} ${y1 - lift}, ${x2 - 240} ${y2 - lift}, ${x2} ${y2}`}
+          fill="none"
+          strokeWidth={involved ? 2.5 : 1.5}
+          strokeDasharray="6 5"
+          strokeLinecap="round"
+          className="stroke-amber-400"
+        />
+        <circle cx={x2 - 4} cy={y2} r={involved ? 4 : 3} className="fill-amber-400" />
+        <text
+          x={(x1 + x2) / 2}
+          y={midY}
+          textAnchor="middle"
+          className="tnum fill-amber-300 font-mono text-[10px]"
+          style={LABEL_HALO}
+        >
+          {involved ? `suspected ${link.reason} · ${Math.round(link.confidence * 100)}%` : `${Math.round(link.confidence * 100)}%`}
+        </text>
+      </g>
+    );
+  };
+
   return (
     <div onClick={() => setTrace({ kind: 'none' })}>
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -308,23 +353,34 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
             Trace all
           </button>
         </div>
+        {links.length > 0 && (
+          <button
+            type="button"
+            className={`rounded border px-2.5 py-1 text-[11px] ${showGuesses ? 'border-amber-400/50 bg-amber-400/10 text-amber-300' : 'border-zinc-700 text-zinc-400 hover:bg-zinc-800'}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowGuesses((s) => !s);
+            }}
+          >
+            Suspected links ({links.length})
+          </button>
+        )}
         <span className="text-[11px] text-zinc-500">
-          Hover or click a box to trace its flow. Sky outline = labeled address. Click an address to open its page.
+          Hover or click a box to trace its flow. Sky outline = labeled address.
+          {links.length > 0 && ' Amber dashes = heuristic input↔output guesses.'}
         </span>
       </div>
 
-      {trace.kind === 'in' && sharesValid && (
-        <p className="mb-2 rounded border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] text-zinc-400">
-          Proportional split (conservative lower bound): assumes this input's coins spread evenly across all outputs.
-          Real attribution needs address clustering, which is out of MVP scope.
+      {/* fixed-height slot: swapping the banner in/out must not shift the svg below (hover flicker) */}
+      <div className="mb-2 h-[30px]">
+        <p
+          className={`truncate rounded border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] text-zinc-400 ${trace.kind === 'in' ? 'visible' : 'invisible'}`}
+        >
+          {sharesValid
+            ? "Proportional split (conservative lower bound): assumes this input's coins spread evenly across all outputs."
+            : 'Input addresses unknown (node without txindex). Flow tracing shows amounts only.'}
         </p>
-      )}
-      {trace.kind === 'in' && !sharesValid && (
-        <p className="mb-2 rounded border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 text-[11px] text-zinc-400">
-          Input addresses unknown (node without txindex). Flow tracing shows amounts only; proportional split
-          unavailable.
-        </p>
-      )}
+      </div>
 
       <svg viewBox={`0 0 ${WIDTH} ${height}`} className="w-full select-none">
         <text x={COL_IN_X} y={14} className="fill-zinc-500 text-[10px] font-semibold tracking-widest">
@@ -339,6 +395,7 @@ export function TxGraph({ txid, inputs, outputs, labels }: TxGraphProps) {
 
         {inputs.map((io, i) => renderFlow(io, inGeom.boxes[i], 'in', i))}
         {outputs.map((io, i) => renderFlow(io, outGeom.boxes[i], 'out', i))}
+        {showGuesses && links.map(renderGuess)}
 
         <g>
           <rect
