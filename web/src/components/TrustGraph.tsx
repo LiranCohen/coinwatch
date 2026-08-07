@@ -298,7 +298,7 @@ export function TrustGraph({ data }: { data: TrustGraphData }) {
           </p>
           {selected.kind === 'address' && selected.address && (
             <Link
-              to={`/address/${selected.address}`}
+              to={`/app/address/${selected.address}`}
               className="pointer-events-auto mt-1 inline-block text-sky-400 hover:underline"
             >
               Open address page

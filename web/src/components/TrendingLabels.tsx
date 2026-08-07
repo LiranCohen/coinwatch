@@ -28,7 +28,7 @@ export function TrendingLabels() {
       {labels.slice(0, 10).map((label) => (
         <Link
           key={label.id}
-          to={`/address/${label.address}`}
+          to={`/app/address/${label.address}`}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1 text-xs text-zinc-200 hover:border-zinc-500"
         >
           {label.tag}
