@@ -27,6 +27,17 @@ export interface Label {
   createdAt: string;
 }
 
+export interface CoinjoinMeta {
+  kind: 'wasabi' | 'whirlpool' | 'generic';
+  denominationSats: number;
+  equalOutputCount: number;
+  participantCount: number;
+}
+
+export interface EventMeta {
+  coinjoin?: CoinjoinMeta;
+}
+
 export interface EventSummary {
   id: string;
   txid: string;
@@ -37,6 +48,10 @@ export interface EventSummary {
   source: 'live' | 'demo';
   aiStatus: AiStatus;
   aiTag: string | null;
+  blockHeight: number | null;
+  blockHash: string | null;
+  blockTime: string | null;
+  meta: EventMeta | null;
   matchedLabels: Label[];
 }
 
@@ -105,6 +120,61 @@ export interface AiFeedbackRequest {
 
 export interface EventsListResponse {
   events: EventSummary[];
+}
+
+export type BatchKind = 'coinjoin-round' | 'curated';
+
+export interface BatchSummary {
+  id: string;
+  kind: BatchKind;
+  title: string;
+  description: string | null;
+  txCount: number;
+  totalValueSats: number;
+  latestBlockTime: string | null;
+  topLabels: Label[];
+}
+
+export interface BatchTx {
+  txid: string;
+  blockHeight: number | null;
+  blockHash: string | null;
+  blockTime: string | null;
+  valueSats: number;
+  linkReason: string;
+  labels: Label[];
+  eventId: string | null;
+}
+
+export interface BatchDetail extends BatchSummary {
+  txs: BatchTx[];
+}
+
+export interface AnalystProfile {
+  identity: Identity;
+  labels: Label[];
+  votesReceived: { up: number; down: number };
+  aiFeedbackGiven: number;
+}
+
+export interface EntitySummary {
+  tag: string;
+  addressCount: number;
+  eventCount: number;
+}
+
+export interface EntityDetail {
+  tag: string;
+  addresses: { address: string; labels: Label[] }[];
+  recentEvents: EventSummary[];
+}
+
+export interface BatchesResponse {
+  batches: BatchSummary[];
+}
+
+export interface CoinjoinsResponse {
+  coinjoins: (EventSummary & { batchId: string | null })[];
 }
 
 export interface TrendingResponse {

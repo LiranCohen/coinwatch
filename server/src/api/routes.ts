@@ -19,7 +19,7 @@ import {
   type TrendingResponse,
   type VoteRequest,
 } from '@chainwatch/shared';
-import { findLabelByUnique, getEventById, getLabelById, insertLabel, type EventRow } from '../store/db';
+import { findLabelByUnique, getEventById, getLabelById, insertLabel, parseEventMeta, type EventRow } from '../store/db';
 import { isoFromNow } from '../store/authQueries';
 import {
   applyLabelVote,
@@ -139,6 +139,10 @@ export function serializeEventSummary(
     source: row.source,
     aiStatus: row.ai_status,
     aiTag: row.ai_tag,
+    blockHeight: row.block_height,
+    blockHash: row.block_hash,
+    blockTime: row.block_time,
+    meta: parseEventMeta(row),
     matchedLabels,
   };
 }
@@ -161,6 +165,10 @@ export function serializeEventDetail(
     source: row.source,
     aiStatus: row.ai_status,
     aiTag: row.ai_tag,
+    blockHeight: row.block_height,
+    blockHash: row.block_hash,
+    blockTime: row.block_time,
+    meta: parseEventMeta(row),
     matchedLabels: labels.slice(0, 3).map(toLabel),
     aiSummary: row.ai_summary,
     inputs,

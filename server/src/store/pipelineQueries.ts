@@ -19,3 +19,20 @@ export function setEventStatus(db: Database, id: string, status: EventStatus): E
   db.query('UPDATE events SET status = ? WHERE id = ?').run(status, id);
   return getEventById(db, id);
 }
+
+export interface EventBlockInfo {
+  blockHeight: number | null;
+  blockHash: string;
+  blockTime: string | null;
+}
+
+export function setEventConfirmed(
+  db: Database,
+  id: string,
+  block: EventBlockInfo,
+): EventRow | null {
+  db.query(
+    "UPDATE events SET status = 'confirmed', block_height = ?, block_hash = ?, block_time = ? WHERE id = ?",
+  ).run(block.blockHeight, block.blockHash, block.blockTime, id);
+  return getEventById(db, id);
+}

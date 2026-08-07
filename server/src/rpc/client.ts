@@ -43,6 +43,7 @@ export interface VerboseTx {
 export interface BlockInfo {
   hash: string;
   height: number;
+  time?: number;
   tx: string[];
 }
 

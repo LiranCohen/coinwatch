@@ -57,7 +57,9 @@ class FakeRpc implements BitcoinRpc {
   txs = new Map<string, VerboseTx>();
   confirmed = new Set<string>();
   blocks = 800_000;
+  blockTime = 1_785_000_000;
   failMempool = false;
+  failGetblock = false;
   fetchCalls: string[] = [];
 
   addTx(tx: VerboseTx): void {
@@ -87,7 +89,8 @@ class FakeRpc implements BitcoinRpc {
   }
 
   async getblock(hash: string): Promise<BlockInfo> {
-    return { hash, height: this.blocks, tx: [...this.confirmed] };
+    if (this.failGetblock) throw new Error('bitcoind: block not found');
+    return { hash, height: this.blocks, time: this.blockTime, tx: [...this.confirmed] };
   }
 }
 
@@ -187,6 +190,55 @@ describe('pipeline', () => {
 
     await pipeline.poll();
     expect(updates).toHaveLength(2);
+  });
+
+  test('confirmed event gains block height/hash/time; evicted keeps nulls', async () => {
+    const { db, rpc, pipeline, updates } = makeHarness();
+    await pipeline.poll();
+    const evictTx = WHALE_TX();
+    rpc.addTx(evictTx);
+    rpc.addTx(makeRawTx(txid('e'), [{ address: 'bc1qdest', btc: 20 }], [{ address: 'bc1qin2', btc: 21 }]));
+    await pipeline.poll();
+
+    rpc.mempool.delete(evictTx.txid);
+    rpc.mempool.delete(txid('e'));
+    rpc.confirmed.add(txid('e'));
+    await pipeline.poll();
+
+    const confirmed = db.query('SELECT * FROM events WHERE txid = ?').get(txid('e')) as EventRow;
+    expect(confirmed.status).toBe('confirmed');
+    expect(confirmed.block_height).toBe(800_000);
+    expect(confirmed.block_hash).toBe(txid('b'));
+    expect(confirmed.block_time).toBe(new Date(1_785_000_000 * 1000).toISOString());
+
+    const evicted = db.query('SELECT * FROM events WHERE txid = ?').get(evictTx.txid) as EventRow;
+    expect(evicted.status).toBe('evicted');
+    expect(evicted.block_height).toBeNull();
+    expect(evicted.block_hash).toBeNull();
+    expect(evicted.block_time).toBeNull();
+
+    const confirmedUpdate = updates.find((r) => r.txid === txid('e'))!;
+    expect(confirmedUpdate.block_hash).toBe(txid('b'));
+    expect(confirmedUpdate.block_height).toBe(800_000);
+  });
+
+  test('confirmation still lands when getblock fails, with null height/time', async () => {
+    const { db, rpc, pipeline, warnings } = makeHarness();
+    await pipeline.poll();
+    rpc.addTx(makeRawTx(txid('e'), [{ address: 'bc1qdest', btc: 20 }], [{ address: 'bc1qin2', btc: 21 }]));
+    await pipeline.poll();
+
+    rpc.mempool.delete(txid('e'));
+    rpc.confirmed.add(txid('e'));
+    rpc.failGetblock = true;
+    await pipeline.poll();
+
+    expect(warnings.some((w) => w.includes('getblock'))).toBe(true);
+    const row = db.query('SELECT * FROM events WHERE txid = ?').get(txid('e')) as EventRow;
+    expect(row.status).toBe('confirmed');
+    expect(row.block_hash).toBe(txid('b'));
+    expect(row.block_height).toBeNull();
+    expect(row.block_time).toBeNull();
   });
 
   test('RPC failure is swallowed and retried on next poll', async () => {

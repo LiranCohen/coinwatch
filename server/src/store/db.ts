@@ -2,7 +2,7 @@ import { Database } from 'bun:sqlite';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { loadConfig } from '../config';
-import type { Rule, EventStatus, AiStatus } from '@chainwatch/shared';
+import type { Rule, EventStatus, AiStatus, BatchKind, EventMeta } from '@chainwatch/shared';
 
 export interface EventInput {
   txid: string;
@@ -27,6 +27,19 @@ export interface EventRow {
   ai_tag: string | null;
   source: 'live' | 'demo';
   status: EventStatus;
+  block_height: number | null;
+  block_hash: string | null;
+  block_time: string | null;
+  meta: string | null;
+}
+
+export function parseEventMeta(row: EventRow): EventMeta | null {
+  if (row.meta === null) return null;
+  try {
+    return JSON.parse(row.meta) as EventMeta;
+  } catch {
+    return null;
+  }
 }
 
 export interface LabelInput {
@@ -137,4 +150,95 @@ export function getLabelsForAddress(db: Database, address: string): LabelRow[] {
 
 export function getLabelById(db: Database, id: string): LabelRow | null {
   return db.query('SELECT * FROM labels WHERE id = ?').get(id) as LabelRow | null;
+}
+
+export interface BatchInput {
+  id?: string;
+  kind: BatchKind;
+  title: string;
+  description?: string | null;
+  source: string;
+}
+
+export interface BatchRow {
+  id: string;
+  kind: BatchKind;
+  title: string;
+  description: string | null;
+  source: string;
+  created_at: string;
+}
+
+export interface BatchTxInput {
+  batchId: string;
+  txid: string;
+  blockHeight?: number | null;
+  blockHash?: string | null;
+  blockTime?: string | null;
+  valueSats: number;
+  linkReason: string;
+}
+
+export interface BatchTxRow {
+  batch_id: string;
+  txid: string;
+  block_height: number | null;
+  block_hash: string | null;
+  block_time: string | null;
+  value_sats: number;
+  link_reason: string;
+}
+
+export function insertBatch(db: Database, batch: BatchInput): BatchRow | null {
+  const id = batch.id ?? crypto.randomUUID();
+  db.query(
+    `INSERT OR IGNORE INTO batches (id, kind, title, description, source)
+     VALUES (?, ?, ?, ?, ?)`,
+  ).run(id, batch.kind, batch.title, batch.description ?? null, batch.source);
+  return getBatchById(db, id);
+}
+
+export function addBatchTx(db: Database, tx: BatchTxInput): BatchTxRow | null {
+  db.query(
+    `INSERT OR IGNORE INTO batch_txs
+       (batch_id, txid, block_height, block_hash, block_time, value_sats, link_reason)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    tx.batchId,
+    tx.txid,
+    tx.blockHeight ?? null,
+    tx.blockHash ?? null,
+    tx.blockTime ?? null,
+    tx.valueSats,
+    tx.linkReason,
+  );
+  return db
+    .query('SELECT * FROM batch_txs WHERE batch_id = ? AND txid = ?')
+    .get(tx.batchId, tx.txid) as BatchTxRow | null;
+}
+
+export function getBatchById(db: Database, id: string): BatchRow | null {
+  return db.query('SELECT * FROM batches WHERE id = ?').get(id) as BatchRow | null;
+}
+
+export function listBatchTxs(db: Database, batchId: string): BatchTxRow[] {
+  return db
+    .query('SELECT * FROM batch_txs WHERE batch_id = ? ORDER BY block_time DESC, txid')
+    .all(batchId) as BatchTxRow[];
+}
+
+export function findBatchByTxid(db: Database, txid: string): BatchRow | null {
+  return db
+    .query(
+      `SELECT batches.* FROM batches
+       JOIN batch_txs ON batch_txs.batch_id = batches.id
+       WHERE batch_txs.txid = ?
+       ORDER BY batches.created_at DESC
+       LIMIT 1`,
+    )
+    .get(txid) as BatchRow | null;
+}
+
+export function listBatches(db: Database): BatchRow[] {
+  return db.query('SELECT * FROM batches ORDER BY created_at DESC, id').all() as BatchRow[];
 }

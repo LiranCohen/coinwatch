@@ -6,7 +6,7 @@ import type { BitcoinRpc, VerboseTx } from '../rpc/client';
 import type { AddressInfoClient } from '../external/addressinfo';
 import { coinjoin, dormantWake, whale, type NormalizedTx } from './rules';
 import { insertEvent } from '../store/db';
-import { listSweepableEvents, setEventStatus } from '../store/pipelineQueries';
+import { listSweepableEvents, setEventConfirmed, setEventStatus } from '../store/pipelineQueries';
 import { errMessage } from '../util';
 
 const SATS_PER_BTC = 100_000_000;
@@ -122,17 +122,37 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
 
   async function sweepEvent(row: { id: string; txid: string }, mempool: Set<string>): Promise<void> {
     if (mempool.has(row.txid)) return;
-    let confirmed = false;
+    let blockhash: string | null = null;
     try {
       const tx = await rpc.getrawtransaction(row.txid);
-      confirmed = typeof tx.blockhash === 'string' && tx.blockhash.length > 0;
+      if (typeof tx.blockhash === 'string' && tx.blockhash.length > 0) {
+        blockhash = tx.blockhash;
+      }
     } catch {
-      confirmed = false;
+      blockhash = null;
     }
-    const status = confirmed ? 'confirmed' : 'evicted';
-    const updated = setEventStatus(db, row.id, status);
+    if (blockhash === null) {
+      const evicted = setEventStatus(db, row.id, 'evicted');
+      if (evicted) {
+        log(`pipeline: event ${row.txid} -> evicted`);
+        emitter.emit('event:update', evicted);
+      }
+      return;
+    }
+    let blockHeight: number | null = null;
+    let blockTime: string | null = null;
+    try {
+      const block = await rpc.getblock(blockhash);
+      blockHeight = block.height;
+      if (typeof block.time === 'number') {
+        blockTime = new Date(block.time * 1000).toISOString();
+      }
+    } catch (err) {
+      warn(`pipeline: getblock(${blockhash}) failed: ${errMessage(err)}`);
+    }
+    const updated = setEventConfirmed(db, row.id, { blockHeight, blockHash: blockhash, blockTime });
     if (updated) {
-      log(`pipeline: event ${row.txid} -> ${status}`);
+      log(`pipeline: event ${row.txid} -> confirmed`);
       emitter.emit('event:update', updated);
     }
   }

@@ -1,5 +1,18 @@
 import { describe, test, expect } from 'bun:test';
-import { openDatabase, insertEvent, getEventByTxid, getLabelsForAddress, insertLabel } from '../src/store/db';
+import {
+  openDatabase,
+  insertEvent,
+  getEventByTxid,
+  getLabelsForAddress,
+  insertLabel,
+  insertBatch,
+  addBatchTx,
+  getBatchById,
+  listBatchTxs,
+  findBatchByTxid,
+  listBatches,
+  parseEventMeta,
+} from '../src/store/db';
 import { applyLabelVote, getLabelsForAddressScored } from '../src/store/apiQueries';
 import { importSeedEntries, seedDatabase, isBitcoinAddress } from '../src/store/seed';
 import fixture from '../fixtures/seed-labels.json';
@@ -22,6 +35,8 @@ describe('schema', () => {
     ).map((r) => r.name);
     expect(tables).toEqual([
       'ai_feedback',
+      'batch_txs',
+      'batches',
       'challenges',
       'did_documents',
       'events',
@@ -50,6 +65,99 @@ describe('events', () => {
     expect(second.inserted).toBe(false);
     expect(second.row!.id).toBe(first.row!.id);
     expect(getEventByTxid(db, SAMPLE_EVENT.txid)!.value_sats).toBe(1_500_000_000);
+  });
+
+  test('new events have null block info and null meta', () => {
+    const db = openDatabase(':memory:');
+    const { row } = insertEvent(db, SAMPLE_EVENT);
+    expect(row!.block_height).toBeNull();
+    expect(row!.block_hash).toBeNull();
+    expect(row!.block_time).toBeNull();
+    expect(row!.meta).toBeNull();
+    expect(parseEventMeta(row!)).toBeNull();
+  });
+
+  test('parseEventMeta parses stored JSON and tolerates invalid JSON', () => {
+    const db = openDatabase(':memory:');
+    const { row } = insertEvent(db, SAMPLE_EVENT);
+    db.query('UPDATE events SET meta = ? WHERE id = ?').run(
+      JSON.stringify({
+        coinjoin: {
+          kind: 'whirlpool',
+          denominationSats: 10_000_000,
+          equalOutputCount: 5,
+          participantCount: 5,
+        },
+      }),
+      row!.id,
+    );
+    const meta = parseEventMeta(getEventByTxid(db, SAMPLE_EVENT.txid)!);
+    expect(meta?.coinjoin?.kind).toBe('whirlpool');
+    expect(meta?.coinjoin?.equalOutputCount).toBe(5);
+
+    db.query('UPDATE events SET meta = ? WHERE id = ?').run('not json', row!.id);
+    expect(parseEventMeta(getEventByTxid(db, SAMPLE_EVENT.txid)!)).toBeNull();
+  });
+});
+
+describe('batches', () => {
+  const TX_A = 'b'.repeat(64);
+  const TX_B = 'c'.repeat(64);
+
+  test('insertBatch + addBatchTx round-trip with block info', () => {
+    const db = openDatabase(':memory:');
+    const batch = insertBatch(db, {
+      kind: 'coinjoin-round',
+      title: 'Round chain',
+      description: 'linked rounds',
+      source: 'auto',
+    })!;
+    expect(batch.id).toBeTruthy();
+    expect(getBatchById(db, batch.id)!.title).toBe('Round chain');
+
+    addBatchTx(db, {
+      batchId: batch.id,
+      txid: TX_A,
+      blockHeight: 800_001,
+      blockHash: 'd'.repeat(64),
+      blockTime: '2026-08-01T00:00:00.000Z',
+      valueSats: 500_000_000,
+      linkReason: 'first round',
+    });
+    addBatchTx(db, { batchId: batch.id, txid: TX_B, valueSats: 500_000_000, linkReason: 'spends output of round 1' });
+
+    const txs = listBatchTxs(db, batch.id);
+    expect(txs).toHaveLength(2);
+    const byTxid = new Map(txs.map((t) => [t.txid, t]));
+    expect(byTxid.get(TX_A)!.block_height).toBe(800_001);
+    expect(byTxid.get(TX_A)!.link_reason).toBe('first round');
+    expect(byTxid.get(TX_B)!.block_height).toBeNull();
+    expect(byTxid.get(TX_B)!.value_sats).toBe(500_000_000);
+  });
+
+  test('addBatchTx dedupes on UNIQUE(batch_id, txid)', () => {
+    const db = openDatabase(':memory:');
+    const batch = insertBatch(db, { kind: 'curated', title: 'Curated', source: 'seed' })!;
+    addBatchTx(db, { batchId: batch.id, txid: TX_A, valueSats: 1, linkReason: 'first' });
+    const dupe = addBatchTx(db, { batchId: batch.id, txid: TX_A, valueSats: 2, linkReason: 'second' });
+    expect(listBatchTxs(db, batch.id)).toHaveLength(1);
+    expect(dupe!.value_sats).toBe(1);
+    expect(dupe!.link_reason).toBe('first');
+  });
+
+  test('insertBatch with explicit id is idempotent; findBatchByTxid and listBatches work', () => {
+    const db = openDatabase(':memory:');
+    const first = insertBatch(db, { id: 'batch-1', kind: 'curated', title: 'One', source: 'seed' })!;
+    const second = insertBatch(db, { id: 'batch-1', kind: 'curated', title: 'Dupe', source: 'seed' })!;
+    expect(second.id).toBe(first.id);
+    expect(second.title).toBe('One');
+    expect(listBatches(db)).toHaveLength(1);
+
+    insertBatch(db, { id: 'batch-2', kind: 'coinjoin-round', title: 'Two', source: 'auto' });
+    addBatchTx(db, { batchId: 'batch-2', txid: TX_A, valueSats: 10, linkReason: 'round' });
+    expect(findBatchByTxid(db, TX_A)!.id).toBe('batch-2');
+    expect(findBatchByTxid(db, TX_B)).toBeNull();
+    expect(listBatches(db)).toHaveLength(2);
   });
 });
 

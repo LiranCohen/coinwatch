@@ -28,7 +28,31 @@ CREATE TABLE IF NOT EXISTS events (
   ai_summary TEXT,
   ai_tag TEXT,
   source TEXT NOT NULL DEFAULT 'live',
-  status TEXT NOT NULL DEFAULT 'active'
+  status TEXT NOT NULL DEFAULT 'active',
+  block_height INTEGER,
+  block_hash TEXT,
+  block_time TEXT,
+  meta TEXT
+);
+
+CREATE TABLE IF NOT EXISTS batches (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  source TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+);
+
+CREATE TABLE IF NOT EXISTS batch_txs (
+  batch_id TEXT NOT NULL REFERENCES batches (id),
+  txid TEXT NOT NULL,
+  block_height INTEGER,
+  block_hash TEXT,
+  block_time TEXT,
+  value_sats INTEGER NOT NULL,
+  link_reason TEXT NOT NULL,
+  UNIQUE (batch_id, txid)
 );
 
 CREATE TABLE IF NOT EXISTS labels (
