@@ -53,6 +53,8 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
       .slice(0, MAX_DRAWN_LINKS);
   }, [event.meta]);
 
+  const isCoinjoin = event.rules.includes('coinjoin');
+
   const copyTxid = async () => {
     try {
       await navigator.clipboard.writeText(event.txid);
@@ -152,9 +154,10 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
         </section>
       )}
 
-      {event.rules.includes('coinjoin') && <CoinjoinAnalysis txid={event.txid} />}
+      {isCoinjoin && <CoinjoinAnalysis txid={event.txid} />}
 
-      {event.meta?.entropy && (
+      {/* the coinjoin panel already reports entropy, in more depth */}
+      {!isCoinjoin && event.meta?.entropy && (
         <EntropyPanel
           entropy={event.meta.entropy}
           nbInputs={event.inputs.length}

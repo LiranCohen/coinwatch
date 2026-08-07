@@ -4,6 +4,7 @@ import type { CoinjoinAnalysis as Analysis } from '@chainwatch/shared';
 
 import { getCoinjoinAnalysis } from '../api/client';
 import { satsToBtc, truncateMiddle } from '../lib/format';
+import { MappingMatrix } from './MappingMatrix';
 
 interface CoinjoinAnalysisProps {
   txid: string;
@@ -108,24 +109,45 @@ export function CoinjoinAnalysis({ txid }: CoinjoinAnalysisProps) {
         right.
       </p>
 
-      {analysis.entropy.status === 'ok' && analysis.entropy.entropy > 0 ? (
-        <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-          {analysis.entropy.combinations.toLocaleString()} input-to-output mappings are consistent with these
-          amounts ({analysis.entropy.entropy.toFixed(2)} bits), and{' '}
-          {analysis.entropy.deterministicLinks.length === 0 ? (
-            <>no single link holds in all of them — nothing about who paid whom is forced by the arithmetic.</>
-          ) : (
-            <>
-              {analysis.entropy.deterministicLinks.length} link
-              {analysis.entropy.deterministicLinks.length === 1 ? '' : 's'} hold in every one of them, so that
-              much is provable despite the mixing.
-            </>
-          )}
-        </p>
+      {analysis.entropy.status === 'ok' ? (
+        <div className="mt-4">
+          <p className="mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">
+            Input-to-output mappings
+          </p>
+          <p className="mb-2 text-xs leading-relaxed text-zinc-400">
+            {analysis.entropy.combinations.toLocaleString(undefined, { maximumFractionDigits: 0 })} distinct
+            readings of this transaction are consistent with its amounts — {analysis.entropy.entropy.toFixed(2)}{' '}
+            bits of ambiguity, found by searching {analysis.entropy.states.toLocaleString()} value-class states.{' '}
+            {analysis.entropy.entropy === 0 ? (
+              <>
+                <strong className="font-semibold text-amber-300">Only one reading exists</strong>, so this
+                transaction provides no mixing at all despite its shape: the amounts admit a single grouping,
+                and every pairing in it is forced.
+              </>
+            ) : analysis.entropy.deterministicLinks.length === 0 ? (
+              <>No single link holds across all of them: nothing about who paid whom is forced by the amounts.</>
+            ) : (
+              <>
+                <strong className="font-semibold text-amber-300">
+                  {analysis.entropy.deterministicLinks.length} link
+                  {analysis.entropy.deterministicLinks.length === 1 ? '' : 's'}
+                </strong>{' '}
+                hold in every one of them, so that much is provable despite the mixing.
+              </>
+            )}
+          </p>
+          <MappingMatrix
+            entropy={analysis.entropy}
+            inputs={analysis.inputValues.map((valueSats) => ({ address: null, valueSats }))}
+            outputs={analysis.outputValues.map((valueSats) => ({ address: null, valueSats }))}
+          />
+        </div>
       ) : (
         <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-          Enumerating every valid input-to-output mapping is infeasible at this size, so no exact figure is
-          claimed. That infeasibility is itself the protection this transaction buys.
+          Enumerating every valid input-to-output mapping is out of reach here
+          {analysis.entropy.reason ? ` (${analysis.entropy.reason})` : ''}, so no figure is claimed. Coins that
+          all take different values cannot be grouped into interchangeable classes, and that irreducibility is
+          itself the protection.
         </p>
       )}
 

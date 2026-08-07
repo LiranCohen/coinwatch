@@ -65,6 +65,14 @@ export interface TxEntropy {
   linkProbability: number[][];
   /** links that hold in every interpretation */
   deterministicLinks: { input: number; output: number }[];
+  /**
+   * p(I, o): for each output, the strongest link probability to any single
+   * input. A conservative read of how well that output is mixed — 1 means it is
+   * pinned to an input, low values mean it is genuinely hidden in the crowd.
+   */
+  outputLinkMax: number[];
+  /** value-class states explored; a measure of how hard the count actually was */
+  states: number;
 }
 
 export interface EventMeta {
@@ -306,6 +314,9 @@ export interface CoinjoinAnalysis {
   /** distinct input addresses, an upper bound on parties present */
   participants: number;
   entropy: TxEntropy;
+  /** coin values, in vin/vout order, for labelling the mapping matrix */
+  inputValues: number[];
+  outputValues: number[];
   /** indistinguishable outputs at the moment of mixing */
   anonymitySet: number;
   /** what survives after post-mix consolidations are accounted for */

@@ -57,6 +57,8 @@ function entropyOf(tx: EsploraTx): TxEntropy {
     density: result.density,
     linkProbability: result.linkProbability,
     deterministicLinks: result.deterministicLinks,
+    outputLinkMax: result.outputLinkMax,
+    states: result.states,
   };
 }
 
@@ -148,6 +150,8 @@ export async function analyzeCoinjoin(
     outputCount: tx.outputs.length,
     participants,
     entropy,
+    inputValues: tx.inputs.map((io) => io.valueSats),
+    outputValues: tx.outputs.map((io) => io.valueSats),
     anonymitySet: equalOutputs,
     effectiveAnonymitySet,
     degradation,

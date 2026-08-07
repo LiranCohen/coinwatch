@@ -84,6 +84,8 @@ export function entropyFor(tx: SourceTx): TxEntropy {
     density: result.density,
     linkProbability: result.linkProbability,
     deterministicLinks: result.deterministicLinks,
+    outputLinkMax: result.outputLinkMax,
+    states: result.states,
   };
 }
 

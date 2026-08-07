@@ -22,6 +22,8 @@
  * search steps and reports honestly when it bails instead of guessing.
  */
 
+import { countNumericMappings, toValueClasses } from './numericMappings';
+
 export type BoltzmannStatus = 'ok' | 'skipped' | 'aborted';
 
 export interface BoltzmannLink {
@@ -52,20 +54,38 @@ export interface BoltzmannResult {
   deterministicLinks: BoltzmannLink[];
   /** search steps consumed, for observability */
   steps: number;
+  /**
+   * p(I, o) from Kajaba et al.: for each output, the strongest link probability
+   * to any single input. A conservative read of how well that output is mixed —
+   * if an observer identifies one input, this bounds what they learn about o.
+   */
+  outputLinkMax: number[];
+  /** distinct value-class states explored, a measure of the real search cost */
+  states: number;
 }
 
 export interface BoltzmannOptions {
-  /** refuse to analyze wider transactions (search is exponential) */
+  /** sanity bound on raw coin counts, independent of how many values repeat */
   maxInputs?: number;
   maxOutputs?: number;
+  /** refuse when the value-class state space exceeds this */
+  maxStates?: number;
   /** abort once the search exceeds this many expansion steps */
   maxSteps?: number;
 }
 
+/**
+ * Bounds are on value-class states rather than coin counts. Enumerating coin
+ * subsets is exponential in coins, but enumerating value classes is exponential
+ * only in *distinct* values — so a 40-input coinjoin drawn from four
+ * denominations is cheap while a 20-input transaction of all-distinct amounts
+ * is not, which is the opposite of what a coin-count limit assumes.
+ */
 const DEFAULTS = {
-  maxInputs: 12,
-  maxOutputs: 12,
-  maxSteps: 1_500_000,
+  maxInputs: 200,
+  maxOutputs: 200,
+  maxStates: 400_000,
+  maxSteps: 4_000_000,
 } as const;
 
 function skipped(
@@ -94,6 +114,8 @@ function skipped(
     linkProbability: [],
     deterministicLinks: [],
     steps,
+    outputLinkMax: [],
+    states: 0,
   };
 }
 
@@ -224,140 +246,39 @@ export function analyzeBoltzmann(
   if (n > maxInputs || m > maxOutputs) {
     return skipped(`transaction too large to analyze (${n} in, ${m} out)`, n, m, fee);
   }
+  void maxSteps;
 
-  // Precompute subset sums. Output subsets are additionally sorted by sum so a
-  // matching group can be found by range query instead of a linear scan.
-  const inSubsetSum = subsetSums(inputSats);
-  const outSubsetSum = subsetSums(outputSats);
-  const outBySum: { mask: number; sum: number }[] = [];
-  for (let mask = 1; mask < 1 << m; mask++) outBySum.push({ mask, sum: outSubsetSum[mask] });
-  outBySum.sort((a, b) => a.sum - b.sum);
-  const outSumsSorted = outBySum.map((entry) => entry.sum);
+  const inputClasses = toValueClasses(inputSats);
+  const outputClasses = toValueClasses(outputSats);
+  const mapping = countNumericMappings(inputClasses, outputClasses, {
+    maxStates: options.maxStates ?? DEFAULTS.maxStates,
+    maxSteps: options.maxSteps ?? DEFAULTS.maxSteps,
+  });
 
-  const fullIn = (1 << n) - 1;
-  const fullOut = (1 << m) - 1;
-  const stateKey = (inMask: number, outMask: number) => inMask * (1 << m) + outMask;
-
-  let steps = 0;
-  let aborted = false;
-
-  /** completions: interpretations of the sub-transaction left in this state */
-  const completions = new Map<number, number>();
-
-  const countFrom = (inMask: number, outMask: number): number => {
-    if (inMask === 0 && outMask === 0) return 1;
-    if (inMask === 0 || outMask === 0) return 0;
-    const key = stateKey(inMask, outMask);
-    const memo = completions.get(key);
-    if (memo !== undefined) return memo;
-    if (aborted) return 0;
-    if (++steps > maxSteps) {
-      aborted = true;
-      return 0;
-    }
-
-    const budget = inSubsetSum[inMask] - outSubsetSum[outMask];
-    if (budget < 0) {
-      completions.set(key, 0);
-      return 0;
-    }
-
-    let total = 0;
-    forEachGroup(inMask, outMask, budget, (nextIn, nextOut) => {
-      total += countFrom(nextIn, nextOut);
-    });
-    completions.set(key, total);
-    return total;
-  };
-
-  /**
-   * Enumerate every valid first group of a state: each subset of the remaining
-   * inputs containing the lowest-indexed one (the anchor that keeps partitions
-   * from being counted more than once), paired with every remaining-output
-   * subset whose sum leaves non-negative, affordable slack.
-   */
-  function forEachGroup(
-    inMask: number,
-    outMask: number,
-    budget: number,
-    visit: (nextIn: number, nextOut: number, groupIn: number, groupOut: number) => void,
-  ): void {
-    const anchor = inMask & -inMask;
-    const rest = inMask ^ anchor;
-    for (let sub = rest; ; sub = (sub - 1) & rest) {
-      const groupIn = sub | anchor;
-      const need = inSubsetSum[groupIn];
-      // outputs in this group must sum within [need - budget, need]
-      const lo = lowerBound(outSumsSorted, need - budget);
-      for (let idx = lo; idx < outBySum.length && outBySum[idx].sum <= need; idx++) {
-        const groupOut = outBySum[idx].mask;
-        if ((groupOut & outMask) !== groupOut) continue; // not available in this state
-        visit(inMask ^ groupIn, outMask ^ groupOut, groupIn, groupOut);
-      }
-      if (sub === 0) break;
-    }
+  if (mapping.status !== 'ok') {
+    return skipped(mapping.reason ?? 'analysis declined', n, m, fee, mapping.status, mapping.steps);
   }
 
-  const combinations = countFrom(fullIn, fullOut);
+  // expand class-level probabilities back onto individual coins
+  const inputClassOf = classIndex(inputSats, inputClasses);
+  const outputClassOf = classIndex(outputSats, outputClasses);
+  const linkProbability: number[][] = inputSats.map((_, i) =>
+    outputSats.map((__, j) => mapping.classLinkProbability[inputClassOf[i]][outputClassOf[j]]),
+  );
 
-  if (aborted) {
-    return skipped(
-      `search exceeded ${maxSteps.toLocaleString()} steps`,
-      n,
-      m,
-      fee,
-      'aborted',
-      steps,
-    );
-  }
-  if (combinations === 0) {
-    return skipped('no valid interpretation (input/output values do not reconcile)', n, m, fee, 'skipped', steps);
-  }
-
-  // Second pass: count, for each (input, output) pair, how many interpretations
-  // place them in the same group. A group chosen at state X leading to state Y
-  // appears in (paths reaching X) * (completions of Y) interpretations.
-  const paths = new Map<number, number>();
-  paths.set(stateKey(fullIn, fullOut), 1);
-  const states = [...completions.keys()].filter((key) => (completions.get(key) ?? 0) > 0);
-  // transitions only ever remove inputs, so wider states settle before narrower ones
-  states.sort((a, b) => popcount(Math.floor(b / (1 << m))) - popcount(Math.floor(a / (1 << m))));
-
-  const linkCount: number[][] = Array.from({ length: n }, () => new Array<number>(m).fill(0));
-
-  for (const key of states) {
-    const reaching = paths.get(key);
-    if (reaching === undefined || reaching === 0) continue;
-    const inMask = Math.floor(key / (1 << m));
-    const outMask = key % (1 << m);
-    const budget = inSubsetSum[inMask] - outSubsetSum[outMask];
-    if (budget < 0) continue;
-
-    forEachGroup(inMask, outMask, budget, (nextIn, nextOut, groupIn, groupOut) => {
-      const completing = nextIn === 0 && nextOut === 0 ? 1 : (completions.get(stateKey(nextIn, nextOut)) ?? 0);
-      if (completing === 0) return;
-      const weight = reaching * completing;
-      for (let i = 0; i < n; i++) {
-        if ((groupIn & (1 << i)) === 0) continue;
-        for (let j = 0; j < m; j++) {
-          if ((groupOut & (1 << j)) !== 0) linkCount[i][j] += weight;
-        }
-      }
-      if (nextIn !== 0 || nextOut !== 0) {
-        const childKey = stateKey(nextIn, nextOut);
-        paths.set(childKey, (paths.get(childKey) ?? 0) + reaching);
-      }
-    });
-  }
-
-  const linkProbability = linkCount.map((row) => row.map((count) => count / combinations));
   const deterministicLinks: BoltzmannLink[] = [];
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < m; j++) {
       if (linkProbability[i][j] >= 1 - 1e-9) deterministicLinks.push({ input: i, output: j });
     }
   }
+  const outputLinkMax = outputSats.map((_, j) => {
+    let strongest = 0;
+    for (let i = 0; i < n; i++) strongest = Math.max(strongest, linkProbability[i][j]);
+    return strongest;
+  });
 
+  const combinations = mapping.combinations;
   const entropy = Math.log2(combinations);
   // computed in log space so wide shapes cannot overflow the ceiling
   const maxEntropy = perfectCoinjoinEntropyBits(n, m);
@@ -376,8 +297,17 @@ export function analyzeBoltzmann(
     density: entropy / (n + m),
     linkProbability,
     deterministicLinks,
-    steps,
+    steps: mapping.steps,
+    outputLinkMax,
+    states: mapping.states,
   };
+}
+
+/** index of each coin's value class */
+function classIndex(values: readonly number[], classes: { valueSats: number }[]): number[] {
+  const lookup = new Map<number, number>();
+  classes.forEach((cls, index) => lookup.set(cls.valueSats, index));
+  return values.map((value) => lookup.get(value) ?? 0);
 }
 
 function sum(values: readonly number[]): number {

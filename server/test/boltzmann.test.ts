@@ -1,5 +1,9 @@
 import { describe, test, expect } from 'bun:test';
-import { analyzeBoltzmann, perfectCoinjoinCombinations } from '../src/analytics/boltzmann';
+import {
+  analyzeBoltzmann,
+  perfectCoinjoinCombinations,
+  perfectCoinjoinEntropyBits,
+} from '../src/analytics/boltzmann';
 
 const BTC = 100_000_000;
 
@@ -126,21 +130,22 @@ describe('analyzeBoltzmann', () => {
       expect(analyzeBoltzmann([BTC], []).status).toBe('skipped');
     });
 
-    test('skips transactions wider than the configured bound', () => {
-      const wide = Array.from({ length: 30 }, () => BTC);
-      const result = analyzeBoltzmann(wide, wide);
-      expect(result.status).toBe('skipped');
-      expect(result.reason).toContain('too large');
+    test('declines when the coins take too many distinct values to classify', () => {
+      // all-distinct values give every coin its own class, which is the case
+      // numeric mappings cannot compress
+      const inputs = Array.from({ length: 24 }, (_, i) => 10 * BTC + i * 1_000);
+      const outputs = Array.from({ length: 24 }, (_, i) => 10 * BTC + i * 1_000 - 500);
+      const result = analyzeBoltzmann(inputs, outputs);
+      expect(result.status).not.toBe('ok');
       expect(result.combinations).toBe(0);
     });
 
     test('aborts rather than hanging when the search budget runs out', () => {
-      const inputs = Array.from({ length: 10 }, () => BTC);
-      const outputs = Array.from({ length: 10 }, () => BTC);
-      const result = analyzeBoltzmann(inputs, outputs, { maxSteps: 50 });
+      const inputs = Array.from({ length: 12 }, (_, i) => BTC + i);
+      const outputs = Array.from({ length: 12 }, (_, i) => BTC - 1_000 + i);
+      const result = analyzeBoltzmann(inputs, outputs, { maxSteps: 20 });
       expect(result.status).toBe('aborted');
-      expect(result.reason).toContain('steps');
-      expect(result.steps).toBeGreaterThan(0);
+      expect(result.reason).toMatch(/steps|states/);
     });
   });
 
@@ -159,15 +164,37 @@ describe('analyzeBoltzmann', () => {
   });
 });
 
-describe('reporting the ceiling when exact counting is out of reach', () => {
-  test('a large coinjoin still reports what its shape could achieve', () => {
+describe('numeric mappings lift the size limit', () => {
+  test('an 85-in/85-out equal-value coinjoin is now analyzed exactly', () => {
     const wide = Array.from({ length: 85 }, () => 100_000_000);
     const result = analyzeBoltzmann(wide, wide);
-    expect(result.status).toBe('skipped');
-    expect(result.combinations).toBe(0);
-    // exact entropy is unknown, but the ceiling for 85x85 is enormous and finite
-    expect(result.maxEntropy).toBeGreaterThan(100);
-    expect(Number.isFinite(result.maxEntropy)).toBe(true);
+    expect(result.status).toBe('ok');
+    // coin-subset enumeration would need 2^85 masks; value classes need 85 states
+    expect(result.states).toBeLessThanOrEqual(90);
+    expect(result.entropy).toBeGreaterThan(600);
+    // an equal-value join of this shape *is* the perfect coinjoin, so it should
+    // land exactly on the independently derived ceiling
+    expect(result.entropy).toBeCloseTo(perfectCoinjoinEntropyBits(85, 85), 6);
+    expect(result.efficiency).toBeCloseTo(1, 6);
+  });
+
+  test('cost tracks distinct values, not coin count', () => {
+    const many = Array.from({ length: 40 }, () => BTC);
+    const cheap = analyzeBoltzmann(many, many);
+    expect(cheap.status).toBe('ok');
+    expect(cheap.states).toBeLessThanOrEqual(45);
+  });
+
+  test('per-output link maxima are reported for the user-level metric', () => {
+    const result = analyzeBoltzmann([BTC, BTC], [BTC, BTC]);
+    expect(result.outputLinkMax).toHaveLength(2);
+    // in a 2x2 equal join every link sits at 2/3, so the strongest is 2/3
+    for (const strongest of result.outputLinkMax) expect(strongest).toBeCloseTo(2 / 3, 10);
+  });
+
+  test('a fully determined spend reports a certain strongest link', () => {
+    const result = analyzeBoltzmann([10 * BTC], [8 * BTC, 2 * BTC - 1000]);
+    for (const strongest of result.outputLinkMax) expect(strongest).toBeCloseTo(1, 10);
   });
 
   test('degenerate shapes report no ceiling rather than a bogus one', () => {

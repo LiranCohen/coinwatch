@@ -62,7 +62,15 @@ An *interpretation* is one way of partitioning a transaction's inputs and output
 | **deterministic links** | Links that hold in *every* interpretation, and are therefore provable from the chain alone. |
 | **efficiency** | How much of the entropy achievable for this input/output shape the transaction actually reaches. |
 
-A perfect coinjoin of a given shape is the ceiling, computed in closed form from a one-dimensional recurrence; efficiency is measured against it. Counting is exponential, so the engine is bounded on transaction width and search steps. When it cannot finish it says so and reports only the ceiling for that shape — it never publishes a guessed entropy. Canonical cases are pinned in `server/test/boltzmann.test.ts` (a 2×2 equal-value coinjoin has exactly 3 interpretations, 1.58 bits, and no certain links).
+A perfect coinjoin of a given shape is the ceiling, computed in closed form from a one-dimensional recurrence; efficiency is measured against it. Canonical cases are pinned in `server/test/boltzmann.test.ts` (a 2×2 equal-value coinjoin has exactly 3 interpretations, 1.58 bits, and no certain links).
+
+**Numeric mappings.** Counting by enumerating coin subsets is exponential in the number of coins, which puts real coinjoins out of reach — exactly the transactions worth analyzing. Following Kajaba et al., *[Analysis of Input-Output Mappings in Coinjoin Transactions with Arbitrary Values](https://arxiv.org/abs/2510.17284)*, the search instead runs over **value classes**: coins of equal value are interchangeable, so mappings are enumerated only up to a permutation of same-valued coins. Each numeric mapping is then weighted by how many labelled arrangements it stands for, so the counts are identical to coin-level enumeration — only the cost changes.
+
+The effect is large where it matters. An 85-input/85-output equal-value round needs 85 states instead of 2⁸⁵ coin subsets, and resolves in ~10 ms. Backfilling the engine over an existing index turned 181 previously-undecidable transactions into exact analyses. Cost now tracks *distinct values* rather than coin count, so a 40-input join drawn from four denominations is cheap while a 20-input transaction of all-distinct amounts is not — the opposite of what a coin-count limit assumes.
+
+Bounds are on reachable states and search steps rather than transaction size. When the engine cannot finish it says so; it never publishes a guessed entropy.
+
+Also implemented from that paper: **p(I, o)** — for each output, the strongest link probability to any single input. It is the conservative read of how well an output is mixed, and it is what the bar under each column of the mapping matrix shows.
 
 **Detection honesty.** Equal outputs alone do not make a coinjoin — exchange payout batches and inscription sprays look identical by that test. A transaction is classified as a coinjoin only if it also carries enough separate inputs to plausibly represent the participants claiming those equal outputs, at a denomination worth mixing (`COINJOIN_MIN_DENOMINATION_BTC`). On live mainnet blocks this is the difference between 16 dust false positives and 3 genuine Wasabi rounds.
 
