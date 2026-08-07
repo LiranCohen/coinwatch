@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { EventDetail as EventDetailType, Hack } from '@chainwatch/shared';
 
 import { getHack, postVote } from '../api/client';
-import { satsToBtc, timeAgo } from '../lib/format';
+import { formatCoins, timeAgo } from '../lib/format';
 import { useSession } from '../session';
 import { AiCard } from './AiCard';
 import { RuleBadge, SimulatedBadge, StatusBadge } from './badges';
@@ -72,8 +72,7 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
           <span className="ml-auto text-xs text-zinc-500">detected {timeAgo(event.detectedAt)}</span>
         </div>
         <p className="tnum mt-3 font-mono text-4xl font-semibold text-zinc-50">
-          {satsToBtc(event.valueSats)}
-          <span className="ml-2 text-base font-normal text-zinc-500">BTC</span>
+          {formatCoins(event.valueSats)}
         </p>
         <div className="mt-2 flex items-center gap-2">
           <p className="break-all font-mono text-xs text-zinc-500">{event.txid}</p>
@@ -103,7 +102,7 @@ export function EventDetail({ event, onUpdate, onOpenEvent }: EventDetailProps) 
             <div className="mb-1 flex flex-wrap items-baseline gap-2">
               <span className="text-sm font-semibold text-red-200">{hack.title}</span>
               <span className="tnum text-xs text-red-300/80">
-                {satsToBtc(hack.totalSats)} BTC · {hack.hops.length} hops · {hack.status}
+                {formatCoins(hack.totalSats)} · {hack.hops.length} hops · {hack.status}
               </span>
             </div>
             <p className="mb-3 text-xs leading-relaxed text-zinc-400">{hack.summary}</p>

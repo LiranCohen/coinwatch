@@ -48,14 +48,14 @@ describe('openai-compatible provider', () => {
         seenUrl = url;
         seenAuth = new Headers(init?.headers).get('authorization') ?? '';
         seenBody = JSON.parse(String(init?.body));
-        return chatResponse('SUMMARY: A whale moved 25 BTC to an exchange wallet.\nTAG: whale-move');
+        return chatResponse('SUMMARY: A whale moved ₿ 25 to an exchange wallet.\nTAG: whale-move');
       }),
     });
 
     const result = await provider.summarizeEvent(ctx);
     expect(result).toEqual({
       ok: true,
-      summary: 'A whale moved 25 BTC to an exchange wallet.',
+      summary: 'A whale moved ₿ 25 to an exchange wallet.',
       tag: 'whale-move',
     });
     expect(seenUrl).toBe('https://ai.example/v1/chat/completions');
@@ -134,7 +134,7 @@ describe('mock provider', () => {
     if (whale.ok) {
       expect(whale.tag).toBe('whale-move');
       expect(whale.summary).toContain('[demo]');
-      expect(whale.summary).toContain('25 BTC');
+      expect(whale.summary).toContain('₿ 25');
       expect(whale.summary).toContain('exchange-hot-wallet');
     }
     const again = await provider.summarizeEvent(ctx);

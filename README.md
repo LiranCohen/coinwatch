@@ -8,7 +8,7 @@ Real-time, community-validated Bitcoin transaction analysis. Your own node strea
 
 ## What it does
 
-- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), coinjoin-pattern transactions (≥ 5 equal outputs), and multi-transaction hacks (drain patterns traced hop by hop).
+- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ ₿ 10, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at ₿ 1), coinjoin-pattern transactions (≥ 5 equal outputs), and multi-transaction hacks (drain patterns traced hop by hop). Amounts display per the [Coin Standard](https://coinsymbol.wtf/) (¢ / ₿, symbol first).
 - **Hack tracing.** Multi-hop exploits render as a chain visualization: origin, each hop, peeled side-outputs, and terminal outputs, with a one-click "trace the funds" path.
 - **AI first pass.** Every event gets a 1–2 sentence summary + risk/behavior tag from an OpenAI-compatible provider (OKX.AI-compatible pitch). Unconfigured or failed → the event still appears, marked "analysis pending."
 - **Crowd labels.** Authenticated analysts attach tag/note/evidence labels to any address; labels on involved addresses appear inline in event context. One up/down vote per identity, toggle semantics.

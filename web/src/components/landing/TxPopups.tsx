@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import type { EventSummary } from '@chainwatch/shared';
 
 import { getEvents } from '../../api/client';
-import { satsToBtc, timeAgo, truncateMiddle } from '../../lib/format';
+import { formatCoins, timeAgo, truncateMiddle } from '../../lib/format';
 import { RuleBadge } from '../badges';
 
 const SLOTS: { style: React.CSSProperties }[] = [
@@ -89,7 +89,7 @@ export function TxPopups() {
           <div className="flex items-center justify-between gap-2">
             <RuleBadge rule={p.event.rules[0]} />
             <span className="tnum font-mono text-[11px] font-semibold text-goldbright">
-              {satsToBtc(p.event.valueSats)} BTC
+              {formatCoins(p.event.valueSats)}
             </span>
           </div>
           <div className="mt-1.5 font-mono text-[10px] text-mist">

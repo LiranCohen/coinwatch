@@ -207,7 +207,7 @@ export function FeedPage() {
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center">
               <p className="text-sm text-zinc-300">Listening to your node. No matching events yet.</p>
               <p className="mt-2 text-xs text-zinc-500">
-                Active detection: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
+                Active detection: whale ≥ ₿ 10 · dormant-wake ≥ ₿ 1 after ~30 days quiet · coinjoin ≥ 5 equal
                 outputs · hack (multi-tx drain patterns).
               </p>
               {injectAvailable && (

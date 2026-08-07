@@ -7,7 +7,7 @@ import { getAddress, postLabel, postVote } from '../api/client';
 import { FeedItem } from '../components/FeedItem';
 import { LabelForm } from '../components/LabelForm';
 import { LabelList } from '../components/LabelList';
-import { satsToBtc, timeAgo, truncateMiddle } from '../lib/format';
+import { formatCoins, timeAgo, truncateMiddle } from '../lib/format';
 import { useSession } from '../session';
 
 export function AddressPage() {
@@ -52,7 +52,7 @@ export function AddressPage() {
           <div>
             <p className="text-[11px] uppercase tracking-wider text-zinc-500">Balance</p>
             <p className="tnum font-mono text-xl text-zinc-50">
-              {info.balanceSats !== null ? `${satsToBtc(info.balanceSats)} BTC` : '—'}
+              {info.balanceSats !== null ? formatCoins(info.balanceSats) : '—'}
             </p>
           </div>
           <div>
@@ -91,7 +91,7 @@ export function AddressPage() {
                   }`}
                 >
                   {entry.deltaSats < 0 ? '−' : '+'}
-                  {satsToBtc(Math.abs(entry.deltaSats))} BTC
+                  {formatCoins(Math.abs(entry.deltaSats))}
                 </span>
                 {entry.eventId && (
                   <Link

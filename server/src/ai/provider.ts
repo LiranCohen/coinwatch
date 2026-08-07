@@ -32,14 +32,24 @@ function isAiTag(value: unknown): value is AiTag {
   return typeof value === 'string' && (AI_TAGS as readonly string[]).includes(value);
 }
 
-function satsToBtc(valueSats: number): string {
-  return (valueSats / 1e8).toFixed(8).replace(/\.?0+$/, '') || '0';
+function formatCoins(valueSats: number): string {
+  const n = Math.round(Math.abs(valueSats));
+  const COINS_PER_BITCOIN = 100_000_000;
+  if (n >= COINS_PER_BITCOIN) {
+    const btc = n / COINS_PER_BITCOIN;
+    const fixed = btc.toFixed(8).replace(/\.?0+$/, '');
+    return `₿ ${fixed}`;
+  }
+  if (n >= 1_000_000 && n % 1_000_000 === 0) {
+    return `¢ ${(n / 1_000_000).toLocaleString('en-US')}m`;
+  }
+  return `¢ ${n.toLocaleString('en-US')}`;
 }
 
 function buildUserPrompt(ctx: AiEventContext): string {
   const lines = [
     `Rules matched: ${ctx.rules.join(', ') || 'none'}`,
-    `Value: ${satsToBtc(ctx.valueSats)} BTC (${ctx.valueSats} sats)`,
+    `Value: ${formatCoins(ctx.valueSats)}`,
     `Involved addresses: ${ctx.addresses.join(', ') || 'unknown'}`,
   ];
   if (ctx.matchedLabels.length > 0) {
@@ -55,6 +65,7 @@ const SYSTEM_PROMPT = [
   'You summarize Bitcoin transactions that tripped detection rules for a live mempool monitor.',
   'Respond with a 1-2 sentence summary for a non-technical audience, then exactly one tag.',
   `The tag must be one of: ${AI_TAGS.join(', ')}.`,
+  'Express amounts with the Coin Standard: ¢ for coins (integer base units) and ₿ for whole bitcoin, symbol before the number with a space (e.g. ¢ 12,345 or ₿ 25). Never write sats, satoshis, or decimal BTC.',
   'Use this exact two-line format:',
   'SUMMARY: <1-2 sentences>',
   'TAG: <tag>',
@@ -174,7 +185,7 @@ function createMockProvider(): AiProvider {
     summarizeEvent(ctx: AiEventContext): Promise<AiResult> {
       const primary = MOCK_RULE_LINES[ctx.rules[0]] ?? MOCK_UNMATCHED_LINE;
       const parts = [
-        `[demo] Mock analysis: ${primary.line}, moving ${satsToBtc(ctx.valueSats)} BTC.`,
+        `[demo] Mock analysis: ${primary.line}, moving ${formatCoins(ctx.valueSats)}.`,
       ];
       if (ctx.rules.length > 1) {
         parts.push(`Also matched: ${ctx.rules.slice(1).join(', ')}.`);
