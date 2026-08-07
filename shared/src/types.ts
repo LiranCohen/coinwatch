@@ -203,6 +203,76 @@ export interface AddressChainTxsResponse {
   available: boolean;
 }
 
+/**
+ * Forensic address graph.
+ *
+ * Nodes are addresses and edges are aggregate value movements between them,
+ * laid out by hop distance from the address under investigation: negative hops
+ * funded it, positive hops received from it. This is the "follow the money"
+ * view — where value came from, where it went, and where it stopped.
+ */
+export interface FlowNode {
+  address: string;
+  /** negative = upstream (funded the focus), 0 = focus, positive = downstream */
+  hop: number;
+  balanceSats: number | null;
+  txCount: number | null;
+  /** value that moved along the traced path through this address */
+  tracedSats: number;
+  /** crowd/seed labels we hold for this address */
+  labels: string[];
+  /** true when this address still holds everything it was traced receiving */
+  unmoved: boolean;
+  /** expansion stopped here because a bound was hit, not because the trail ended */
+  frontier: boolean;
+}
+
+export interface FlowEdge {
+  from: string;
+  to: string;
+  valueSats: number;
+  /** transactions carrying this flow, newest first */
+  txids: string[];
+  /** share of the destination's traced inflow supplied by this edge, 0..1 */
+  share: number;
+}
+
+export interface AddressFlow {
+  focus: string;
+  nodes: FlowNode[];
+  edges: FlowEdge[];
+  /** a bound was reached, so the graph is a sample rather than the whole trail */
+  truncated: boolean;
+  note: string | null;
+  available: boolean;
+}
+
+/**
+ * Addresses provably controlled together, via the common-input-ownership
+ * heuristic: signing one transaction with several inputs proves one party held
+ * all those keys at once. This is the strongest link available from chain data
+ * alone, and the basis of OXT-style wallet clustering.
+ */
+export interface ClusterMember {
+  address: string;
+  /** how many co-spending transactions tie this address to the cluster */
+  cospends: number;
+  balanceSats: number | null;
+  labels: string[];
+}
+
+export interface AddressCluster {
+  focus: string;
+  members: ClusterMember[];
+  /** transactions whose multi-input signatures bind the cluster together */
+  bindingTxids: string[];
+  /** notable structure observed while clustering */
+  patterns: string[];
+  truncated: boolean;
+  note: string | null;
+  available: boolean;
+}
+
 export interface LeaderboardEntry {
   did: string;
   handle: string | null;

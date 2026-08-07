@@ -1,5 +1,7 @@
 import type {
   AddressChainTxsResponse,
+  AddressCluster,
+  AddressFlow,
   AddressInfo,
   BlocksResponse,
   ChallengeResponse,
@@ -357,6 +359,32 @@ export async function getAddressTransactions(address: string): Promise<AddressCh
   return request<AddressChainTxsResponse>(
     `/api/addresses/${encodeURIComponent(address)}/transactions`,
   );
+}
+
+/** Bounded forensic walk of the chain around an address; slow by nature. */
+export async function getAddressFlow(address: string): Promise<AddressFlow> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return { focus: address, nodes: [], edges: [], truncated: false, note: null, available: false };
+  }
+  return request<AddressFlow>(`/api/addresses/${encodeURIComponent(address)}/flow`);
+}
+
+/** Addresses proven to share control with this one, by common input ownership. */
+export async function getAddressCluster(address: string): Promise<AddressCluster> {
+  if (USE_FIXTURES) {
+    await mockLatency();
+    return {
+      focus: address,
+      members: [],
+      bindingTxids: [],
+      patterns: [],
+      truncated: false,
+      note: null,
+      available: false,
+    };
+  }
+  return request<AddressCluster>(`/api/addresses/${encodeURIComponent(address)}/cluster`);
 }
 
 export async function getAddress(address: string, token?: string | null): Promise<AddressInfo> {

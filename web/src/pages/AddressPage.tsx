@@ -9,7 +9,9 @@ import {
 } from '@chainwatch/shared';
 
 import { ApiError, getAddress, getAddressTransactions, postLabel, postVote } from '../api/client';
+import { ClusterView } from '../components/ClusterView';
 import { FeedItem } from '../components/FeedItem';
+import { FlowTrace } from '../components/FlowTrace';
 import { LabelForm } from '../components/LabelForm';
 import { LabelList } from '../components/LabelList';
 import { satsToBtc, timeAgo, truncateMiddle } from '../lib/format';
@@ -450,6 +452,10 @@ export function AddressPage() {
           </p>
         )}
       </section>
+
+      {!offNetwork && <FlowTrace address={current.address} />}
+
+      {!offNetwork && <ClusterView address={current.address} />}
 
       {!offNetwork && <ChainActivity address={current.address} />}
 
