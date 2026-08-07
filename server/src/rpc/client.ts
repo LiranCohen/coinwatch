@@ -1,4 +1,5 @@
 import { loadConfig, type Config } from '../config';
+import { errMessage } from '../util';
 
 export class RpcError extends Error {
   constructor(
@@ -81,10 +82,7 @@ export class BitcoinRpcClient implements BitcoinRpc {
         body: JSON.stringify({ jsonrpc: '1.0', id: 'chainwatch', method, params }),
       });
     } catch (err) {
-      throw new RpcError(
-        `rpc ${method}: network error: ${err instanceof Error ? err.message : String(err)}`,
-        method,
-      );
+      throw new RpcError(`rpc ${method}: network error: ${errMessage(err)}`, method);
     }
     if (!res.ok) {
       throw new RpcError(`rpc ${method}: HTTP ${res.status}`, method, res.status);

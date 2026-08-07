@@ -1,5 +1,4 @@
 import type { Database } from 'bun:sqlite';
-import { readFileSync } from 'node:fs';
 import { insertLabel } from './db';
 import defaultSeedEntries from '../../fixtures/seed-labels.json';
 
@@ -44,26 +43,25 @@ export function importSeedEntries(
 ): SeedResult {
   let imported = 0;
   let skipped = 0;
-  for (const entry of entries) {
-    if (!isValidEntry(entry)) {
-      skipped += 1;
-      warn(`seed: skipping malformed entry ${JSON.stringify(entry)}`);
-      continue;
+  const importAll = db.transaction((items: unknown[]): void => {
+    for (const entry of items) {
+      if (!isValidEntry(entry)) {
+        skipped += 1;
+        warn(`seed: skipping malformed entry ${JSON.stringify(entry)}`);
+        continue;
+      }
+      insertLabel(db, {
+        address: entry.address,
+        tag: entry.tag,
+        evidenceUrl: entry.evidenceUrl,
+        authorDid: null,
+        source: 'seed',
+      });
+      imported += 1;
     }
-    insertLabel(db, {
-      address: entry.address,
-      tag: entry.tag,
-      evidenceUrl: entry.evidenceUrl,
-      authorDid: null,
-      source: 'seed',
-    });
-    imported += 1;
-  }
+  });
+  importAll(entries);
   return { imported, skipped };
-}
-
-export function loadSeedEntries(path: string): unknown[] {
-  return JSON.parse(readFileSync(path, 'utf8')) as unknown[];
 }
 
 export function seedDatabase(

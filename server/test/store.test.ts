@@ -1,5 +1,6 @@
 import { describe, test, expect } from 'bun:test';
-import { openDatabase, insertEvent, getEventByTxid, getLabelsForAddress, insertLabel, upsertVote, getLabelScore } from '../src/store/db';
+import { openDatabase, insertEvent, getEventByTxid, getLabelsForAddress, insertLabel } from '../src/store/db';
+import { applyLabelVote, getLabelsForAddressScored } from '../src/store/apiQueries';
 import { importSeedEntries, seedDatabase, isBitcoinAddress } from '../src/store/seed';
 import fixture from '../fixtures/seed-labels.json';
 
@@ -22,6 +23,7 @@ describe('schema', () => {
     expect(tables).toEqual([
       'ai_feedback',
       'challenges',
+      'did_documents',
       'events',
       'identities',
       'labels',
@@ -35,22 +37,24 @@ describe('events', () => {
   test('insertEvent persists and dedupes on txid', () => {
     const db = openDatabase(':memory:');
     const first = insertEvent(db, SAMPLE_EVENT);
-    expect(first).not.toBeNull();
-    expect(first!.txid).toBe(SAMPLE_EVENT.txid);
-    expect(JSON.parse(first!.rules)).toEqual(['whale']);
-    expect(JSON.parse(first!.inputs)[0].address).toBe('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
+    expect(first.inserted).toBe(true);
+    expect(first.row).not.toBeNull();
+    expect(first.row!.txid).toBe(SAMPLE_EVENT.txid);
+    expect(JSON.parse(first.row!.rules)).toEqual(['whale']);
+    expect(JSON.parse(first.row!.inputs)[0].address).toBe('1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa');
 
     const countBefore = (db.query('SELECT COUNT(*) AS n FROM events').get() as { n: number }).n;
     const second = insertEvent(db, { ...SAMPLE_EVENT, valueSats: 1 });
     const countAfter = (db.query('SELECT COUNT(*) AS n FROM events').get() as { n: number }).n;
     expect(countAfter).toBe(countBefore);
-    expect(second!.id).toBe(first!.id);
+    expect(second.inserted).toBe(false);
+    expect(second.row!.id).toBe(first.row!.id);
     expect(getEventByTxid(db, SAMPLE_EVENT.txid)!.value_sats).toBe(1_500_000_000);
   });
 });
 
 describe('labels and votes', () => {
-  test('insertLabel + getLabelsForAddress; upsertVote toggle/flip semantics', () => {
+  test('insertLabel + getLabelsForAddress; applyLabelVote toggle/flip semantics', () => {
     const db = openDatabase(':memory:');
     db.query('INSERT INTO identities (did) VALUES (?)').run('did:jwk:alice');
     const label = insertLabel(db, {
@@ -65,15 +69,18 @@ describe('labels and votes', () => {
     insertLabel(db, { address: label.address, tag: 'Genesis', source: 'crowd' });
     expect(getLabelsForAddress(db, label.address)).toHaveLength(1);
 
-    expect(upsertVote(db, label.id, 'did:jwk:bob', 1)).toBe(1);
-    expect(getLabelScore(db, label.id)).toBe(1);
+    const score = () =>
+      getLabelsForAddressScored(db, label.address, null).find((l) => l.id === label.id)!.score;
+
+    expect(applyLabelVote(db, label.id, 'did:jwk:bob', 1)).toBe(1);
+    expect(score()).toBe(1);
     // same value again removes the vote
-    expect(upsertVote(db, label.id, 'did:jwk:bob', 1)).toBe(0);
-    expect(getLabelScore(db, label.id)).toBe(0);
+    expect(applyLabelVote(db, label.id, 'did:jwk:bob', 1)).toBe(0);
+    expect(score()).toBe(0);
     // opposite value flips
-    expect(upsertVote(db, label.id, 'did:jwk:bob', 1)).toBe(1);
-    expect(upsertVote(db, label.id, 'did:jwk:bob', -1)).toBe(-1);
-    expect(getLabelScore(db, label.id)).toBe(-1);
+    expect(applyLabelVote(db, label.id, 'did:jwk:bob', 1)).toBe(1);
+    expect(applyLabelVote(db, label.id, 'did:jwk:bob', -1)).toBe(-1);
+    expect(score()).toBe(-1);
   });
 });
 

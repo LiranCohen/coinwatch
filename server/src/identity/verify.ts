@@ -34,9 +34,7 @@ function findVerificationMethod(
 }
 
 function base64UrlToBytes(value: string): Uint8Array {
-  const b64 = value.replace(/-/g, '+').replace(/_/g, '/');
-  const padded = b64 + '='.repeat((4 - (b64.length % 4)) % 4);
-  return new Uint8Array(Buffer.from(padded, 'base64'));
+  return new Uint8Array(Buffer.from(value, 'base64url'));
 }
 
 export interface VerifyNonceParams {
@@ -80,12 +78,7 @@ export async function verifyDidNonce({
     throw new DidVerifyError(`no verification method ${keyId} on ${did}`, 'key-not-found');
   }
 
-  let signatureBytes: Uint8Array;
-  try {
-    signatureBytes = base64UrlToBytes(signature);
-  } catch {
-    throw new DidVerifyError('malformed signature encoding', 'bad-signature');
-  }
+  const signatureBytes = base64UrlToBytes(signature);
 
   const valid = await new EdDsaAlgorithm().verify({
     key: vm.publicKeyJwk,

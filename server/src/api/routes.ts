@@ -1,24 +1,26 @@
 import { Hono } from 'hono';
 import { createMiddleware } from 'hono/factory';
 import type { Database } from 'bun:sqlite';
-import type {
-  AddressInfo,
-  AiFeedbackRequest,
-  CreateLabelRequest,
-  EventDetail,
-  EventStatus,
-  EventSummary,
-  EventsListResponse,
-  Identity,
-  Label,
-  LeaderboardEntry,
-  LeaderboardResponse,
-  Rule,
-  TrendingResponse,
-  VoteRequest,
+import {
+  RULES,
+  SOURCES,
+  STATUSES,
+  type AddressInfo,
+  type AiFeedbackRequest,
+  type CreateLabelRequest,
+  type EventDetail,
+  type EventSummary,
+  type EventsListResponse,
+  type Identity,
+  type Label,
+  type LeaderboardEntry,
+  type LeaderboardResponse,
+  type Rule,
+  type TrendingResponse,
+  type VoteRequest,
 } from '@chainwatch/shared';
-import { getEventById, getLabelById, insertLabel, type EventRow } from '../store/db';
-import { getIdentity, getSession } from '../store/authQueries';
+import { findLabelByUnique, getEventById, getLabelById, insertLabel, type EventRow } from '../store/db';
+import { isoFromNow } from '../store/authQueries';
 import {
   applyLabelVote,
   getAiFeedback,
@@ -34,12 +36,10 @@ import {
   type ScoredLabelRow,
 } from '../store/apiQueries';
 import { createAuthMiddleware } from './auth';
+import { parseJsonBody, resolveBearerIdentity } from './http';
 import type { SseHub } from './sse';
 import type { AddressInfoClient } from '../external/addressinfo';
 
-const RULES: readonly string[] = ['whale', 'dormant-wake', 'coinjoin', 'demo'];
-const STATUSES: readonly string[] = ['active', 'confirmed', 'evicted'];
-const SOURCES: readonly string[] = ['live', 'demo'];
 const MAX_LIMIT = 200;
 const TRENDING_WINDOW_MS = 24 * 60 * 60 * 1000;
 
@@ -52,14 +52,7 @@ type ApiEnv = {
 
 function optionalAuth(db: Database) {
   return createMiddleware<ApiEnv>(async (c, next) => {
-    const header = c.req.header('Authorization');
-    const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : null;
-    let viewer: Identity | null = null;
-    if (token) {
-      const session = getSession(db, token);
-      viewer = session ? getIdentity(db, session.did) : null;
-    }
-    c.set('viewer', viewer);
+    c.set('viewer', resolveBearerIdentity(db, c.req.header('Authorization')));
     await next();
   });
 }
@@ -84,9 +77,7 @@ interface EventIo {
   valueSats: number;
 }
 
-export function involvedAddresses(row: EventRow): string[] {
-  const inputs = JSON.parse(row.inputs) as EventIo[];
-  const outputs = JSON.parse(row.outputs) as EventIo[];
+function addressesFromIo(inputs: EventIo[], outputs: EventIo[]): string[] {
   const addresses = new Set<string>();
   for (const io of [...inputs, ...outputs]) {
     if (io.address !== null) addresses.add(io.address);
@@ -94,14 +85,50 @@ export function involvedAddresses(row: EventRow): string[] {
   return [...addresses];
 }
 
+export function involvedAddresses(row: EventRow): string[] {
+  return addressesFromIo(
+    JSON.parse(row.inputs) as EventIo[],
+    JSON.parse(row.outputs) as EventIo[],
+  );
+}
+
+function compareScoredLabels(a: ScoredLabelRow, b: ScoredLabelRow): number {
+  return (
+    b.score - a.score ||
+    (a.created_at < b.created_at ? -1 : a.created_at > b.created_at ? 1 : 0) ||
+    (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0)
+  );
+}
+
+function fetchLabelsPool(db: Database, rows: EventRow[], viewerDid: string | null): ScoredLabelRow[] {
+  const union = [...new Set(rows.flatMap(involvedAddresses))];
+  return getLabelsForAddressesScored(db, union, viewerDid);
+}
+
+function topMatchedLabels(
+  db: Database,
+  row: EventRow,
+  viewerDid: string | null,
+  pool?: ScoredLabelRow[],
+): ScoredLabelRow[] {
+  const addresses = involvedAddresses(row);
+  if (pool === undefined) {
+    return getTopLabelsForAddresses(db, addresses, 3, viewerDid);
+  }
+  const inEvent = new Set(addresses);
+  return pool
+    .filter((label) => inEvent.has(label.address))
+    .sort(compareScoredLabels)
+    .slice(0, 3);
+}
+
 export function serializeEventSummary(
   db: Database,
   row: EventRow,
   viewerDid: string | null = null,
+  labelsPool?: ScoredLabelRow[],
 ): EventSummary {
-  const matchedLabels = getTopLabelsForAddresses(db, involvedAddresses(row), 3, viewerDid).map(
-    toLabel,
-  );
+  const matchedLabels = topMatchedLabels(db, row, viewerDid, labelsPool).map(toLabel);
   return {
     id: row.id,
     txid: row.txid,
@@ -121,12 +148,24 @@ export function serializeEventDetail(
   row: EventRow,
   viewerDid: string | null = null,
 ): EventDetail {
+  const inputs = JSON.parse(row.inputs) as EventIo[];
+  const outputs = JSON.parse(row.outputs) as EventIo[];
+  const labels = getLabelsForAddressesScored(db, addressesFromIo(inputs, outputs), viewerDid);
   return {
-    ...serializeEventSummary(db, row, viewerDid),
+    id: row.id,
+    txid: row.txid,
+    detectedAt: row.detected_at,
+    rules: JSON.parse(row.rules) as Rule[],
+    valueSats: row.value_sats,
+    status: row.status,
+    source: row.source,
+    aiStatus: row.ai_status,
+    aiTag: row.ai_tag,
+    matchedLabels: labels.slice(0, 3).map(toLabel),
     aiSummary: row.ai_summary,
-    inputs: JSON.parse(row.inputs) as EventIo[],
-    outputs: JSON.parse(row.outputs) as EventIo[],
-    labels: getLabelsForAddressesScored(db, involvedAddresses(row), viewerDid).map(toLabel),
+    inputs,
+    outputs,
+    labels: labels.map(toLabel),
     aiFeedback: getAiFeedback(db, row.id, viewerDid),
   };
 }
@@ -154,16 +193,16 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
 
   app.get('/api/events', opt, (c) => {
     const query = c.req.query();
-    const rule = query.rule;
-    if (rule !== undefined && !RULES.includes(rule)) {
+    const rule = RULES.find((r) => r === query.rule);
+    if (query.rule !== undefined && rule === undefined) {
       return c.json({ error: `rule must be one of ${RULES.join(', ')}` }, 400);
     }
-    const status = query.status;
-    if (status !== undefined && !STATUSES.includes(status)) {
+    const status = STATUSES.find((s) => s === query.status);
+    if (query.status !== undefined && status === undefined) {
       return c.json({ error: `status must be one of ${STATUSES.join(', ')}` }, 400);
     }
-    const source = query.source;
-    if (source !== undefined && !SOURCES.includes(source)) {
+    const source = SOURCES.find((s) => s === query.source);
+    if (query.source !== undefined && source === undefined) {
       return c.json({ error: `source must be one of ${SOURCES.join(', ')}` }, 400);
     }
     let limit = 50;
@@ -176,14 +215,15 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
     }
     const viewerDid = c.get('viewer')?.did ?? null;
     const rows = listEvents(db, {
-      rule: rule as Rule | undefined,
-      status: status as EventStatus | undefined,
-      source: source as 'live' | 'demo' | undefined,
+      rule,
+      status,
+      source,
       limit,
       before: query.before,
     });
+    const labelsPool = fetchLabelsPool(db, rows, viewerDid);
     const body: EventsListResponse = {
-      events: rows.map((row) => serializeEventSummary(db, row, viewerDid)),
+      events: rows.map((row) => serializeEventSummary(db, row, viewerDid, labelsPool)),
     };
     return c.json(body);
   });
@@ -197,13 +237,11 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   app.post('/api/events/:id/ai-feedback', auth, async (c) => {
     const row = getEventById(db, c.req.param('id'));
     if (!row) return c.json({ error: 'unknown event' }, 404);
-    let body: AiFeedbackRequest;
-    try {
-      body = await c.req.json<AiFeedbackRequest>();
-    } catch {
+    const body = await parseJsonBody<AiFeedbackRequest>(c);
+    if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);
     }
-    if (body?.value !== 'confirm' && body?.value !== 'refute') {
+    if (body.value !== 'confirm' && body.value !== 'refute') {
       return c.json({ error: "value must be 'confirm' or 'refute'" }, 400);
     }
     const identity = c.get('identity');
@@ -227,13 +265,15 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
         txCount = (stats.chain_stats?.tx_count ?? 0) + (stats.mempool_stats?.tx_count ?? 0);
       }
     }
+    const recentEvents = listEventsForAddress(db, address);
+    const labelsPool = fetchLabelsPool(db, recentEvents, viewerDid);
     const body: AddressInfo = {
       address,
       balanceSats,
       txCount,
       labels: getLabelsForAddressScored(db, address, viewerDid).map(toLabel),
-      recentEvents: listEventsForAddress(db, address, 10).map((row) =>
-        serializeEventSummary(db, row, viewerDid),
+      recentEvents: recentEvents.map((row) =>
+        serializeEventSummary(db, row, viewerDid, labelsPool),
       ),
       externalUrl: `https://mempool.space/address/${address}`,
     };
@@ -242,13 +282,11 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
 
   app.post('/api/addresses/:address/labels', auth, async (c) => {
     const address = c.req.param('address');
-    let body: CreateLabelRequest;
-    try {
-      body = await c.req.json<CreateLabelRequest>();
-    } catch {
+    const body = await parseJsonBody<CreateLabelRequest>(c);
+    if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);
     }
-    const tag = typeof body?.tag === 'string' ? body.tag.trim() : '';
+    const tag = typeof body.tag === 'string' ? body.tag.trim() : '';
     if (tag.length < 2 || tag.length > 32) {
       return c.json({ error: 'tag must be 2-32 characters' }, 400);
     }
@@ -270,9 +308,7 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
       evidenceUrl = body.evidenceUrl;
     }
     const identity = c.get('identity');
-    const existing = db
-      .query('SELECT id FROM labels WHERE address = ? AND tag = ? AND source = ?')
-      .get(address, tag, 'crowd') as { id: string } | null;
+    const existing = findLabelByUnique(db, address, tag, 'crowd');
     if (existing) {
       return c.json(toLabel(getLabelWithScore(db, existing.id, identity.did)!));
     }
@@ -293,13 +329,11 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   app.post('/api/labels/:id/vote', auth, async (c) => {
     const label = getLabelById(db, c.req.param('id'));
     if (!label) return c.json({ error: 'unknown label' }, 404);
-    let body: VoteRequest;
-    try {
-      body = await c.req.json<VoteRequest>();
-    } catch {
+    const body = await parseJsonBody<VoteRequest>(c);
+    if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);
     }
-    if (body?.value !== 1 && body?.value !== -1) {
+    if (body.value !== 1 && body.value !== -1) {
       return c.json({ error: 'value must be 1 or -1' }, 400);
     }
     const identity = c.get('identity');
@@ -311,7 +345,7 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   });
 
   app.get('/api/leaderboard', (c) => {
-    const analysts: LeaderboardEntry[] = listLeaderboard(db, 20).map((row) => ({
+    const analysts: LeaderboardEntry[] = listLeaderboard(db).map((row) => ({
       did: row.did,
       handle: row.handle,
       reputation: row.reputation,
@@ -323,10 +357,10 @@ export function createApiRoutes(deps: ApiRoutesDeps): Hono<ApiEnv> {
   });
 
   app.get('/api/labels/trending', opt, (c) => {
-    const since = new Date(Date.now() - TRENDING_WINDOW_MS).toISOString();
+    const since = isoFromNow(-TRENDING_WINDOW_MS);
     const viewerDid = c.get('viewer')?.did ?? null;
     const body: TrendingResponse = {
-      labels: listTrendingLabels(db, since, viewerDid, 20).map(toLabel),
+      labels: listTrendingLabels(db, since, viewerDid).map(toLabel),
     };
     return c.json(body);
   });

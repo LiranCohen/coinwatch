@@ -84,7 +84,7 @@ function makeHarness(
 }
 
 function addEvent(db: Database, overrides: Partial<EventInput> = {}): EventRow {
-  const row = insertEvent(db, {
+  const { row } = insertEvent(db, {
     txid: (crypto.randomUUID().replaceAll('-', '') + '0'.repeat(64)).slice(0, 64),
     rules: ['whale'],
     valueSats: 1_500_000_000,
@@ -652,8 +652,6 @@ describe('SSE health', () => {
         lastPoll = new Date().toISOString();
         return Promise.resolve();
       },
-      start: () => {},
-      stop: () => {},
       lastPollAt: () => lastPoll,
     };
     const stop = startPipelineLoop(fakePipeline, hub, 60_000);

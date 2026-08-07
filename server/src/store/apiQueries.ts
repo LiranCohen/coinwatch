@@ -1,6 +1,6 @@
 import type { Database } from 'bun:sqlite';
-import type { AiFeedback, EventStatus, Rule } from '@chainwatch/shared';
-import { getEventById, type EventRow, type LabelRow } from './db';
+import type { AiFeedback, AiStatus, EventStatus, Rule } from '@chainwatch/shared';
+import { getEventById, placeholders, type EventRow, type LabelRow } from './db';
 
 export interface EventListFilters {
   rule?: Rule;
@@ -90,10 +90,9 @@ export function getLabelsForAddressesScored(
   viewerDid: string | null,
 ): ScoredLabelRow[] {
   if (addresses.length === 0) return [];
-  const placeholders = addresses.map(() => '?').join(', ');
   return db
     .query(
-      `${LABEL_SELECT} WHERE labels.address IN (${placeholders}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
+      `${LABEL_SELECT} WHERE labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC`,
     )
     .all(viewerDid, ...addresses) as ScoredLabelRow[];
 }
@@ -105,10 +104,9 @@ export function getTopLabelsForAddresses(
   viewerDid: string | null,
 ): ScoredLabelRow[] {
   if (addresses.length === 0) return [];
-  const placeholders = addresses.map(() => '?').join(', ');
   return db
     .query(
-      `${LABEL_SELECT} WHERE labels.address IN (${placeholders}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC LIMIT ?`,
+      `${LABEL_SELECT} WHERE labels.address IN (${placeholders(addresses.length)}) ORDER BY score DESC, labels.created_at ASC, labels.tag ASC LIMIT ?`,
     )
     .all(viewerDid, ...addresses, limit) as ScoredLabelRow[];
 }
@@ -147,14 +145,6 @@ export function listLeaderboard(db: Database, limit = 20): LeaderboardRow[] {
        ORDER BY i.reputation DESC, i.did ASC LIMIT ?`,
     )
     .all(limit) as LeaderboardRow[];
-}
-
-export function ensureApiTables(db: Database): void {
-  try {
-    db.exec('ALTER TABLE votes ADD COLUMN created_at TEXT');
-  } catch {
-    // column already present
-  }
 }
 
 export function applyLabelVote(
@@ -200,6 +190,18 @@ export function applyLabelVote(
   return tx(labelId, voterDid, value);
 }
 
+function getMyAiFeedback(
+  db: Database,
+  eventId: string,
+  viewerDid: string | null,
+): 'confirm' | 'refute' | null {
+  if (!viewerDid) return null;
+  const row = db
+    .query('SELECT value FROM ai_feedback WHERE event_id = ? AND voter_did = ?')
+    .get(eventId, viewerDid) as { value: 'confirm' | 'refute' } | null;
+  return row?.value ?? null;
+}
+
 export function getAiFeedback(
   db: Database,
   eventId: string,
@@ -213,14 +215,11 @@ export function getAiFeedback(
        FROM ai_feedback WHERE event_id = ?`,
     )
     .get(eventId) as { confirms: number; refutes: number };
-  let mine: 'confirm' | 'refute' | null = null;
-  if (viewerDid) {
-    const row = db
-      .query('SELECT value FROM ai_feedback WHERE event_id = ? AND voter_did = ?')
-      .get(eventId, viewerDid) as { value: 'confirm' | 'refute' } | null;
-    mine = row?.value ?? null;
-  }
-  return { confirms: tallies.confirms, refutes: tallies.refutes, mine };
+  return {
+    confirms: tallies.confirms,
+    refutes: tallies.refutes,
+    mine: getMyAiFeedback(db, eventId, viewerDid),
+  };
 }
 
 export function toggleAiFeedback(
@@ -229,10 +228,8 @@ export function toggleAiFeedback(
   voterDid: string,
   value: 'confirm' | 'refute',
 ): void {
-  const existing = db
-    .query('SELECT value FROM ai_feedback WHERE event_id = ? AND voter_did = ?')
-    .get(eventId, voterDid) as { value: 'confirm' | 'refute' } | null;
-  if (existing && existing.value === value) {
+  const existing = getMyAiFeedback(db, eventId, voterDid);
+  if (existing === value) {
     db.query('DELETE FROM ai_feedback WHERE event_id = ? AND voter_did = ?').run(
       eventId,
       voterDid,
@@ -248,7 +245,7 @@ export function toggleAiFeedback(
 export function setEventAiResult(
   db: Database,
   id: string,
-  status: 'done' | 'failed',
+  status: Extract<AiStatus, 'done' | 'failed'>,
   summary: string | null,
   tag: string | null,
 ): EventRow | null {

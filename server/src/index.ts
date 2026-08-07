@@ -4,7 +4,7 @@ import type { Database } from 'bun:sqlite';
 import { loadConfig, type Config } from './config';
 import { openDatabase, type EventRow } from './store/db';
 import { seedDatabase } from './store/seed';
-import { ensureApiTables, getTopLabelsForAddresses, setEventAiResult } from './store/apiQueries';
+import { getTopLabelsForAddresses, setEventAiResult } from './store/apiQueries';
 import { BitcoinRpcClient } from './rpc/client';
 import { createAddressInfoClient, type AddressInfoClient } from './external/addressinfo';
 import { createPipeline, type Pipeline } from './detect/pipeline';
@@ -81,7 +81,6 @@ export interface ComposeDeps {
 
 export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   const { db, config, emitter } = deps;
-  ensureApiTables(db);
   const { app: authApp } = createAuthApp(db);
   const hub = createSseHub({
     emitter,
@@ -124,7 +123,6 @@ function main(): void {
 
   const shutdown = () => {
     stopPipeline();
-    pipeline.stop();
     server.stop();
     process.exit(0);
   };

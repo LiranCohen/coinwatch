@@ -4,6 +4,10 @@ export type EventStatus = 'active' | 'confirmed' | 'evicted';
 
 export type AiStatus = 'pending' | 'done' | 'failed';
 
+export const RULES = ['whale', 'dormant-wake', 'coinjoin', 'demo'] as const satisfies readonly Rule[];
+export const STATUSES = ['active', 'confirmed', 'evicted'] as const satisfies readonly EventStatus[];
+export const SOURCES = ['live', 'demo'] as const satisfies readonly ('live' | 'demo')[];
+
 export interface Identity {
   did: string;
   handle: string | null;

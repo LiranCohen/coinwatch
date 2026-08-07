@@ -5,10 +5,12 @@ import type { Rule } from '@chainwatch/shared';
 import type { BitcoinRpc, VerboseTx } from '../rpc/client';
 import type { AddressInfoClient } from '../external/addressinfo';
 import { coinjoin, dormantWake, whale, type NormalizedTx } from './rules';
-import { getEventByTxid, insertEvent, type EventRow } from '../store/db';
+import { insertEvent } from '../store/db';
 import { listSweepableEvents, setEventStatus } from '../store/pipelineQueries';
+import { errMessage } from '../util';
 
 const SATS_PER_BTC = 100_000_000;
+const FETCH_CONCURRENCY = 8;
 
 export function btcToSats(btc: number): number {
   return Math.round(btc * SATS_PER_BTC);
@@ -55,8 +57,6 @@ export interface PipelineDeps {
 export interface Pipeline {
   emitter: EventEmitter;
   poll(): Promise<void>;
-  start(): void;
-  stop(): void;
   lastPollAt(): string | null;
 }
 
@@ -71,7 +71,6 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
   let prevMempool: Set<string> | null = null;
   let lastPoll: string | null = null;
   let polling = false;
-  let timer: ReturnType<typeof setInterval> | null = null;
 
   async function evaluateRules(tx: NormalizedTx, tipHeight: number): Promise<Rule[]> {
     const rules: Rule[] = [];
@@ -89,49 +88,59 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
     return rules;
   }
 
+  async function processNewcomer(txid: string, tipHeight: number): Promise<void> {
+    let raw: VerboseTx;
+    try {
+      raw = await rpc.getrawtransaction(txid);
+    } catch (err) {
+      warn(`pipeline: getrawtransaction(${txid}) failed: ${errMessage(err)}`);
+      return;
+    }
+    const tx = normalizeTx(raw);
+    const rules = await evaluateRules(tx, tipHeight);
+    if (rules.length === 0) return;
+    const { row, inserted } = insertEvent(db, {
+      txid,
+      rules,
+      valueSats: tx.totalOutputSats,
+      inputs: tx.inputs,
+      outputs: tx.outputs,
+    });
+    if (inserted && row) {
+      log(`pipeline: event detected txid=${txid} rules=${rules.join(',')}`);
+      emitter.emit('event:new', row);
+    }
+  }
+
   async function processNewcomers(newcomers: string[], tipHeight: number): Promise<void> {
-    for (const txid of newcomers) {
-      let raw: VerboseTx;
-      try {
-        raw = await rpc.getrawtransaction(txid);
-      } catch (err) {
-        warn(`pipeline: getrawtransaction(${txid}) failed: ${errMessage(err)}`);
-        continue;
-      }
-      const tx = normalizeTx(raw);
-      const rules = await evaluateRules(tx, tipHeight);
-      if (rules.length === 0) continue;
-      const alreadyKnown = getEventByTxid(db, txid) !== null;
-      const row = insertEvent(db, {
-        txid,
-        rules,
-        valueSats: tx.totalOutputSats,
-        inputs: tx.inputs,
-        outputs: tx.outputs,
-      });
-      if (!alreadyKnown && row) {
-        log(`pipeline: event detected txid=${txid} rules=${rules.join(',')}`);
-        emitter.emit('event:new', row);
-      }
+    for (let i = 0; i < newcomers.length; i += FETCH_CONCURRENCY) {
+      await Promise.all(
+        newcomers.slice(i, i + FETCH_CONCURRENCY).map((txid) => processNewcomer(txid, tipHeight)),
+      );
+    }
+  }
+
+  async function sweepEvent(row: { id: string; txid: string }, mempool: Set<string>): Promise<void> {
+    if (mempool.has(row.txid)) return;
+    let confirmed = false;
+    try {
+      const tx = await rpc.getrawtransaction(row.txid);
+      confirmed = typeof tx.blockhash === 'string' && tx.blockhash.length > 0;
+    } catch {
+      confirmed = false;
+    }
+    const status = confirmed ? 'confirmed' : 'evicted';
+    const updated = setEventStatus(db, row.id, status);
+    if (updated) {
+      log(`pipeline: event ${row.txid} -> ${status}`);
+      emitter.emit('event:update', updated);
     }
   }
 
   async function evictionSweep(mempool: Set<string>): Promise<void> {
-    for (const row of listSweepableEvents(db)) {
-      if (mempool.has(row.txid)) continue;
-      let confirmed = false;
-      try {
-        const tx = await rpc.getrawtransaction(row.txid);
-        confirmed = typeof tx.blockhash === 'string' && tx.blockhash.length > 0;
-      } catch {
-        confirmed = false;
-      }
-      const status = confirmed ? 'confirmed' : 'evicted';
-      const updated = setEventStatus(db, row.id, status);
-      if (updated) {
-        log(`pipeline: event ${row.txid} -> ${status}`);
-        emitter.emit('event:update', updated);
-      }
+    const rows = listSweepableEvents(db);
+    for (let i = 0; i < rows.length; i += FETCH_CONCURRENCY) {
+      await Promise.all(rows.slice(i, i + FETCH_CONCURRENCY).map((row) => sweepEvent(row, mempool)));
     }
   }
 
@@ -162,21 +171,6 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
   return {
     emitter,
     poll,
-    start() {
-      if (timer !== null) return;
-      void poll();
-      timer = setInterval(() => void poll(), config.pollIntervalMs);
-    },
-    stop() {
-      if (timer !== null) {
-        clearInterval(timer);
-        timer = null;
-      }
-    },
     lastPollAt: () => lastPoll,
   };
-}
-
-function errMessage(err: unknown): string {
-  return err instanceof Error ? err.message : String(err);
 }

@@ -1,5 +1,6 @@
 import type { Config } from '../config';
 import type { Rule } from '@chainwatch/shared';
+import { errMessage } from '../util';
 
 export const AI_TAGS = ['whale-move', 'dormant-wake', 'coinjoin', 'exchange-flow', 'unknown'] as const;
 export type AiTag = (typeof AI_TAGS)[number];
@@ -91,12 +92,15 @@ function parseModelOutput(content: string): AiResult {
   return { ok: false, error: 'unparseable model output' };
 }
 
-function createOpenAiProvider(config: AiConfig, deps: AiProviderDeps): AiProvider {
+function createOpenAiProvider(
+  config: { aiBaseUrl: string; aiApiKey: string; aiModel: string },
+  deps: AiProviderDeps,
+): AiProvider {
   const fetchFn = deps.fetch ?? fetch;
   const timeoutMs = deps.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const baseUrl = (config.aiBaseUrl as string).replace(/\/+$/, '');
-  const apiKey = config.aiApiKey as string;
-  const model = config.aiModel as string;
+  const baseUrl = config.aiBaseUrl.replace(/\/+$/, '');
+  const apiKey = config.aiApiKey;
+  const model = config.aiModel;
 
   return {
     name: 'openai-compatible',
@@ -134,8 +138,7 @@ function createOpenAiProvider(config: AiConfig, deps: AiProviderDeps): AiProvide
 
         return parseModelOutput(content);
       } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { ok: false, error: message };
+        return { ok: false, error: errMessage(err) };
       }
     },
   };
@@ -180,8 +183,9 @@ function createMockProvider(): AiProvider {
 }
 
 export function createAiProvider(config: AiConfig, deps: AiProviderDeps = {}): AiProvider {
-  if (config.aiApiKey && config.aiBaseUrl && config.aiModel) {
-    return createOpenAiProvider(config, deps);
+  const { aiBaseUrl, aiApiKey, aiModel } = config;
+  if (aiBaseUrl && aiApiKey && aiModel) {
+    return createOpenAiProvider({ aiBaseUrl, aiApiKey, aiModel }, deps);
   }
   return createMockProvider();
 }

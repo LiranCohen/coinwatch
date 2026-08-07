@@ -3,14 +3,13 @@ import { createMiddleware } from 'hono/factory';
 import { getConnInfo } from 'hono/bun';
 import type { EventEmitter } from 'node:events';
 import type { Database } from 'bun:sqlite';
-import type { InjectRequest, Rule } from '@chainwatch/shared';
+import { RULES, type InjectRequest, type Rule } from '@chainwatch/shared';
 import type { Config } from '../config';
 import { insertEvent } from '../store/db';
+import { btcToSats } from '../detect/pipeline';
 import { serializeEventDetail } from './routes';
 
-const RULES: readonly string[] = ['whale', 'dormant-wake', 'coinjoin', 'demo'];
 const LOOPBACK_ADDRESSES = new Set(['127.0.0.1', '::1', '::ffff:127.0.0.1']);
-const SATS_PER_BTC = 100_000_000;
 
 const DEFAULT_DEMO_INPUT = 'bc1qchainwatchdemoinput000000000000000000000';
 const DEFAULT_DEMO_OUTPUT = 'bc1qchainwatchdemooutput00000000000000000000';
@@ -77,10 +76,10 @@ export function createInjectApp(deps: InjectDeps): Hono {
 
     const rule: Rule = body.rule ?? 'whale';
     const rules: Rule[] = rule === 'demo' ? ['demo'] : [rule, 'demo'];
-    const valueSats = body.valueSats ?? 2 * Math.round(config.whaleThresholdBtc * SATS_PER_BTC);
+    const valueSats = body.valueSats ?? 2 * btcToSats(config.whaleThresholdBtc);
     const inputAddress = body.address ?? DEFAULT_DEMO_INPUT;
 
-    const row = insertEvent(db, {
+    const { row } = insertEvent(db, {
       txid: fakeTxid(),
       rules,
       valueSats,

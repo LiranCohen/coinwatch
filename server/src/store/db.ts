@@ -63,10 +63,19 @@ export function openDatabase(path?: string): Database {
   return db;
 }
 
-export function insertEvent(db: Database, event: EventInput): EventRow | null {
+export function placeholders(count: number): string {
+  return Array.from({ length: count }, () => '?').join(', ');
+}
+
+export interface InsertEventResult {
+  row: EventRow | null;
+  inserted: boolean;
+}
+
+export function insertEvent(db: Database, event: EventInput): InsertEventResult {
   const id = crypto.randomUUID();
   const detectedAt = event.detectedAt ?? new Date().toISOString();
-  db.query(
+  const result = db.query(
     `INSERT OR IGNORE INTO events
        (id, txid, detected_at, rules, value_sats, inputs, outputs, source)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -80,7 +89,7 @@ export function insertEvent(db: Database, event: EventInput): EventRow | null {
     JSON.stringify(event.outputs),
     event.source ?? 'live',
   );
-  return getEventByTxid(db, event.txid);
+  return { row: getEventByTxid(db, event.txid), inserted: result.changes > 0 };
 }
 
 export function getEventByTxid(db: Database, txid: string): EventRow | null {
@@ -106,9 +115,18 @@ export function insertLabel(db: Database, label: LabelInput): LabelRow | null {
     label.authorDid ?? null,
     label.source,
   );
+  return findLabelByUnique(db, label.address, label.tag, label.source);
+}
+
+export function findLabelByUnique(
+  db: Database,
+  address: string,
+  tag: string,
+  source: 'crowd' | 'seed',
+): LabelRow | null {
   return db
     .query('SELECT * FROM labels WHERE address = ? AND tag = ? AND source = ?')
-    .get(label.address, label.tag, label.source) as LabelRow | null;
+    .get(address, tag, source) as LabelRow | null;
 }
 
 export function getLabelsForAddress(db: Database, address: string): LabelRow[] {
@@ -117,41 +135,6 @@ export function getLabelsForAddress(db: Database, address: string): LabelRow[] {
     .all(address) as LabelRow[];
 }
 
-export function getLabelsForAddresses(db: Database, addresses: string[]): LabelRow[] {
-  if (addresses.length === 0) return [];
-  const placeholders = addresses.map(() => '?').join(', ');
-  return db
-    .query(`SELECT * FROM labels WHERE address IN (${placeholders}) ORDER BY address, tag`)
-    .all(...addresses) as LabelRow[];
-}
-
 export function getLabelById(db: Database, id: string): LabelRow | null {
   return db.query('SELECT * FROM labels WHERE id = ?').get(id) as LabelRow | null;
-}
-
-export function upsertVote(
-  db: Database,
-  labelId: string,
-  voterDid: string,
-  value: 1 | -1,
-): -1 | 0 | 1 {
-  const existing = db
-    .query('SELECT value FROM votes WHERE label_id = ? AND voter_did = ?')
-    .get(labelId, voterDid) as { value: 1 | -1 } | null;
-  if (existing && existing.value === value) {
-    db.query('DELETE FROM votes WHERE label_id = ? AND voter_did = ?').run(labelId, voterDid);
-    return 0;
-  }
-  db.query(
-    `INSERT INTO votes (label_id, voter_did, value) VALUES (?, ?, ?)
-     ON CONFLICT (label_id, voter_did) DO UPDATE SET value = excluded.value`,
-  ).run(labelId, voterDid, value);
-  return value;
-}
-
-export function getLabelScore(db: Database, labelId: string): number {
-  const row = db
-    .query('SELECT COALESCE(SUM(value), 0) AS score FROM votes WHERE label_id = ?')
-    .get(labelId) as { score: number };
-  return row.score;
 }

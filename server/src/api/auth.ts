@@ -10,13 +10,11 @@ import type {
 import {
   consumeChallenge,
   createSession,
-  ensureAuthTables,
-  getIdentity,
-  getSession,
   insertChallenge,
   updateIdentityHandle,
   upsertIdentity,
 } from '../store/authQueries';
+import { parseJsonBody, resolveBearerIdentity } from './http';
 import { createResolver, verifyDidNonce, DidVerifyError } from '../identity/verify';
 import type { DidResolverLike } from '../identity/verify';
 
@@ -33,13 +31,12 @@ export interface AuthAppOptions {
 export function createAuthMiddleware(db: Database) {
   return createMiddleware<AuthEnv>(async (c, next) => {
     const header = c.req.header('Authorization');
-    const token = header?.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : null;
-    if (!token) {
+    const hasToken = header?.startsWith('Bearer ') && header.slice('Bearer '.length).trim().length > 0;
+    if (!hasToken) {
       return c.json({ error: 'missing bearer token' }, 401);
     }
-    const session = getSession(db, token);
-    const identity = session ? getIdentity(db, session.did) : null;
-    if (!session || !identity) {
+    const identity = resolveBearerIdentity(db, header);
+    if (!identity) {
       return c.json({ error: 'invalid or expired token' }, 401);
     }
     c.set('identity', identity);
@@ -48,7 +45,6 @@ export function createAuthMiddleware(db: Database) {
 }
 
 export function createAuthApp(db: Database, options: AuthAppOptions = {}) {
-  ensureAuthTables(db);
   const resolver = options.resolver ?? createResolver();
   const auth = createAuthMiddleware(db);
   const app = new Hono<AuthEnv>();
@@ -61,13 +57,11 @@ export function createAuthApp(db: Database, options: AuthAppOptions = {}) {
   });
 
   app.post('/api/auth/verify', async (c) => {
-    let body: AuthVerifyRequest;
-    try {
-      body = await c.req.json<AuthVerifyRequest>();
-    } catch {
+    const body = await parseJsonBody<AuthVerifyRequest>(c);
+    if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);
     }
-    const { did, keyId, nonce, signature, handle } = body ?? {};
+    const { did, keyId, nonce, signature, handle } = body;
     if (
       typeof did !== 'string' ||
       typeof keyId !== 'string' ||
@@ -105,18 +99,16 @@ export function createAuthApp(db: Database, options: AuthAppOptions = {}) {
   });
 
   app.patch('/api/identities/me', auth, async (c) => {
-    let body: { handle?: unknown };
-    try {
-      body = await c.req.json<{ handle?: unknown }>();
-    } catch {
+    const body = await parseJsonBody<{ handle?: unknown }>(c);
+    if (body === null) {
       return c.json({ error: 'invalid JSON body' }, 400);
     }
-    if (typeof body?.handle !== 'string' || body.handle.length === 0) {
+    if (typeof body.handle !== 'string' || body.handle.length === 0) {
       return c.json({ error: 'handle is required and must be a non-empty string' }, 400);
     }
     const identity = updateIdentityHandle(db, c.get('identity').did, body.handle);
     return c.json(identity);
   });
 
-  return { app, authMiddleware: auth };
+  return { app };
 }

@@ -1,14 +1,21 @@
 import type { Database } from 'bun:sqlite';
 import type { EventStatus } from '@chainwatch/shared';
-import type { EventRow } from './db';
+import { getEventById, type EventRow } from './db';
 
-export function listSweepableEvents(db: Database): EventRow[] {
+export interface SweepableEventRow {
+  id: string;
+  txid: string;
+}
+
+export function listSweepableEvents(db: Database): SweepableEventRow[] {
   return db
-    .query("SELECT * FROM events WHERE status = 'active' AND source = 'live' ORDER BY detected_at")
-    .all() as EventRow[];
+    .query(
+      "SELECT id, txid FROM events WHERE status = 'active' AND source = 'live' ORDER BY detected_at",
+    )
+    .all() as SweepableEventRow[];
 }
 
 export function setEventStatus(db: Database, id: string, status: EventStatus): EventRow | null {
   db.query('UPDATE events SET status = ? WHERE id = ?').run(status, id);
-  return db.query('SELECT * FROM events WHERE id = ?').get(id) as EventRow | null;
+  return getEventById(db, id);
 }

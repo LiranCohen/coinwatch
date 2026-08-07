@@ -15,15 +15,7 @@ export interface SessionRow {
 export const CHALLENGE_TTL_MS = 5 * 60 * 1000;
 export const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
-export function ensureAuthTables(db: Database): void {
-  db.exec(`CREATE TABLE IF NOT EXISTS did_documents (
-  did TEXT PRIMARY KEY,
-  document TEXT NOT NULL,
-  cached_at TEXT NOT NULL
-)`);
-}
-
-function isoFromNow(offsetMs: number): string {
+export function isoFromNow(offsetMs: number): string {
   return new Date(Date.now() + offsetMs).toISOString();
 }
 
@@ -79,16 +71,20 @@ export function getIdentity(db: Database, did: string): Identity | null {
   return row ? toIdentity(row) : null;
 }
 
+function setHandle(db: Database, did: string, handle: string): void {
+  db.query('UPDATE identities SET handle = ? WHERE did = ?').run(handle, did);
+}
+
 export function upsertIdentity(db: Database, did: string, handle?: string): Identity {
   db.query('INSERT OR IGNORE INTO identities (did) VALUES (?)').run(did);
   if (handle !== undefined) {
-    db.query('UPDATE identities SET handle = ? WHERE did = ?').run(handle, did);
+    setHandle(db, did, handle);
   }
   return getIdentity(db, did)!;
 }
 
 export function updateIdentityHandle(db: Database, did: string, handle: string): Identity | null {
-  db.query('UPDATE identities SET handle = ? WHERE did = ?').run(handle, did);
+  setHandle(db, did, handle);
   return getIdentity(db, did);
 }
 

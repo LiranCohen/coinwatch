@@ -19,11 +19,7 @@ beforeEach(() => {
 });
 
 function bytesToBase64Url(bytes: Uint8Array): string {
-  return Buffer.from(bytes)
-    .toString('base64')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '');
+  return Buffer.from(bytes).toString('base64url');
 }
 
 async function postChallenge(): Promise<{ nonce: string; expiresAt: string }> {

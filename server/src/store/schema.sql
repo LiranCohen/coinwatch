@@ -51,7 +51,14 @@ CREATE TABLE IF NOT EXISTS votes (
   label_id TEXT NOT NULL REFERENCES labels (id),
   voter_did TEXT NOT NULL,
   value INTEGER NOT NULL CHECK (value IN (-1, 1)),
+  created_at TEXT,
   UNIQUE (label_id, voter_did)
+);
+
+CREATE TABLE IF NOT EXISTS did_documents (
+  did TEXT PRIMARY KEY,
+  document TEXT NOT NULL,
+  cached_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS ai_feedback (

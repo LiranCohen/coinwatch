@@ -1,5 +1,6 @@
 import { loadConfig, type Config } from '../config';
 import type { AddressActivity } from '../detect/rules';
+import { errMessage } from '../util';
 
 export interface ExternalAddressTx {
   txid: string;
@@ -27,6 +28,8 @@ export interface AddressInfoOptions {
 }
 
 const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CACHE_ENTRIES = 1000;
+const FETCH_TIMEOUT_MS = 8000;
 
 class RateLimitError extends Error {
   constructor(url: string) {
@@ -47,10 +50,21 @@ export function createAddressInfoClient(
 
   async function getJson(baseUrl: string, path: string): Promise<unknown> {
     const url = `${baseUrl}${path}`;
-    const res = await fetchImpl(url);
+    const res = await fetchImpl(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
     if (res.status === 429) throw new RateLimitError(url);
     if (!res.ok) throw new Error(`addressinfo: HTTP ${res.status} from ${url}`);
     return res.json();
+  }
+
+  function cacheSet(cacheKey: string, data: unknown): void {
+    if (cache.size >= MAX_CACHE_ENTRIES && !cache.has(cacheKey)) {
+      const nowMs = now();
+      for (const [key, entry] of cache) {
+        if (nowMs - entry.at >= cacheTtlMs) cache.delete(key);
+      }
+      if (cache.size >= MAX_CACHE_ENTRIES) cache.clear();
+    }
+    cache.set(cacheKey, { at: now(), data });
   }
 
   async function lookup<T>(cacheKey: string, path: string): Promise<T | null> {
@@ -59,14 +73,10 @@ export function createAddressInfoClient(
     for (const baseUrl of [config.mempoolApi, config.blockstreamApi]) {
       try {
         const data = (await getJson(baseUrl, path)) as T;
-        cache.set(cacheKey, { at: now(), data });
+        cacheSet(cacheKey, data);
         return data;
       } catch (err) {
-        warn(
-          `addressinfo: ${baseUrl} lookup failed for ${path}: ${
-            err instanceof Error ? err.message : String(err)
-          }`,
-        );
+        warn(`addressinfo: ${baseUrl} lookup failed for ${path}: ${errMessage(err)}`);
       }
     }
     warn(`addressinfo: all providers failed for ${path}; skipping address check this cycle`);
