@@ -41,8 +41,58 @@ export interface CoinjoinMeta {
   participantCount: number;
 }
 
+/**
+ * Boltzmann transaction entropy: how many distinct ways an observer could map
+ * this transaction's inputs onto its outputs, and what that implies about which
+ * links are certain. Entropy of 0 means the transaction leaks its full
+ * structure; higher values mean more plausible interpretations.
+ */
+export interface TxEntropy {
+  /** 'skipped'/'aborted' mean the analysis was declined, not that entropy is zero */
+  status: 'ok' | 'skipped' | 'aborted';
+  reason: string | null;
+  /** number of valid input-to-output interpretations */
+  combinations: number;
+  /** log2(combinations), in bits */
+  entropy: number;
+  /** entropy of a perfect coinjoin with the same input/output counts */
+  maxEntropy: number;
+  /** share of the achievable entropy this transaction reaches, in [0, 1] */
+  efficiency: number;
+  /** entropy per input+output, comparable across transaction sizes */
+  density: number;
+  /** linkProbability[input][output] = P(that input funded that output) */
+  linkProbability: number[][];
+  /** links that hold in every interpretation */
+  deterministicLinks: { input: number; output: number }[];
+}
+
 export interface EventMeta {
   coinjoin?: CoinjoinMeta;
+  entropy?: TxEntropy;
+  feeSats?: number;
+}
+
+/** A mined block, as shown in the chain ticker. */
+export interface BlockSummary {
+  height: number;
+  hash: string;
+  /** ISO 8601 */
+  time: string | null;
+  txCount: number;
+  sizeBytes: number;
+  weight: number;
+  /** mining pool, when the upstream source can attribute it */
+  miner: string | null;
+  /** sat/vB */
+  medianFeeRate: number | null;
+}
+
+export interface BlocksResponse {
+  tipHeight: number;
+  blocks: BlockSummary[];
+  /** which upstream produced this: the operator's node or public explorers */
+  source: string;
 }
 
 export interface EventSummary {

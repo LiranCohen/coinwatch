@@ -655,6 +655,7 @@ describe('SSE health', () => {
     let lastPoll: string | null = null;
     const fakePipeline: Pipeline = {
       emitter: new EventEmitter(),
+      sourceName: () => 'test',
       poll: () => {
         lastPoll = new Date().toISOString();
         return Promise.resolve();

@@ -4,7 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import type { Label } from '@chainwatch/shared';
 
 import { satsToBtc, truncateMiddle } from '../lib/format';
-import type { LinkGuess } from '../lib/demoFlow';
+/** A candidate input-to-output link surfaced by the entropy analysis. */
+export interface FlowLink {
+  inputIndex: number;
+  outputIndex: number;
+  /** P(this input funded this output) across all valid interpretations */
+  probability: number;
+  /** true when the link holds in every interpretation */
+  certain: boolean;
+}
 
 interface IoEntry {
   address: string | null;
@@ -16,7 +24,7 @@ interface TxGraphProps {
   inputs: IoEntry[];
   outputs: IoEntry[];
   labels: Label[];
-  links?: LinkGuess[];
+  links?: FlowLink[];
 }
 
 type Trace =
@@ -286,7 +294,7 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
     );
   };
 
-  const renderGuess = (link: LinkGuess, i: number) => {
+  const renderLink = (link: FlowLink, i: number) => {
     const inBox = inGeom.boxes[link.inputIndex];
     const outBox = outGeom.boxes[link.outputIndex];
     if (!inBox || !outBox) return null;
@@ -300,29 +308,36 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
       (trace.kind === 'out' && trace.index === link.outputIndex);
     const faded = trace.kind !== 'none' && trace.kind !== 'all' && !involved;
     const midY = (y1 + y2) / 2 - lift * 0.72;
+    const stroke = link.certain ? 'stroke-emerald-400' : 'stroke-amber-400';
+    const fill = link.certain ? 'fill-emerald-400' : 'fill-amber-400';
+    const text = link.certain ? 'fill-emerald-300' : 'fill-amber-300';
     return (
       <g
-        key={`guess-${i}`}
-        opacity={faded ? 0.08 : involved ? 1 : 0.55}
+        key={`link-${i}`}
+        opacity={faded ? 0.08 : involved ? 1 : 0.5}
         style={{ transition: 'opacity 150ms', pointerEvents: 'none' }}
       >
         <path
           d={`M ${x1} ${y1} C ${x1 + 240} ${y1 - lift}, ${x2 - 240} ${y2 - lift}, ${x2} ${y2}`}
           fill="none"
           strokeWidth={involved ? 2.5 : 1.5}
-          strokeDasharray="6 5"
+          strokeDasharray={link.certain ? undefined : '6 5'}
           strokeLinecap="round"
-          className="stroke-amber-400"
+          className={stroke}
         />
-        <circle cx={x2 - 4} cy={y2} r={involved ? 4 : 3} className="fill-amber-400" />
+        <circle cx={x2 - 4} cy={y2} r={involved ? 4 : 3} className={fill} />
         <text
           x={(x1 + x2) / 2}
           y={midY}
           textAnchor="middle"
-          className="tnum fill-amber-300 font-mono text-[10px]"
+          className={`tnum ${text} font-mono text-[10px]`}
           style={LABEL_HALO}
         >
-          {involved ? `suspected ${link.reason} · ${Math.round(link.confidence * 100)}%` : `${Math.round(link.confidence * 100)}%`}
+          {link.certain
+            ? involved
+              ? 'certain link'
+              : '100%'
+            : `${Math.round(link.probability * 100)}%`}
         </text>
       </g>
     );
@@ -362,12 +377,12 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
               setShowGuesses((s) => !s);
             }}
           >
-            Suspected links ({links.length})
+            Link analysis ({links.length})
           </button>
         )}
         <span className="text-[11px] text-zinc-500">
           Hover or click a box to trace its flow. Sky outline = labeled address.
-          {links.length > 0 && ' Amber dashes = heuristic input↔output guesses.'}
+          {links.length > 0 && ' Green = link certain in every interpretation; amber = probability across interpretations.'}
         </span>
       </div>
 
@@ -395,7 +410,7 @@ export function TxGraph({ txid, inputs, outputs, labels, links = [] }: TxGraphPr
 
         {inputs.map((io, i) => renderFlow(io, inGeom.boxes[i], 'in', i))}
         {outputs.map((io, i) => renderFlow(io, outGeom.boxes[i], 'out', i))}
-        {showGuesses && links.map(renderGuess)}
+        {showGuesses && links.map(renderLink)}
 
         <g>
           <rect

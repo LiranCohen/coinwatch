@@ -1,5 +1,6 @@
 import type {
   AddressInfo,
+  BlocksResponse,
   ChallengeResponse,
   EventDetail,
   EventSummary,
@@ -22,7 +23,6 @@ import eventsFixture from '../../fixtures/events.json';
 import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
 import trendingFixture from '../../fixtures/trending.json';
-import { COLDCARD_HACK, decorateHackEvent } from '../lib/coldcardHack';
 import { emitMockEvent } from './sse';
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true';
@@ -66,7 +66,7 @@ const mock = {
     ['evt_001', structuredClone(eventDetailFixture) as EventDetail],
   ]),
   addresses: new Map<string, AddressInfo>([
-    [addressFixture.address, structuredClone(addressFixture) as AddressInfo],
+    [addressFixture.address, structuredClone(addressFixture) as unknown as AddressInfo],
   ]),
   labels: new Map<string, Label>(),
   sessions: new Map<string, MockSession>(),
@@ -189,6 +189,15 @@ export async function patchHandle(handle: string, token: string): Promise<Identi
 }
 
 // ---------------------------------------------------------------------------
+// Chain
+// ---------------------------------------------------------------------------
+
+/** Recent blocks straight from the chain, for the ticker. */
+export async function getBlocks(limit = 6): Promise<BlocksResponse> {
+  return request<BlocksResponse>(`/api/blocks?limit=${limit}`);
+}
+
+// ---------------------------------------------------------------------------
 // Events
 // ---------------------------------------------------------------------------
 
@@ -210,16 +219,12 @@ export async function getEvents(query: EventsQuery = {}): Promise<EventsResponse
     if (query.source) events = events.filter((e) => e.source === query.source);
     return { events: clone(events.slice(0, query.limit ?? 50)) };
   }
-  // the backend doesn't know the hack rule; it's stamped on client-side
-  const hackFilter = query.rule === 'hack';
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(hackFilter ? { ...query, rule: undefined } : query)) {
+  for (const [key, value] of Object.entries(query)) {
     if (value !== undefined) params.set(key, String(value));
   }
   const qs = params.toString();
-  const res = await request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
-  const events = res.events.map(decorateHackEvent);
-  return { ...res, events: hackFilter ? events.filter((e) => e.rules.includes('hack')) : events };
+  return request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
 }
 
 export async function getEvent(id: string, token?: string | null): Promise<EventDetail> {
@@ -230,7 +235,7 @@ export async function getEvent(id: string, token?: string | null): Promise<Event
     if (!summary) throw new ApiError(404, `unknown event: ${id}`);
     return clone(detailFromSummary(summary));
   }
-  return decorateHackEvent(await request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token));
+  return request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token);
 }
 
 export async function postAiFeedback(
@@ -487,7 +492,6 @@ export async function getTrustGraph(): Promise<TrustGraphData> {
 }
 
 export async function getHack(id: string): Promise<Hack> {
-  if (id === COLDCARD_HACK.id) return structuredClone(COLDCARD_HACK);
   if (USE_FIXTURES) {
     await mockLatency();
     if (id !== hackFixture.id) throw new ApiError(404, `unknown hack: ${id}`);
@@ -508,6 +512,10 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       id,
       txid,
       detectedAt: new Date().toISOString(),
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       rules: ['whale'],
       valueSats: body.valueSats ?? 50_000_000_000,
       status: 'active',

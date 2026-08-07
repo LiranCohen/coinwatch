@@ -7,7 +7,8 @@ import { openDatabase, type EventRow } from './store/db';
 import { seedDatabase } from './store/seed';
 import { getTopLabelsForAddresses, setEventAiResult } from './store/apiQueries';
 import { BitcoinRpcClient } from './rpc/client';
-import { createAddressInfoClient, type AddressInfoClient } from './external/addressinfo';
+import type { AddressInfoClient } from './external/addressinfo';
+import { createEsploraAddressInfo } from './ingest/addressInfo';
 import { createPipeline, type Pipeline } from './detect/pipeline';
 import { createAiProvider, type AiProvider } from './ai/provider';
 import type { Rule } from '@chainwatch/shared';
@@ -19,6 +20,9 @@ import { createAnalystRoutes } from './api/analysts';
 import { createEntityRoutes } from './api/entities';
 import { createCoinjoinRoutes } from './api/coinjoins';
 import { createBatchRoutes } from './api/batches';
+import { createBlockRoutes } from './api/blocks';
+import { EsploraClient } from './ingest/esplora';
+import { selectChainSource } from './ingest/source';
 
 export interface AiPassDeps {
   emitter: EventEmitter;
@@ -80,6 +84,9 @@ export interface ComposeDeps {
   emitter: EventEmitter;
   ai: AiProvider;
   addressInfo: AddressInfoClient | null;
+  /** chain data for the block ticker; omitted in tests that don't exercise it */
+  esplora?: EsploraClient;
+  sourceName?: () => string;
   getRemoteAddress?: (c: Context) => string | undefined;
   log?: (message: string) => void;
 }
@@ -100,6 +107,15 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   app.route('/', createEntityRoutes(db));
   app.route('/', createCoinjoinRoutes(db));
   app.route('/', createBatchRoutes(db));
+  if (deps.esplora) {
+    app.route(
+      '/',
+      createBlockRoutes({
+        esplora: deps.esplora,
+        sourceName: deps.sourceName ?? (() => 'esplora'),
+      }),
+    );
+  }
   app.route('/', hub.app);
   app.route(
     '/',
@@ -108,27 +124,47 @@ export function composeApp(deps: ComposeDeps): { app: Hono; hub: SseHub } {
   return { app, hub };
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const config = loadConfig();
   const db = openDatabase(config.dbFile);
-  const seeded = seedDatabase(db);
-  console.log(`seed: ${seeded.imported} entries loaded (${seeded.skipped} skipped)`);
+  const seeded = seedDatabase(db, { demoData: config.demoSeedEnabled });
+  console.log(
+    `seed: ${seeded.imported} address labels loaded (${seeded.skipped} skipped)` +
+      (config.demoSeedEnabled ? ' + demo fixture' : ''),
+  );
 
   const rpc = new BitcoinRpcClient(config);
-  const addressInfo = createAddressInfoClient(config);
+  // public explorers rate-limit aggressively; pace requests rather than get 429'd
+  const esplora = new EsploraClient({
+    endpoints: [config.mempoolApi, config.blockstreamApi],
+    minIntervalMs: 400,
+  });
+  const addressInfo = createEsploraAddressInfo(esplora);
   const emitter = new EventEmitter();
-  const pipeline = createPipeline({ db, rpc, config, addressInfo, emitter });
+  const source = await selectChainSource({ rpc, esplora, preference: config.chainSource });
+  const pipeline = createPipeline({ db, source, config, addressInfo, emitter });
   const ai = createAiProvider(config);
-  const { app, hub } = composeApp({ db, config, emitter, ai, addressInfo });
+  const { app, hub } = composeApp({
+    db,
+    config,
+    emitter,
+    ai,
+    addressInfo,
+    esplora,
+    sourceName: pipeline.sourceName,
+  });
   const stopPipeline = startPipelineLoop(pipeline, hub, config.pollIntervalMs);
 
   const server = Bun.serve({
     port: config.port,
+    // SSE clients hold the connection open between events, and explorer-backed
+    // reads can outlast the 10s default
+    idleTimeout: 120,
     fetch: (req, bunServer) => app.fetch(req, { server: bunServer }),
   });
   console.log(
     `chainwatch server: listening on http://localhost:${server.port} ` +
-      `(ai=${ai.name}, injector=${config.injectorEnabled ? 'enabled' : 'disabled'})`,
+      `(chain=${pipeline.sourceName()}, ai=${ai.name}, injector=${config.injectorEnabled ? 'enabled' : 'disabled'})`,
   );
 
   const shutdown = () => {
@@ -141,5 +177,8 @@ function main(): void {
 }
 
 if (import.meta.main) {
-  main();
+  main().catch((err) => {
+    console.error(`chainwatch server: failed to start: ${String(err)}`);
+    process.exit(1);
+  });
 }

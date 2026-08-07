@@ -38,7 +38,7 @@ export function SimulatedBadge() {
   );
 }
 
-export function StatusBadge({ status }: { status: EventStatus }) {
+export function StatusBadge({ status, blockHeight }: { status: EventStatus; blockHeight?: number | null }) {
   if (status === 'active') {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-sky-300">
@@ -54,6 +54,7 @@ export function StatusBadge({ status }: { status: EventStatus }) {
           <path d="M4.7 9.1 1.9 6.3l1-1 1.8 1.8 4.4-4.4 1 1z" />
         </svg>
         confirmed
+        {blockHeight != null && <span className="text-emerald-300/70">· #{blockHeight.toLocaleString()}</span>}
       </span>
     );
   }

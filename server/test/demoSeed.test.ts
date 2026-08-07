@@ -30,7 +30,7 @@ const [sleuth, forensics, max] = fixture.analysts;
 
 function seededDb(): Database {
   const db = openDatabase(':memory:');
-  seedDatabase(db);
+  seedDatabase(db, { demoData: true });
   return db;
 }
 
@@ -164,7 +164,7 @@ describe('demo seed: idempotency', () => {
     const before = tableCounts(db);
     const reputationBefore = listLeaderboard(db).map((b) => b.reputation);
 
-    seedDatabase(db);
+    seedDatabase(db, { demoData: true });
 
     expect(tableCounts(db)).toEqual(before);
     expect(listLeaderboard(db).map((b) => b.reputation)).toEqual(reputationBefore);

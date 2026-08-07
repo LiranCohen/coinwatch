@@ -195,7 +195,7 @@ describe('labels and votes', () => {
 describe('seed import', () => {
   test('fresh DB imports fixture seed rows with evidence URLs preserved', () => {
     const db = openDatabase(':memory:');
-    const result = seedDatabase(db);
+    const result = seedDatabase(db, { demoData: true });
     expect(result.imported).toBe(fixture.length);
     expect(result.skipped).toBe(0);
 
@@ -214,8 +214,8 @@ describe('seed import', () => {
 
   test('double import produces no duplicates', () => {
     const db = openDatabase(':memory:');
-    seedDatabase(db);
-    const second = seedDatabase(db);
+    seedDatabase(db, { demoData: true });
+    const second = seedDatabase(db, { demoData: true });
     const count = (db.query("SELECT COUNT(*) AS n FROM labels WHERE source = 'seed'").get() as { n: number }).n;
     expect(count).toBe(fixture.length);
     expect(second.imported).toBe(fixture.length);

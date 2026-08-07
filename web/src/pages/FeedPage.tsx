@@ -12,7 +12,9 @@ import { TrendingLabels } from '../components/TrendingLabels';
 import { useSession } from '../session';
 
 const FEED_CAP = 50;
-const RULE_FILTERS: (Rule | 'all')[] = ['all', 'whale', 'dormant-wake', 'coinjoin', 'hack'];
+// 'hack' is a multi-transaction pattern the detector does not yet emit, so it
+// is not offered as a filter that would always come back empty
+const RULE_FILTERS: (Rule | 'all')[] = ['all', 'whale', 'dormant-wake', 'coinjoin'];
 const NODE_STALE_MS = 15_000;
 
 function SkeletonFeed() {
@@ -36,6 +38,7 @@ export function FeedPage() {
   const [selectedId, setSelectedId] = useState<string | null>(requestedEvent);
   const [detail, setDetail] = useState<EventDetailType | null>(null);
   const [ruleFilter, setRuleFilter] = useState<Rule | 'all'>('all');
+  const [blockFilter, setBlockFilter] = useState<number | null>(null);
   const [nodeStale, setNodeStale] = useState(false);
   const selectedRef = useRef<string | null>(null);
   selectedRef.current = selectedId;
@@ -140,9 +143,13 @@ export function FeedPage() {
     [setSearchParams],
   );
 
+  const visible = (events ?? []).filter(
+    (event) => blockFilter === null || event.blockHeight === blockFilter,
+  );
+
   return (
     <div className="space-y-4">
-      <BlocksStrip />
+      <BlocksStrip selectedHeight={blockFilter} onSelectHeight={setBlockFilter} />
       {nodeStale && (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-2 text-sm text-amber-200">
           Node connection stale: no successful poll in the last {NODE_STALE_MS / 1000}s. Events may be delayed.
@@ -177,16 +184,20 @@ export function FeedPage() {
         <div className="space-y-3">
           {events === null ? (
             <SkeletonFeed />
-          ) : events.length === 0 ? (
+          ) : visible.length === 0 ? (
             <div className="rounded-lg border border-dashed border-zinc-800 px-4 py-10 text-center">
-              <p className="text-sm text-zinc-300">Listening to your node. No matching events yet.</p>
+              <p className="text-sm text-zinc-300">
+                {blockFilter === null
+                  ? 'Watching the chain. No matching events yet.'
+                  : `No detected events in block ${blockFilter.toLocaleString()} yet.`}
+              </p>
               <p className="mt-2 text-xs text-zinc-500">
                 Detection rules: whale ≥ 10 BTC · dormant-wake ≥ 1 BTC after ~30 days quiet · coinjoin ≥ 5 equal
-                outputs · hack (multi-tx drain patterns).
+                outputs.
               </p>
             </div>
           ) : (
-            events.map((event) => (
+            visible.map((event) => (
               <FeedItem key={event.id} event={event} selected={event.id === selectedId} onSelect={select} />
             ))
           )}

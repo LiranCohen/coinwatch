@@ -33,9 +33,38 @@ function largestEqualGroup(values: number[]): { valueSats: number; count: number
   return { valueSats, count };
 }
 
-export function classifyCoinjoin(tx: NormalizedTx, minEqualOutputs: number): CoinjoinMeta | null {
+export interface CoinjoinOptions {
+  minEqualOutputs: number;
+  /** equal outputs below this are batching or dust spray, not mixing */
+  minDenominationSats?: number;
+}
+
+/** default floor for a mixed denomination: 0.001 BTC */
+export const DEFAULT_COINJOIN_MIN_DENOMINATION_SATS = 100_000;
+
+/**
+ * Equal outputs alone do not make a coinjoin — exchange payout batches and
+ * inscription sprays look identical by that test. A coinjoin is a *joint*
+ * transaction, so it must also carry enough separate inputs to plausibly
+ * represent the participants receiving those equal outputs, at a denomination
+ * worth mixing.
+ */
+export function classifyCoinjoin(
+  tx: NormalizedTx,
+  options: CoinjoinOptions | number,
+): CoinjoinMeta | null {
+  const opts: CoinjoinOptions = typeof options === 'number' ? { minEqualOutputs: options } : options;
+  const minDenominationSats = opts.minDenominationSats ?? DEFAULT_COINJOIN_MIN_DENOMINATION_SATS;
+
   const denomination = largestEqualGroup(tx.outputs.map((output) => output.valueSats));
-  if (denomination.count < minEqualOutputs) return null;
+  if (denomination.count < opts.minEqualOutputs) return null;
+  // one input means one payer funded everything: a batch, not a join
+  if (tx.inputs.length < 2) return null;
+  if (denomination.valueSats < minDenominationSats) return null;
+  // participants each bring their own coins, so inputs cannot be far fewer than
+  // the equal outputs they are collectively claiming
+  if (tx.inputs.length * 2 < denomination.count) return null;
+
   const equalInputCount = largestEqualGroup(tx.inputs.map((input) => input.valueSats)).count;
   let kind: CoinjoinMeta['kind'] = 'generic';
   if (denomination.count === 5 && equalInputCount === 5) {

@@ -274,12 +274,18 @@ export function seedDemoData(
   seedAll();
 }
 
-export function seedDatabase(
-  db: Database,
-  entries: unknown[] = defaultSeedEntries,
-  warn?: (message: string) => void,
-): SeedResult {
-  const result = importSeedEntries(db, entries, warn);
-  seedDemoData(db);
+export interface SeedOptions {
+  entries?: unknown[];
+  /**
+   * Load the fabricated analysts/events/votes fixture. Off by default: a real
+   * deployment should show real chain activity, not invented history.
+   */
+  demoData?: boolean;
+  warn?: (message: string) => void;
+}
+
+export function seedDatabase(db: Database, options: SeedOptions = {}): SeedResult {
+  const result = importSeedEntries(db, options.entries ?? defaultSeedEntries, options.warn);
+  if (options.demoData) seedDemoData(db);
   return result;
 }
