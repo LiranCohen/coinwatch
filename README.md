@@ -1,61 +1,68 @@
-# CoinWatch: Crowdsourced On-Chain Intelligence
-
-Real-time, community-validated Bitcoin transaction analysis. Your own node streams the mempool; detection rules surface high-signal events; a pluggable AI gives each event a first-pass summary; the crowd attaches labels to addresses, with reputation accruing to accurate analysts.
-
-> Hackathon MVP. Production pitch: the same architecture on QuickNode endpoints + OKX.AI as the AI provider.
+# CoinWatch: Crowdsourced Bitcoin Chain Analysis
 
 ---
 
-## What it does
+### Overview
+CoinWatch is a real-time, community-validated layer for **Bitcoin** transaction forensics. Our own full node (txindex-enabled) streams mempool and block data; detection rules surface high-signal events — whale moves, dormant-wallet wakes, and coinjoin rounds (Wasabi/Whirlpool classification included); an AI first pass summarizes each event; and the crowd attaches labels to addresses that flow back into event context. Scattered Discord alpha becomes structured, reusable, Bitcoin-native intelligence.
 
-- **Live event feed.** Polls your Bitcoin node's mempool (5s cadence), diffs snapshots, and surfaces whale transfers (≥ 10 BTC, configurable), dormant-wallet wakes (input quiet ≥ ~30 days, value-gated at 1 BTC), coinjoin-pattern transactions (≥ 5 equal outputs), and multi-transaction hacks (drain patterns traced hop by hop).
-- **Hack tracing.** Multi-hop exploits render as a chain visualization: origin, each hop, peeled side-outputs, and terminal outputs, with a one-click "trace the funds" path.
-- **AI first pass.** Every event gets a 1–2 sentence summary + risk/behavior tag from an OpenAI-compatible provider (OKX.AI-compatible pitch). Unconfigured or failed → the event still appears, marked "analysis pending."
-- **Crowd labels.** Authenticated analysts attach tag/note/evidence labels to any address; labels on involved addresses appear inline in event context. One up/down vote per identity, toggle semantics.
-- **Sovereign history.** Address pages show history observed by your own node, signed per-transaction deltas and links into tracked events. No external explorer dependency, nothing links out to one.
-- **One-click identity.** In-page enbox DID creation (`did:dht`, offline fallback `did:jwk`), no password or wallet. Login is a signed server challenge. Reputation leaderboard + trending labels.
-- **Demo injector.** A dev-only, loopback-only endpoint fires a synthetic, unmistakably badged SIMULATED event through the identical pipeline, so the demo never stalls on a quiet mempool.
+---
 
-## Architecture
+### The Problem
+Bitcoin chain analysis is either **prohibitively expensive** (Chainalysis, Arkham enterprise tiers) or **unstructured** (Twitter threads, Discord DMs). Label knowledge lives in closed databases. Retail users, small funds, and security researchers lack a middle ground: a place to see *why* a Bitcoin transaction matters, who validated that insight, and how reliable the source is.
+
+---
+
+### The Solution
+A lightweight feed where:
+1. **Our own Bitcoin node streams transactions** (mempool polling + blocks) through detection rules: whale transfers, dormant-wallet wakes, coinjoin rounds with implementation classification.
+2. **An AI provider generates a first-pass summary and risk tag** per event (pluggable, OpenAI-compatible; mock fallback).
+3. **The crowd annotates addresses** with tags, notes, and evidence links — and votes on accuracy.
+4. **Reputation accrues to accurate analysts** via one-click enbox DID identities (no wallet connect, no password), producing a meritocratic leaderboard.
+
+---
+
+### What's Built
+
+| Feature | Description |
+|---|---|
+| **Live event feed** | Node RPC polling with baseline snapshot + txid dedup; events broadcast over SSE; eviction sweep marks `confirmed`/`evicted` with block info. |
+| **Detection rules** | Whale (≥ threshold), dormant-wake (value-gated, address-history backed), coinjoin (equal-output heuristic). |
+| **Coinjoin forensics** | Wasabi/Whirlpool/generic classification, participant + denomination metadata, automatic round-chain batching, dedicated index endpoint. |
+| **Batches** | Related-tx groups with per-tx block info and link reasons — auto-built coinjoin chains plus curated traces (e.g., the 109,735 BTC Binance cold-storage consolidation). |
+| **Crowd labels + reputation** | Address labels with evidence URLs, one-vote toggle per identity, transactional reputation recompute, leaderboard + trending. |
+| **Entities** | 280 seeded labels from GraphSense TagPacks (exchanges, pools, services) rolled up by tag; address pages resolve history via mempool.space with blockstream fallback. |
+| **AI first pass** | Pluggable OpenAI-compatible provider; deterministic mock when unconfigured; broadcast-then-patch over SSE. |
+| **Enbox identity** | One-click in-page DID creation (`did:dht` with `did:jwk` fallback); challenge-sign login; server-cached DID documents for offline resilience. |
+
+### Architecture
 
 ```
-Bitcoin node RPC ──► server/ ingest + detection ──► SQLite (events + observed history)
-                            │
-                            └──► AI provider ──► SSE ──► web/ dashboard
+Bitcoin node RPC ──► detection pipeline ──► SQLite ──► REST + SSE API ──► frontend
+mempool.space ─────► address lookups              ▲
+AI provider ───────► first-pass summaries          │ labels / votes / signed challenges
+                                              crowd via enbox DIDs
 ```
 
-- `server/`: Bun + Hono + better-sqlite3. One process runs the ingest pipeline, REST API, SSE hub, and dev injector. _(Built by the backend lane; see `docs/plans/2026-08-06-002-feat-chainwatch-backend-plan.md`.)_
-- `web/`: Vite + React + TypeScript + Tailwind. Dark-mode dashboard: feed + detail pane, address pages, leaderboard.
-- `shared/`: the API contract types both lanes compile against. The contract is fixed in `docs/plans/2026-08-06-001-feat-chainwatch-mvp-plan.md`.
+Stack: Bun + Hono + SQLite (bun:sqlite), `@enbox/dids` for identity, Vite + React frontend (separate workspace). Sponsor framing: production deployment stands up on QuickNode Bitcoin endpoints with OKX.AI as the analysis provider.
 
-## Quickstart
+---
+
+### Running
+
+See **docs/development.md** for the live demo tunnel URL and local run instructions. **docs/api.md** is the frontend integration guide (every endpoint, shapes, auth flow, SSE catalog).
 
 ```bash
-npm install
-cp .env.example .env   # fill in node RPC credentials; AI key optional
+bun install
+cd server && bun test        # 114 tests
+PORT=3100 INJECTOR_ENABLED=true bun run src/index.ts
 ```
 
-Frontend only, zero backend, fully clickable demo data:
+---
 
-```bash
-cd web && VITE_USE_FIXTURES=true npm run dev
-```
+### Demo Script
+1. **Hook:** Land on the dashboard — a 3,000 BTC sweep from an OKX reserves wallet just hit the feed, AI-flagged, with the "okx reserves wallets" label inline.
+2. **Crowd layer:** An analyst tags the destination address; votes tick their reputation up on the leaderboard.
+3. **Forensics:** Open the coinjoin index — three Wasabi rounds chained into one batch, traced txid by txid with block info.
+4. **Insight:** Filter by entity to see every seeded exchange wallet and the events touching them.
 
-Full stack (once the backend lane lands):
-
-```bash
-# terminal 1
-cd server && bun run dev
-# terminal 2
-cd web && npm run dev   # proxies /api to localhost:3001
-```
-
-Demo rehearsal: set `INJECTOR_ENABLED=true` in `.env`; an "Inject simulated event" button appears in the UI when the probe returns 200.
-
-## The pitch
-
-On-chain intelligence is either prohibitively expensive (Chainalysis, Nansen) or unstructured (Discord alpha). CoinWatch is the middle ground: see the chain from your own node, get an AI first take, and let a reputation-weighted crowd annotate it. Production stands up on QuickNode (free tier: 10M credits, 15 req/s) and OKX.AI.
-
-## Scope honesty
-
-Bitcoin-only for the MVP (the original EVM framing is superseded). Labels and votes are naive counters; anti-sybil and moderation are explicitly deferred. AI output is always marked machine-generated; the crowd can confirm or refute it, and both signals stay visible.
+**Bottom line:** CoinWatch isn't just a dashboard. It's crowdsourced Bitcoin forensics — our node sees the chain, AI interprets it, and the crowd validates it.

@@ -22,9 +22,11 @@ import eventsFixture from '../../fixtures/events.json';
 import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
 import trendingFixture from '../../fixtures/trending.json';
+import { COLDCARD_HACK, decorateHackEvent } from '../lib/coldcardHack';
 import { emitMockEvent } from './sse';
 
 export const USE_FIXTURES = import.meta.env.VITE_USE_FIXTURES === 'true';
+export const API_BASE = import.meta.env.VITE_API_BASE ?? '';
 
 export class ApiError extends Error {
   constructor(
@@ -40,7 +42,7 @@ async function request<T>(path: string, init?: RequestInit, token?: string | nul
   const headers = new Headers(init?.headers);
   headers.set('Content-Type', 'application/json');
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const res = await fetch(path, { ...init, headers });
+  const res = await fetch(API_BASE + path, { ...init, headers });
   if (!res.ok) {
     const body = await res.text().catch(() => '');
     throw new ApiError(res.status, body || res.statusText);
@@ -208,12 +210,16 @@ export async function getEvents(query: EventsQuery = {}): Promise<EventsResponse
     if (query.source) events = events.filter((e) => e.source === query.source);
     return { events: clone(events.slice(0, query.limit ?? 50)) };
   }
+  // the backend doesn't know the hack rule; it's stamped on client-side
+  const hackFilter = query.rule === 'hack';
   const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
+  for (const [key, value] of Object.entries(hackFilter ? { ...query, rule: undefined } : query)) {
     if (value !== undefined) params.set(key, String(value));
   }
   const qs = params.toString();
-  return request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
+  const res = await request<EventsResponse>(`/api/events${qs ? `?${qs}` : ''}`);
+  const events = res.events.map(decorateHackEvent);
+  return { ...res, events: hackFilter ? events.filter((e) => e.rules.includes('hack')) : events };
 }
 
 export async function getEvent(id: string, token?: string | null): Promise<EventDetail> {
@@ -224,7 +230,7 @@ export async function getEvent(id: string, token?: string | null): Promise<Event
     if (!summary) throw new ApiError(404, `unknown event: ${id}`);
     return clone(detailFromSummary(summary));
   }
-  return request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token);
+  return decorateHackEvent(await request<EventDetail>(`/api/events/${encodeURIComponent(id)}`, undefined, token));
 }
 
 export async function postAiFeedback(
@@ -384,7 +390,7 @@ export async function getTrending(): Promise<TrendingResponse> {
 export async function probeInject(): Promise<boolean> {
   if (USE_FIXTURES) return true;
   try {
-    const res = await fetch('/api/dev/inject', { method: 'GET' });
+    const res = await fetch(API_BASE + '/api/dev/inject', { method: 'GET' });
     return res.ok;
   } catch {
     return false;
@@ -481,6 +487,7 @@ export async function getTrustGraph(): Promise<TrustGraphData> {
 }
 
 export async function getHack(id: string): Promise<Hack> {
+  if (id === COLDCARD_HACK.id) return structuredClone(COLDCARD_HACK);
   if (USE_FIXTURES) {
     await mockLatency();
     if (id !== hackFixture.id) throw new ApiError(404, `unknown hack: ${id}`);

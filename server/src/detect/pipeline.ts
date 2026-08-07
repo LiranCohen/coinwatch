@@ -1,11 +1,12 @@
 import { EventEmitter } from 'node:events';
 import type { Database } from 'bun:sqlite';
 import type { Config } from '../config';
-import type { Rule } from '@chainwatch/shared';
+import type { CoinjoinMeta, Rule } from '@chainwatch/shared';
 import type { BitcoinRpc, VerboseTx } from '../rpc/client';
 import type { AddressInfoClient } from '../external/addressinfo';
-import { coinjoin, dormantWake, whale, type NormalizedTx } from './rules';
-import { insertEvent } from '../store/db';
+import { classifyCoinjoin, dormantWake, whale, type NormalizedTx } from './rules';
+import { addBatchTx, findBatchByTxid, insertBatch, insertEvent } from '../store/db';
+import { findCoinjoinEventByOutputAddress, setEventMeta } from '../store/batchQueries';
 import { listSweepableEvents, setEventConfirmed, setEventStatus } from '../store/pipelineQueries';
 import { errMessage } from '../util';
 
@@ -72,10 +73,16 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
   let lastPoll: string | null = null;
   let polling = false;
 
-  async function evaluateRules(tx: NormalizedTx, tipHeight: number): Promise<Rule[]> {
+  interface RuleEvaluation {
+    rules: Rule[];
+    coinjoinMeta: CoinjoinMeta | null;
+  }
+
+  async function evaluateRules(tx: NormalizedTx, tipHeight: number): Promise<RuleEvaluation> {
     const rules: Rule[] = [];
     if (whale(tx, whaleThresholdSats)) rules.push('whale');
-    if (coinjoin(tx, config.coinjoinMinEqualOutputs)) rules.push('coinjoin');
+    const coinjoinMeta = classifyCoinjoin(tx, config.coinjoinMinEqualOutputs);
+    if (coinjoinMeta !== null) rules.push('coinjoin');
     if (deps.addressInfo && tx.totalOutputSats >= dormantMinValueSats) {
       const hit = await dormantWake(tx, {
         minValueSats: dormantMinValueSats,
@@ -85,7 +92,31 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
       });
       if (hit) rules.push('dormant-wake');
     }
-    return rules;
+    return { rules, coinjoinMeta };
+  }
+
+  function linkCoinjoinRound(tx: NormalizedTx, kind: CoinjoinMeta['kind']): void {
+    const inputAddresses = tx.inputs
+      .map((input) => input.address)
+      .filter((address): address is string => address !== null);
+    const prior = findCoinjoinEventByOutputAddress(db, inputAddresses, tx.txid);
+    const priorBatch = prior === null ? null : findBatchByTxid(db, prior.txid);
+    let batchId: string;
+    let linkReason: string;
+    if (prior !== null && priorBatch !== null) {
+      batchId = priorBatch.id;
+      linkReason = `round chain: spends output of ${prior.txid}`;
+    } else {
+      const batch = insertBatch(db, {
+        kind: 'coinjoin-round',
+        title: `Coinjoin round (${kind})`,
+        source: 'auto',
+      });
+      if (batch === null) return;
+      batchId = batch.id;
+      linkReason = 'round';
+    }
+    addBatchTx(db, { batchId, txid: tx.txid, valueSats: tx.totalOutputSats, linkReason });
   }
 
   async function processNewcomer(txid: string, tipHeight: number): Promise<void> {
@@ -97,7 +128,7 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
       return;
     }
     const tx = normalizeTx(raw);
-    const rules = await evaluateRules(tx, tipHeight);
+    const { rules, coinjoinMeta } = await evaluateRules(tx, tipHeight);
     if (rules.length === 0) return;
     const { row, inserted } = insertEvent(db, {
       txid,
@@ -107,8 +138,13 @@ export function createPipeline(deps: PipelineDeps): Pipeline {
       outputs: tx.outputs,
     });
     if (inserted && row) {
+      let finalRow = row;
+      if (coinjoinMeta !== null) {
+        finalRow = setEventMeta(db, row.id, { coinjoin: coinjoinMeta }) ?? row;
+        linkCoinjoinRound(tx, coinjoinMeta.kind);
+      }
       log(`pipeline: event detected txid=${txid} rules=${rules.join(',')}`);
-      emitter.emit('event:new', row);
+      emitter.emit('event:new', finalRow);
     }
   }
 

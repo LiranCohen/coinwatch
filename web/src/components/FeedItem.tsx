@@ -10,7 +10,7 @@ interface FeedItemProps {
 }
 
 export function FeedItem({ event, selected, onSelect }: FeedItemProps) {
-  const isDemo = event.source === 'demo';
+  const isDemo = false;
   return (
     <button
       type="button"

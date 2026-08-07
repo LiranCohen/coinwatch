@@ -145,7 +145,7 @@ export function useEventStream(handlers: StreamHandlers): StreamState {
 
     const connect = () => {
       if (disposed) return;
-      source = new EventSource('/api/stream');
+      source = new EventSource((import.meta.env.VITE_API_BASE ?? '') + '/api/stream');
 
       source.onopen = () => {
         attempts = 0;

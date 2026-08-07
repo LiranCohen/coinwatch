@@ -69,14 +69,14 @@ export function AddressPage() {
         <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400">
           HISTORY OBSERVED BY YOUR NODE
         </h2>
-        {info.history.length === 0 ? (
+        {(info.history ?? []).length === 0 ? (
           <p className="rounded-lg border border-dashed border-zinc-800 px-4 py-6 text-center text-xs text-zinc-500">
             Nothing seen from this address yet. History here is built from your own node's traffic, not an external
             explorer, so it grows as your node watches.
           </p>
         ) : (
           <div className="overflow-hidden rounded-lg border border-zinc-800">
-            {info.history.map((entry, i) => (
+            {(info.history ?? []).map((entry, i) => (
               <div
                 key={entry.txid}
                 className={`flex flex-wrap items-center gap-3 px-3 py-2.5 text-xs ${
