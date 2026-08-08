@@ -104,6 +104,7 @@ const FOOTER_COLS: { title: string; links: { label: string; to: string; external
     links: [
       { label: 'QuickNode setup', to: '#quicknode' },
       { label: 'Protocol', to: '#protocol' },
+      { label: 'RSS feed', to: '/api/feed.xml', external: true },
       { label: 'QuickNode', to: QUICKNODE_URL, external: true },
     ],
   },

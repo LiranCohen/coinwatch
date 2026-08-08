@@ -35,7 +35,14 @@ export function AppShell() {
             <NavItem to="/app" label="Feed" end />
             <NavItem to="/app/web-of-trust" label="Web of Trust" />
           </nav>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-3">
+            <a
+              href="/api/feed.xml"
+              className="hidden text-xs text-zinc-500 hover:text-zinc-300 sm:inline"
+              title="RSS feed of detected events"
+            >
+              RSS
+            </a>
             <AccountButton />
           </div>
         </div>

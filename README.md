@@ -3,10 +3,9 @@
 ---
 
 ### Overview
-CoinWatch is a real-time, community-validated layer for **Bitcoin** transaction forensics. Our own full node (txindex-enabled) streams mempool and block data; detection rules surface high-signal events — whale moves, dormant-wallet wakes, and coinjoin rounds (Wasabi/Whirlpool classification included); an AI first pass summarizes each event; and the crowd attaches labels to addresses that flow back into event context. Scattered Discord alpha becomes structured, reusable, Bitcoin-native intelligence.
+CoinWatch is a real-time, community-validated layer for **Bitcoin** transaction forensics. Our own full node (txindex-enabled) streams mempool and block data; detection rules surface high-signal events — whale moves, dormant-wallet wakes, and coinjoin rounds (Wasabi/Whirlpool classification included); an AI first pass summarizes each event; and the crowd attaches labels to addresses that flow back into event context. Scattered Discord alpha becomes structured, reusable, Bitcoin-native intelligence. Amounts display per the [Coin Standard](https://coinsymbol.wtf/): ¢ for coins, ₿ for whole bitcoin, symbol first (`₿ 1 = ¢ 100m`).
 
 ---
-
 ### The Problem
 Bitcoin chain analysis is either **prohibitively expensive** (Chainalysis, Arkham enterprise tiers) or **unstructured** (Twitter threads, Discord DMs). Label knowledge lives in closed databases. Retail users, small funds, and security researchers lack a middle ground: a place to see *why* a Bitcoin transaction matters, who validated that insight, and how reliable the source is.
 
@@ -26,9 +25,11 @@ A lightweight feed where:
 | Feature | Description |
 |---|---|
 | **Live event feed** | Node RPC polling with baseline snapshot + txid dedup; events broadcast over SSE; eviction sweep marks `confirmed`/`evicted` with block info. |
+| **RSS** | `GET /api/feed.xml` (alias `/feed.xml`) for any reader; Coin Standard titles, deep links into the app. |
 | **Detection rules** | Whale (≥ threshold), dormant-wake (value-gated, address-history backed), coinjoin (equal-output heuristic). |
 | **Coinjoin forensics** | Wasabi/Whirlpool/generic classification, participant + denomination metadata, automatic round-chain batching, dedicated index endpoint. |
-| **Batches** | Related-tx groups with per-tx block info and link reasons — auto-built coinjoin chains plus curated traces (e.g., the 109,735 BTC Binance cold-storage consolidation). |
+| **Batches** | Related-tx groups with per-tx block info and link reasons — auto-built coinjoin chains plus curated traces (e.g., the ₿ 109,735 Binance cold-storage consolidation). |
+| **Coin Standard** | Display uses [¢ / ₿](https://coinsymbol.wtf/) prefix notation (`₿ 1 = ¢ 100m`). Wire amounts stay integer base units (`valueSats`). |
 | **Crowd labels + reputation** | Address labels with evidence URLs, one-vote toggle per identity, transactional reputation recompute, leaderboard + trending. |
 | **Entities** | 280 seeded labels from GraphSense TagPacks (exchanges, pools, services) rolled up by tag; address pages resolve history via mempool.space with blockstream fallback. |
 | **AI first pass** | Pluggable OpenAI-compatible provider; deterministic mock when unconfigured; broadcast-then-patch over SSE. |
@@ -60,7 +61,7 @@ PORT=3100 INJECTOR_ENABLED=true bun run src/index.ts
 ---
 
 ### Demo Script
-1. **Hook:** Land on the dashboard — a 3,000 BTC sweep from an OKX reserves wallet just hit the feed, AI-flagged, with the "okx reserves wallets" label inline.
+1. **Hook:** Land on the dashboard — a ₿ 3,000 sweep from an OKX reserves wallet just hit the feed, AI-flagged, with the "okx reserves wallets" label inline.
 2. **Crowd layer:** An analyst tags the destination address; votes tick their reputation up on the leaderboard.
 3. **Forensics:** Open the coinjoin index — three Wasabi rounds chained into one batch, traced txid by txid with block info.
 4. **Insight:** Filter by entity to see every seeded exchange wallet and the events touching them.

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { satsToBtc, truncateMiddle } from '../lib/format';
+import { formatCoins, truncateMiddle } from '../lib/format';
 
 /**
  * Live-looking incoming block ticker. Heights advance on a fixed cadence from a
@@ -154,9 +154,7 @@ export function BlocksStrip() {
             {txs.map((tx) => (
               <li key={tx.txid} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                 <span className="font-mono text-zinc-500">{truncateMiddle(tx.txid, 10, 8)}</span>
-                <span className="tnum font-mono text-zinc-200">
-                  {satsToBtc(tx.valueSats)} <span className="text-zinc-500">BTC</span>
-                </span>
+                <span className="tnum font-mono text-zinc-200">{formatCoins(tx.valueSats)}</span>
                 <span className="font-mono text-sky-400">{truncateMiddle(tx.address, 8, 6)}</span>
                 <button
                   type="button"

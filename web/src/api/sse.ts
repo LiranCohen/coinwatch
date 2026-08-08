@@ -74,6 +74,10 @@ function startMockTimers(): void {
       source: template.source,
       aiStatus: 'pending',
       aiTag: null,
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       matchedLabels: [],
     };
     mockBroadcast('event:new', event);

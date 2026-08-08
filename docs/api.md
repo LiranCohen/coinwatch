@@ -10,7 +10,7 @@ Everything a frontend needs to consume this backend. No server-code reading requ
 | Local | `http://localhost:3100` |
 
 - CORS is wide open: any origin, `Authorization` + `Content-Type` headers allowed, `GET/POST/PATCH/OPTIONS`.
-- All bodies are JSON. Timestamps are ISO 8601 UTC strings. All amounts are integer **satoshis** (`valueSats`).
+- All bodies are JSON. Timestamps are ISO 8601 UTC strings. All amounts are integer base units (`valueSats`; one unit = one satoshi on-chain). UIs SHOULD display them with the [Coin Standard](https://coinsymbol.wtf/): ¢ for coins, ₿ for whole bitcoin, symbol first (`₿ 1 = ¢ 100m`).
 - The tunnel URL is ephemeral (quick tunnel) — check `docs/development.md` for the current one.
 
 ## Conventions
@@ -147,6 +147,7 @@ interface BatchDetail extends BatchSummary { txs: BatchTx[]; }
 | GET | `/api/events/:id` | no | → `EventDetail` (404 unknown) |
 | POST | `/api/events/:id/ai-feedback` | yes | `{ value: 'confirm' \| 'refute' }` → updated `aiFeedback`; same value again removes |
 | GET | `/api/coinjoins` | no | `?limit` → `{ coinjoins: (EventSummary & { batchId: string \| null })[] }` — coinjoin events with classification in `meta.coinjoin` |
+| GET | `/api/feed.xml` | no | RSS 2.0 of recent events. Query: `rule`, `limit`. Alias: `/feed.xml`. Item links point at `PUBLIC_SITE_URL/app?event=<id>` |
 
 ### Labels & addresses
 
@@ -164,7 +165,7 @@ interface BatchDetail extends BatchSummary { txs: BatchTx[]; }
 | GET | `/api/batches` | no | → `{ batches: BatchSummary[] }` |
 | GET | `/api/batches/:id` | no | → `BatchDetail` (404 unknown). `txs[].linkReason` explains each link; `eventId` non-null when the tx is also a detected event |
 
-Seeded batches include "Binance.com hot wallet — 2018 cold-storage consolidations" (incl. the 109,735 BTC consolidation) and "OKX proof-of-reserves wallets". Auto batches are created when coinjoin rounds chain.
+Seeded batches include "Binance.com hot wallet — 2018 cold-storage consolidations" (incl. the ₿ 109,735 consolidation) and "OKX proof-of-reserves wallets". Auto batches are created when coinjoin rounds chain.
 
 ### Leaderboard & entities
 
@@ -185,6 +186,20 @@ Seeded batches include "Binance.com hot wallet — 2018 cold-storage consolidati
 | `label:new` | `Label` | crowd label created |
 | `health` | `{ lastPollAt: string }` | after each successful node poll — if these stop, show "node connection stale" |
 
+## RSS feed
+
+`GET /api/feed.xml` (also `/feed.xml`) — RSS 2.0 of recent detections for any reader (Feedly, NetNewsWire, etc.).
+
+```bash
+curl https://camp-prophet-duties-fairly.trycloudflare.com/api/feed.xml
+curl 'http://localhost:3100/api/feed.xml?rule=whale&limit=20'
+```
+
+- Titles use Coin Standard amounts (`₿ 42.15`, `¢ 25m`) and include the AI tag when present.
+- Each item links to `PUBLIC_SITE_URL/app?event=<id>` (set `PUBLIC_SITE_URL` in `.env`; defaults to `http://localhost:5173`).
+- Optional filters: `rule` (`whale` \| `dormant-wake` \| `coinjoin` \| `hack`), `limit` (default 50, max 200).
+- The web app advertises the feed via `<link rel="alternate" type="application/rss+xml">` and an RSS link in the app chrome / landing footer.
+
 ## Demo injector (presenter only)
 
 - `GET /api/dev/inject` → 200 when enabled, 404 otherwise (use it to toggle an inject button).
@@ -192,4 +207,4 @@ Seeded batches include "Binance.com hot wallet — 2018 cold-storage consolidati
 
 ## Demo data
 
-The demo DB is pre-seeded so every endpoint returns content: 7 confirmed events (3,000 BTC OKX sweeps, the 109,735 BTC Binance consolidation, the 2010 "pizza-era" dormant wake, three chained Wasabi rounds), 3 analysts with reputation, crowd labels with votes, ai_feedback tallies, and 3 batches. Seed labels (280 exchange/pool/service addresses) power `matchedLabels`, entities, and batch context.
+The demo DB is pre-seeded so every endpoint returns content: 7 confirmed events (₿ 3,000 OKX sweeps, the ₿ 109,735 Binance consolidation, the 2010 "pizza-era" dormant wake, three chained Wasabi rounds), 3 analysts with reputation, crowd labels with votes, ai_feedback tallies, and 3 batches. Seed labels (280 exchange/pool/service addresses) power `matchedLabels`, entities, and batch context.

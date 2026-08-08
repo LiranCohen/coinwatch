@@ -18,6 +18,7 @@ import type {
 
 import addressFixture from '../../fixtures/address.json';
 import eventDetailFixture from '../../fixtures/event-detail.json';
+import { formatCoins } from '../lib/format';
 import eventsFixture from '../../fixtures/events.json';
 import hackFixture from '../../fixtures/hack.json';
 import leaderboardFixture from '../../fixtures/leaderboard.json';
@@ -50,6 +51,16 @@ async function request<T>(path: string, init?: RequestInit, token?: string | nul
   return (await res.json()) as T;
 }
 
+function withBlockFields<T extends EventSummary>(event: T): T {
+  return {
+    ...event,
+    blockHeight: event.blockHeight ?? null,
+    blockHash: event.blockHash ?? null,
+    blockTime: event.blockTime ?? null,
+    meta: event.meta ?? null,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Fixtures mode: mutable in-memory store so writes (labels, votes, auth) are
 // fully exercisable with zero network (R16).
@@ -61,12 +72,20 @@ interface MockSession {
 }
 
 const mock = {
-  events: structuredClone(eventsFixture.events) as EventSummary[],
+  events: (structuredClone(eventsFixture.events) as unknown as EventSummary[]).map(withBlockFields),
   details: new Map<string, EventDetail>([
-    ['evt_001', structuredClone(eventDetailFixture) as EventDetail],
+    ['evt_001', withBlockFields(structuredClone(eventDetailFixture) as unknown as EventDetail)],
   ]),
   addresses: new Map<string, AddressInfo>([
-    [addressFixture.address, structuredClone(addressFixture) as AddressInfo],
+    [
+      addressFixture.address,
+      {
+        ...(structuredClone(addressFixture) as unknown as AddressInfo),
+        recentEvents: (
+          structuredClone(addressFixture.recentEvents) as unknown as EventSummary[]
+        ).map(withBlockFields),
+      },
+    ],
   ]),
   labels: new Map<string, Label>(),
   sessions: new Map<string, MockSession>(),
@@ -130,7 +149,7 @@ function detailFromSummary(summary: EventSummary): EventDetail {
     ...summary,
     aiSummary:
       summary.aiStatus === 'done'
-        ? `A ${(summary.valueSats / 1e8).toFixed(2)} BTC transaction matched the ${summary.rules.join(', ')} rule${summary.rules.length > 1 ? 's' : ''}. Destination profile is consistent with routine movement; no seeded labels are involved.`
+        ? `A ${formatCoins(summary.valueSats)} transaction matched the ${summary.rules.join(', ')} rule${summary.rules.length > 1 ? 's' : ''}. Destination profile is consistent with routine movement; no seeded labels are involved.`
         : null,
     inputs: [{ address: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', valueSats: summary.valueSats + 50_000 }],
     outputs: [
@@ -514,6 +533,10 @@ export async function postInject(body: { rule?: string; valueSats?: number; addr
       source: 'demo',
       aiStatus: 'pending',
       aiTag: null,
+      blockHeight: null,
+      blockHash: null,
+      blockTime: null,
+      meta: null,
       matchedLabels: [],
     };
     mock.events.unshift(summary);

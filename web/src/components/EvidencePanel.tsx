@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import type { Label } from '@chainwatch/shared';
 
-import { isHttpUrl, truncateMiddle } from '../lib/format';
+import { formatCoins, isHttpUrl, truncateMiddle } from '../lib/format';
 
 interface EvidencePanelProps {
   label: Label;
@@ -37,7 +37,7 @@ export function EvidencePanel({ label, onClose }: EvidencePanelProps) {
   const firstSeenYear = 2013 + Math.floor(rand() * 10);
   const txCount = 40 + Math.floor(rand() * 4200);
   const clusterSize = 2 + Math.floor(rand() * 340);
-  const received = (rand() * 12000 + 4).toFixed(2);
+  const receivedCoins = Math.round((rand() * 12000 + 4) * 100_000_000);
   const confidence = Math.floor(55 + rand() * 40);
   const sampleTxs = Array.from({ length: 3 }, () => {
     let tx = '';
@@ -77,7 +77,7 @@ export function EvidencePanel({ label, onClose }: EvidencePanelProps) {
         <div className="mb-4 mt-3 grid grid-cols-3 gap-2 text-center">
           {[
             ['First seen', String(firstSeenYear)],
-            ['Total received', `${received} BTC`],
+            ['Total received', formatCoins(receivedCoins)],
             ['Confidence', `${confidence}%`],
           ].map(([k, v]) => (
             <div key={k} className="rounded-lg border border-zinc-800 bg-zinc-950/60 px-2 py-2">

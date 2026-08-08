@@ -11,6 +11,7 @@ Try it:
 ```bash
 curl https://camp-prophet-duties-fairly.trycloudflare.com/api/events
 curl https://camp-prophet-duties-fairly.trycloudflare.com/api/entities
+curl https://camp-prophet-duties-fairly.trycloudflare.com/api/feed.xml   # RSS of recent events
 curl -N https://camp-prophet-duties-fairly.trycloudflare.com/api/stream   # SSE live feed
 ```
 

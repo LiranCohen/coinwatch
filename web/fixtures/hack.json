@@ -1,7 +1,7 @@
 {
   "id": "hack_001",
   "title": "Exchange cold-wallet drain",
-  "summary": "75 BTC left a seeded exchange cold wallet, peeled through two fresh addresses, then 45 BTC consolidated into a labeled CoinJoin coordinator. Classic drain-and-mix pattern.",
+  "summary": "₿ 75 left a seeded exchange cold wallet, peeled through two fresh addresses, then ₿ 45 consolidated into a labeled CoinJoin coordinator. Classic drain-and-mix pattern.",
   "detectedAt": "2026-08-06T22:29:44.000Z",
   "status": "active",
   "totalSats": 7500000000,
